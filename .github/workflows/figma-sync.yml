@@ -1,0 +1,72 @@
+name: Figma Sync
+
+on:
+  schedule:
+    # 每週一台北 10:00（UTC 週一 02:00）
+    - cron: '0 2 * * 1'
+  workflow_dispatch:
+    inputs:
+      file_key:
+        description: 'Figma file key (overrides FIGMA_FILE_KEY secret/var)'
+        required: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: figma-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Pull Figma structure → docs/design/
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run Figma sync
+        env:
+          FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
+          FIGMA_FILE_KEY: ${{ github.event.inputs.file_key || secrets.FIGMA_FILE_KEY || vars.FIGMA_FILE_KEY }}
+        run: python scripts/figma_sync.py
+
+      - name: Detect changes
+        id: diff
+        run: |
+          if [ -n "$(git status --porcelain docs/design)" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Open PR with Figma updates
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          DATE=$(date -u +%Y%m%d)
+          BRANCH="figma-sync/${DATE}"
+          git config user.name  "brandos-figma-sync[bot]"
+          git config user.email "brandos-figma-sync@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add docs/design
+          git commit -m "[figma-sync] 同步 Figma 結構與 design tokens (${DATE})"
+          git push -u origin "$BRANCH"
+          if ! gh pr view "$BRANCH" >/dev/null 2>&1; then
+            gh pr create \
+              --base main \
+              --head "$BRANCH" \
+              --draft \
+              --title "[figma-sync] 同步 Figma (${DATE})" \
+              --body "Figma → repo 單向同步產出。請審核 design-tokens.json 變動後合併。"
+          fi
+
+      - name: Summary
+        run: |
+          echo "## Figma Sync" >> $GITHUB_STEP_SUMMARY
+          echo "- Changed: ${{ steps.diff.outputs.changed }}" >> $GITHUB_STEP_SUMMARY

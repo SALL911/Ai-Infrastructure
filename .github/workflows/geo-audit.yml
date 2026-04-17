@@ -1,0 +1,89 @@
+name: GEO Audit
+
+on:
+  schedule:
+    # 每日台北 02:00（UTC 18:00 前一天）執行，錯開其他 workflow
+    - cron: '0 18 * * *'
+  workflow_dispatch:
+    inputs:
+      brand_name:
+        description: 'Brand name to audit (overrides BRAND_NAME secret)'
+        required: false
+      brand_domain:
+        description: 'Brand domain (optional)'
+        required: false
+      brand_industry:
+        description: 'Industry category (technology / finance / consumer_goods / default)'
+        required: false
+        default: 'technology'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: geo-audit
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    name: Query AI engines for brand visibility
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run GEO audit
+        env:
+          BRAND_NAME: ${{ github.event.inputs.brand_name || vars.BRAND_NAME || 'Symcio' }}
+          BRAND_DOMAIN: ${{ github.event.inputs.brand_domain || vars.BRAND_DOMAIN }}
+          BRAND_INDUSTRY: ${{ github.event.inputs.brand_industry || vars.BRAND_INDUSTRY || 'technology' }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python scripts/geo_audit.py
+
+      - name: Upload report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: geo-audit-${{ github.run_id }}
+          path: reports/geo-audit/
+          retention-days: 30
+
+      - name: Commit report to repo
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -z "$(git status --porcelain reports/)" ]; then
+            echo "No new reports to commit."
+            exit 0
+          fi
+          DATE=$(date -u +%Y%m%d)
+          BRANCH="geo-audit/${DATE}-${GITHUB_RUN_NUMBER}"
+          git config user.name  "brandos-geo-audit[bot]"
+          git config user.email "brandos-geo-audit@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add reports/
+          git commit -m "[geo-audit] 每日可見度測試 ${DATE}"
+          git push -u origin "$BRANCH"
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --draft \
+            --title "[geo-audit] 每日可見度測試 (${DATE})" \
+            --body "自動產生的 GEO 可見度報告，請人工審核 avg_score 與趨勢後合併。"
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## GEO Audit" >> $GITHUB_STEP_SUMMARY
+          echo "- Brand: ${{ github.event.inputs.brand_name || vars.BRAND_NAME || 'Symcio' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Industry: ${{ github.event.inputs.brand_industry || vars.BRAND_INDUSTRY || 'technology' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY

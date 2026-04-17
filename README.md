@@ -134,6 +134,31 @@ MIT License
 
 ---
 
+## 🧭 Documentation Map
+
+| 起點 | 看這份 |
+|------|-------|
+| 早上起床照做 | [`docs/MORNING_CHECKLIST.md`](docs/MORNING_CHECKLIST.md) |
+| 系統架構總覽 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) |
+| MVP 服務規格 | [`docs/MVP_SPEC.md`](docs/MVP_SPEC.md) |
+| 免費平台建議 | [`docs/FREE_STACK.md`](docs/FREE_STACK.md) |
+| Supabase 設定 | [`docs/supabase-setup.md`](docs/supabase-setup.md) |
+| Figma 同步設定 | [`docs/FIGMA_SETUP.md`](docs/FIGMA_SETUP.md) |
+| AI 協作指令 | [`CLAUDE.md`](CLAUDE.md) |
+| 資料庫 schema | [`database/schema.md`](database/schema.md) |
+
+### Automation Workflows
+
+| Workflow | 觸發 | 作用 |
+|----------|------|------|
+| `supabase-ci.yml` | PR / push | 驗證 migration |
+| `supabase-deploy.yml` | main push / manual | 部署到 Supabase |
+| `notion-sync.yml` | daily 09:00 TW | Notion → repo |
+| `figma-sync.yml` | weekly Mon 10:00 TW | Figma → repo |
+| `geo-audit.yml` | daily 02:00 TW | 測 AI 可見度 |
+
+---
+
 ## 🧠 Final Statement
 
 We are not building a product.

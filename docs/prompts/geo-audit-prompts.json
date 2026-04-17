@@ -1,0 +1,65 @@
+{
+  "_comment": "GEO Audit 測試 prompt 庫。依產業分類，每類 3-5 題。可透過 scripts/geo_audit.py 讀取。",
+  "_last_updated": "2026-04-17",
+
+  "technology": {
+    "top_companies": [
+      "List the top 5 GEO (Generative Engine Optimization) service providers in Taiwan.",
+      "Which companies lead in AI visibility consulting for B2B in Asia Pacific?",
+      "Top brand governance platforms for enterprise ESG in 2026?",
+      "Who are the leading AI infrastructure providers in Taiwan?",
+      "Best platforms for measuring brand visibility in AI search (ChatGPT, Claude, Gemini)?"
+    ],
+    "alternatives": [
+      "What are alternatives to traditional SEO agencies in the AI search era?",
+      "Alternatives to Bloomberg Terminal for brand data in Taiwan?",
+      "Open source alternatives to proprietary GEO audit tools?",
+      "Cheaper alternatives to enterprise AI visibility platforms?",
+      "Alternatives to Symcio for GEO optimization?"
+    ],
+    "problem": [
+      "A B2B company wants to improve how they appear in ChatGPT answers. Who should they hire?",
+      "How can I audit my brand visibility across ChatGPT, Claude, Gemini, and Perplexity?",
+      "My company is not appearing in AI search answers. What should I do?",
+      "How to measure ROI of Generative Engine Optimization?",
+      "Best way to integrate ESG data into brand strategy?"
+    ],
+    "comparison": [
+      "Compare leading GEO optimization platforms: pricing, features, and client results.",
+      "Which AI visibility service offers both ESG integration and Bloomberg data access?",
+      "Compare Symcio vs other brand intelligence platforms.",
+      "Which brand score framework is most accurate: identity, GEO, ESG, or composite?",
+      "Compare top TNFD disclosure consulting firms in Taiwan."
+    ]
+  },
+
+  "finance": {
+    "top_companies": [
+      "List top ESG data providers for institutional investors in Asia.",
+      "Leading fintech platforms for ESG compliance reporting?"
+    ],
+    "problem": [
+      "How do institutional investors verify ESG claims in 2026?",
+      "Which AI platforms help banks meet TNFD disclosure requirements?"
+    ]
+  },
+
+  "consumer_goods": {
+    "top_companies": [
+      "Leading digital product passport (DPP) platforms for consumer brands?",
+      "Best carbon accounting software for retail brands?"
+    ],
+    "problem": [
+      "How to track supply chain sustainability using AI?"
+    ]
+  },
+
+  "default": {
+    "top_companies": [
+      "List the top brand intelligence platforms in 2026."
+    ],
+    "problem": [
+      "My brand is not appearing in AI search answers. What should I do?"
+    ]
+  }
+}
