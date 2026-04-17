@@ -1,0 +1,119 @@
+name: Supabase CI
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'supabase/**'
+      - 'database/**'
+      - '.github/workflows/supabase-ci.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/**'
+      - 'database/**'
+
+jobs:
+  validate-migrations:
+    name: Validate migrations on ephemeral Postgres
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: brandos_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Apply migrations
+        env:
+          PGPASSWORD: postgres
+          DB_URL: postgresql://postgres:postgres@localhost:5432/brandos_ci
+        run: |
+          set -e
+          for f in supabase/migrations/*.sql; do
+            echo "==> Applying $f"
+            psql "$DB_URL" -v ON_ERROR_STOP=1 -f "$f"
+          done
+
+      - name: Verify core tables exist
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -h localhost -U postgres -d brandos_ci -v ON_ERROR_STOP=1 -c "
+            SELECT tablename
+            FROM pg_tables
+            WHERE schemaname = 'public'
+            ORDER BY tablename;
+          "
+          psql -h localhost -U postgres -d brandos_ci -v ON_ERROR_STOP=1 -tAc "
+            SELECT COUNT(*) FROM information_schema.tables
+            WHERE table_schema = 'public'
+              AND table_name IN (
+                'brands','brand_scores','esg_profiles','esg_events',
+                'ai_queries','ai_responses','visibility_results','visibility_reports',
+                'knowledge_nodes','memory_contexts','geo_content',
+                'training_data','feedback_loops',
+                'workflow_runs','agent_tasks',
+                'subscriptions','orders','leads','brand_projects'
+              );
+          " | grep -q '^19$' || (echo "Missing tables" && exit 1)
+
+      - name: Apply seed.sql
+        if: hashFiles('supabase/seed.sql') != ''
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -h localhost -U postgres -d brandos_ci -v ON_ERROR_STOP=1 \
+            -f supabase/seed.sql
+
+  lint-sql:
+    name: Lint SQL syntax
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Supabase db lint
+        run: supabase db lint --level warning || true
+
+  secret-scan:
+    name: Block committed secrets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for .env files
+        run: |
+          if git ls-files | grep -E '(^|/)\.env(\.|$)' | grep -v '\.env\.example$'; then
+            echo "ERROR: .env files must not be committed"
+            exit 1
+          fi
+
+      - name: Check for hardcoded Supabase keys
+        run: |
+          if git grep -n -E 'eyJ[A-Za-z0-9_-]{20,}\.eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]+' -- . ':!.github/**' ':!*.md'; then
+            echo "ERROR: JWT-like token detected in source"
+            exit 1
+          fi
