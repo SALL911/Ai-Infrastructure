@@ -133,6 +133,21 @@ def render_page(page: dict, token: str) -> tuple[str, str]:
     return slugify(title), f"{front_matter}# {title}\n\n{body}"
 
 
+def search_all(token: str) -> list[dict]:
+    """自動發現 integration 有權限存取的所有頁面與 database。"""
+    results, cursor = [], None
+    while True:
+        body: dict[str, Any] = {"page_size": 100}
+        if cursor:
+            body["start_cursor"] = cursor
+        resp = _request("POST", "/search", token, body)
+        results.extend(resp.get("results", []))
+        if not resp.get("has_more"):
+            break
+        cursor = resp.get("next_cursor")
+    return results
+
+
 def main() -> int:
     token = os.environ.get("NOTION_API_KEY", "").strip()
     db_ids = [d.strip() for d in os.environ.get("NOTION_DATABASE_ID", "").split(",") if d.strip()]
@@ -141,24 +156,51 @@ def main() -> int:
     if not token:
         print("ERROR: NOTION_API_KEY not set", file=sys.stderr)
         return 2
-    if not db_ids:
-        print("ERROR: NOTION_DATABASE_ID not set", file=sys.stderr)
-        return 2
 
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / ".keep").touch(exist_ok=True)
 
     written = 0
-    for db_id in db_ids:
-        print(f"==> Querying database {db_id}")
-        pages = query_database(db_id, token)
-        print(f"    found {len(pages)} pages")
-        for page in pages:
-            slug, content = render_page(page, token)
-            target = out_dir / f"{slug}.md"
-            target.write_text(content, encoding="utf-8")
-            written += 1
-            print(f"    wrote {target}")
+
+    if db_ids:
+        # 指定模式：只同步指定的 databases
+        for db_id in db_ids:
+            print(f"==> Querying database {db_id}")
+            pages = query_database(db_id, token)
+            print(f"    found {len(pages)} pages")
+            for page in pages:
+                slug, content = render_page(page, token)
+                target = out_dir / f"{slug}.md"
+                target.write_text(content, encoding="utf-8")
+                written += 1
+                print(f"    wrote {target}")
+    else:
+        # 自動發現模式：同步 integration 可見的所有頁面
+        print("==> NOTION_DATABASE_ID not set, auto-discovering accessible content")
+        items = search_all(token)
+        print(f"    found {len(items)} items")
+        if not items:
+            print("    NOTE: integration 尚未被授權存取任何頁面。")
+            print("    請至 Notion 頁面 ⋯ → Connections → Add 你的 integration")
+            return 0
+        for item in items:
+            obj_type = item.get("object")
+            if obj_type == "database":
+                db_id = item["id"]
+                title = rich_text(item.get("title", [])) or f"db-{db_id[:8]}"
+                print(f"    database: {title}")
+                for page in query_database(db_id, token):
+                    slug, content = render_page(page, token)
+                    target = out_dir / f"{slug}.md"
+                    target.write_text(content, encoding="utf-8")
+                    written += 1
+                    print(f"      wrote {target}")
+            elif obj_type == "page":
+                slug, content = render_page(item, token)
+                target = out_dir / f"{slug}.md"
+                target.write_text(content, encoding="utf-8")
+                written += 1
+                print(f"    wrote {target}")
 
     print(f"Done. {written} pages synced to {out_dir}/")
     return 0

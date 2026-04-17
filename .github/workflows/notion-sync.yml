@@ -39,6 +39,8 @@ jobs:
       - name: Run Notion sync
         env:
           NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          # NOTION_DATABASE_ID 可選；未設定時 script 會自動發現 integration
+          # 可見的所有頁面與 database 並全部同步。
           NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
         run: python scripts/notion_sync.py
 
