@@ -1,0 +1,82 @@
+name: Notion Sync
+
+on:
+  schedule:
+    # 每日台北時間 09:00（UTC 01:00）執行
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run without committing changes'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: notion-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Pull Notion pages into docs/notion-sync
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run Notion sync
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+        run: python scripts/notion_sync.py
+
+      - name: Detect changes
+        id: diff
+        run: |
+          if [ -n "$(git status --porcelain docs/notion-sync)" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Open PR with synced content
+        if: steps.diff.outputs.changed == 'true' && github.event.inputs.dry_run != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          DATE=$(date -u +%Y%m%d)
+          BRANCH="notion-sync/${DATE}"
+          git config user.name  "brandos-notion-sync[bot]"
+          git config user.email "brandos-notion-sync@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add docs/notion-sync
+          git commit -m "[notion-sync] 自動同步 Notion 頁面 (${DATE})"
+          git push -u origin "$BRANCH"
+
+          # Open draft PR if none exists for this branch
+          if ! gh pr view "$BRANCH" >/dev/null 2>&1; then
+            gh pr create \
+              --base main \
+              --head "$BRANCH" \
+              --draft \
+              --title "[notion-sync] 自動同步 (${DATE})" \
+              --body "Notion → repo 單向同步產出。請人工審核 diff 後合併。"
+          fi
+
+      - name: Summary
+        run: |
+          echo "## Notion Sync" >> $GITHUB_STEP_SUMMARY
+          echo "- Changed: ${{ steps.diff.outputs.changed }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Dry run: ${{ github.event.inputs.dry_run }}" >> $GITHUB_STEP_SUMMARY

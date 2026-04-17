@@ -106,3 +106,42 @@ brandos-infrastructure/
 - Commit 訊息格式：[類型] 簡短描述
 - 敏感客戶資料不進 repo，改用環境變數或 .env.local
 - 每次重大架構更新，同步更新本 CLAUDE.md 版本號
+
+---
+
+## 九、工具角色分工與單一真相來源（SSoT）
+
+### 9.1 七工具分工表
+
+| 工具 | 角色 | 主要方向 |
+|------|------|---------|
+| GitHub `SALL911/BrandOS-Infrastructure` | **單一真相來源（SSoT）** | 所有工具的中心 |
+| Claude Code | 開發 / 部署 / DB migration 執行 agent | 讀寫 GitHub + Supabase |
+| VS Code / Windsurf | 本機 IDE | `git pull` / `git push` |
+| claude.ai（雲端 Claude） | 策略思考、行銷內容 brainstorm | 透過 GitHub MCP 讀 repo；Notion MCP 讀 Notion |
+| Notion + BrandOS Claude | 人類協作知識庫（brief / 會議 / CRM 草稿） | 人類編輯、AI 讀取 |
+| Notion AI | Notion 內文案生成 | 僅限 Notion 內部 |
+| Supabase | 結構化資料庫（knowledge_nodes / geo_content / leads） | GitHub Actions 自動部署 |
+
+### 9.2 底層改寫規則（避免雙向衝突）
+
+| 內容類型 | 唯一編輯位置 | 同步方向 |
+|---------|-------------|---------|
+| Schema / code / migration / workflow | GitHub repo | repo → Supabase（auto via CI）|
+| 品牌知識 / 客戶 brief / 會議紀錄 | Notion | Notion → `docs/notion-sync/` → `knowledge_nodes`（單向 cron）|
+| 行銷內容 / GEO 內容 | Notion 起草 → repo approved | Notion → `geo_content` 表（approved 後）|
+| 敏感憑證（API key / DB password）| GitHub Secrets | 不同步、不落地 |
+
+禁止事項：
+- 不得在 Notion 與 repo 同時修改同一筆資料（先 Notion、再單向推）
+- 不得把 Notion API token 寫入 repo；一律走 `secrets.NOTION_API_KEY`
+- 不得在 Supabase Studio 手動改 schema（必須透過 migration PR）
+
+### 9.3 AI 自動化獲客行銷路線圖
+
+| 優先級 | 任務 | 實作位置 |
+|-------|------|---------|
+| P0 | Notion → GitHub → Supabase 單向同步 | `.github/workflows/notion-sync.yml` |
+| P1 | GEO visibility 每日 cron 測試 | `.github/workflows/geo-audit.yml`（待建）|
+| P2 | Lead scoring agent | `agents/lead-scorer.py`（待建）|
+| P3 | GEO 內容自動發布 | `agents/publisher.py`（待建）|
