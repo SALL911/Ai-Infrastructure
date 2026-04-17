@@ -1,0 +1,50 @@
+{
+  "version": "1.0",
+  "project": "BrandOS Infrastructure",
+  "owner": "Symcio / SALL911",
+  "updated": "2026-04-17",
+
+  "permissions": {
+    "allow": [
+      "read_files",
+      "write_files",
+      "execute_commands",
+      "web_search",
+      "database_query"
+    ],
+    "require_confirmation": [
+      "delete_files",
+      "external_api_calls",
+      "send_emails",
+      "publish_content",
+      "financial_data_access"
+    ],
+    "deny": [
+      "access_client_credentials",
+      "modify_git_history",
+      "access_env_files",
+      "share_client_data_externally"
+    ]
+  },
+
+  "context": {
+    "default_language": "zh-TW",
+    "code_comments": "en",
+    "brand_names_no_translate": ["Symcio", "BrandOS", "GEO", "Brand Score AI", "TNFD", "LEAP", "Bloomberg"],
+    "tone": "professional_b2b",
+    "avoid_words": ["創新", "顛覆", "賦能", "革命性", "最強", "最佳"]
+  },
+
+  "database": {
+    "primary": "postgresql",
+    "development": "sqlite",
+    "schema_file": "database/schema.md",
+    "sensitive_fields_no_commit": ["client_api_keys", "personal_data", "financial_records"]
+  },
+
+  "git": {
+    "commit_format": "[type] description",
+    "types": ["init", "schema", "rules", "commands", "agents", "docs", "fix"],
+    "no_commit_patterns": [".env", ".env.local", "*.key", "client_data/"]
+  }
+}
