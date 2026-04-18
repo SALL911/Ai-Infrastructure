@@ -29,7 +29,7 @@ export function FreeScanForm() {
     }
 
     try {
-      const res = await fetch("/api/scan", {
+      const res = await fetch("/api/agent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
