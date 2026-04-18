@@ -1,0 +1,47 @@
+name: Composio — Lead → HubSpot sync
+
+on:
+  schedule:
+    # 每小時整點執行
+    - cron: '0 * * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Set to "true" to preview without writing'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: composio-hubspot-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Sync Supabase leads to HubSpot via Composio
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run sync
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          COMPOSIO_API_KEY: ${{ secrets.COMPOSIO_API_KEY }}
+          COMPOSIO_USER_ID: ${{ secrets.COMPOSIO_USER_ID }}
+          COMPOSIO_HUBSPOT_CONNECTION_ID: ${{ secrets.COMPOSIO_HUBSPOT_CONNECTION_ID }}
+          DRY_RUN: ${{ github.event.inputs.dry_run == 'true' && '1' || '0' }}
+        run: python scripts/composio_hubspot_sync.py
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Composio Lead Sync" >> $GITHUB_STEP_SUMMARY
+          echo "- Dry run: ${{ github.event.inputs.dry_run || 'false' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY

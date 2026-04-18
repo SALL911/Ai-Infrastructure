@@ -138,6 +138,7 @@ brandos-infrastructure/
 | Notion + BrandOS Claude | 人類協作知識庫（brief / 會議 / CRM 草稿） | 人類編輯、AI 讀取 |
 | Notion AI | Notion 內文案生成 | 僅限 Notion 內部 |
 | Supabase | 結構化資料庫（knowledge_nodes / geo_content / leads） | GitHub Actions 自動部署 |
+| Composio | 200+ 第三方 app 整合層（HubSpot / Gmail / Slack / Linear） | 終端 CLI + GitHub Actions 雙軌 |
 
 ### 9.2 底層改寫規則（避免雙向衝突）
 
@@ -159,5 +160,6 @@ brandos-infrastructure/
 |-------|------|---------|
 | P0 | Notion → GitHub → Supabase 單向同步 | `.github/workflows/notion-sync.yml` |
 | P1 | GEO visibility 每日 cron 測試 | `.github/workflows/geo-audit.yml`（待建）|
+| P1 | Lead → HubSpot via Composio | `.github/workflows/composio-hubspot-sync.yml` |
 | P2 | Lead scoring agent | `agents/lead-scorer.py`（待建）|
 | P3 | GEO 內容自動發布 | `agents/publisher.py`（待建）|
