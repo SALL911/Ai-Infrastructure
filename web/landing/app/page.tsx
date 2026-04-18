@@ -204,17 +204,17 @@ export default function Page() {
           </h2>
           <div className="mt-10 grid gap-4 md:grid-cols-4">
             {[
-              { name: "Free Scan", price: "$0", note: "1 prompt × 4 引擎", cta: "立即試用" },
-              { name: "AI Visibility Audit", price: "$299", note: "20 prompt + 改善建議 PDF", cta: "預購" },
-              { name: "AI Visibility Optimization", price: "$1,999", note: "Audit + 90 天追蹤", cta: "預購" },
-              { name: "Symcio Intelligence", price: "$12k/年", note: "每日追蹤 + ESG × Bloomberg", cta: "聯絡業務" },
+              { name: "Free Scan", price: "$0", note: "1 prompt × 4 引擎", cta: "立即試用", href: "#scan" },
+              { name: "AI Visibility Audit", price: "$299", note: "20 prompt + 改善建議 PDF", cta: "現在下單", href: "/api/checkout?product=audit" },
+              { name: "AI Visibility Optimization", price: "$1,999", note: "Audit + 90 天追蹤", cta: "現在下單", href: "/api/checkout?product=optimization" },
+              { name: "Symcio Intelligence", price: "$12k/年", note: "每日追蹤 + ESG × Bloomberg", cta: "聯絡業務", href: "mailto:sales@symcio.tw?subject=Symcio%20Intelligence%20Subscription" },
             ].map((p) => (
               <div key={p.name} className="border border-line p-6">
                 <p className="text-sm text-muted">{p.name}</p>
                 <p className="mt-2 text-3xl font-semibold">{p.price}</p>
                 <p className="mt-3 text-sm text-muted">{p.note}</p>
                 <a
-                  href="#scan"
+                  href={p.href}
                   className="mt-6 inline-block border border-ink px-4 py-2 text-sm hover:bg-ink hover:text-white no-underline"
                 >
                   {p.cta} →

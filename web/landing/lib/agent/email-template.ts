@@ -35,6 +35,11 @@ export function renderReportEmail(report: FakeReport): {
     )
     .join("");
 
+  const origin = process.env.NEXT_PUBLIC_SITE_URL || "https://symcio.tw";
+  const checkoutUrl =
+    `${origin}/api/checkout?product=audit` +
+    `&brand=${encodeURIComponent(report.brand)}`;
+
   const html = `<!DOCTYPE html>
 <html lang="zh-Hant">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -92,7 +97,7 @@ export function renderReportEmail(report: FakeReport): {
             <p style="margin:0 0 12px;font-size:14px;color:${INK};">
               本快照為 Free Scan。完整 $299 AI Visibility Audit 包含：20 個產業 prompt × 4 引擎、競品 radar、3 項可執行改善建議、24 小時內交付。
             </p>
-            <a href="https://symcio.tw#scan"
+            <a href="${checkoutUrl}"
                style="display:inline-block;background:${INK};color:${ACCENT};padding:10px 18px;font-size:14px;font-weight:600;text-decoration:none;">
               升級 $299 AI Visibility Audit →
             </a>
