@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "Symcio — AI Visibility Intelligence",
   description:
     "Symcio = AI 時代的 SimilarWeb + SEMrush + Bloomberg。台灣第一個「AI 曝光可量化系統」、唯一「跨 ChatGPT/Gemini 品牌可見度指標」、全球第一個「AI 搜尋排名監測平台」。",
-  metadataBase: new URL("https://symcio.com"),
+  metadataBase: new URL("https://symcio.tw"),
   openGraph: {
     title: "Symcio — AI Visibility Intelligence",
     description:

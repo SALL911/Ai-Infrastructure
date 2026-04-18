@@ -111,7 +111,7 @@ https://github.com/SALL911/BrandOS-Infrastructure/settings/secrets/actions
 - [ ] **Vercel**（https://vercel.com）→ GitHub 登入，授權 BrandOS-Infrastructure repo
 - [ ] **Resend**（https://resend.com）→ 驗證 email，建 API key，存 Secret `RESEND_API_KEY`
 - [ ] **Tally**（https://tally.so）→ 建第一個 lead 表單
-- [ ] **Cloudflare**（https://cloudflare.com）→ 若你有 symcio.com 域名，轉到 Cloudflare DNS
+- [ ] **Cloudflare**（https://cloudflare.com）→ 若你有 symcio.tw 域名，轉到 Cloudflare DNS
 
 ---
 

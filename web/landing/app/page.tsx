@@ -93,6 +93,55 @@ export default function Page() {
         </div>
       </section>
 
+      {/* BEFORE / AFTER */}
+      <section className="border-b border-line bg-white">
+        <div className="mx-auto max-w-6xl px-6 py-20">
+          <p className="font-mono text-xs uppercase tracking-widest text-muted">
+            Before / After · 實際案例
+          </p>
+          <h2 className="mt-3 max-w-3xl text-3xl font-semibold md:text-4xl">
+            你在 Google 排第一，但 AI 完全沒提到你。
+          </h2>
+          <div className="mt-12 grid gap-6 md:grid-cols-2">
+            <article className="border border-line p-6">
+              <p className="font-mono text-xs uppercase tracking-widest text-muted">
+                Before · 未量化
+              </p>
+              <h3 className="mt-2 text-xl font-semibold">Google Search</h3>
+              <ul className="mt-4 space-y-2 text-sm text-muted">
+                <li>· 關鍵字排名 #1</li>
+                <li>· 每月自然流量 12,000</li>
+                <li>· Domain Authority 62</li>
+                <li>· Backlinks 1,400</li>
+              </ul>
+              <p className="mt-6 text-sm">
+                漂亮的數字。問題是買家現在不從這裡找你。
+              </p>
+            </article>
+            <article className="border border-ink bg-ink p-6 text-white">
+              <p className="font-mono text-xs uppercase tracking-widest text-accent">
+                After · Symcio 量化
+              </p>
+              <h3 className="mt-2 text-xl font-semibold">AI Search（同一個品牌）</h3>
+              <ul className="mt-4 space-y-2 text-sm text-white/70">
+                <li>· ChatGPT 提及率 15%（80 次測試）</li>
+                <li>· Claude 提及率 0%</li>
+                <li>· Gemini 平均排名 4.2 名</li>
+                <li>· Perplexity 引用來源 0 個</li>
+              </ul>
+              <p className="mt-6 text-sm text-white/80">
+                ABVI 綜合分數：<span className="text-accent font-semibold">22 / 100</span>（Invisible 段）。
+                這才是 2026 年的真實戰場。
+              </p>
+            </article>
+          </div>
+          <p className="mt-8 max-w-3xl text-sm text-muted">
+            案例為匿名處理的 Symcio 實際客戶。40% 以上首次 Free Scan 落在 Invisible（0–24 分）。你可以用自家品牌直接驗證——
+            <a href="#scan" className="text-ink underline">往上捲跑一次 Free Scan</a>。
+          </p>
+        </div>
+      </section>
+
       {/* PILLARS */}
       <section className="border-b border-line">
         <div className="mx-auto max-w-6xl px-6 py-20">

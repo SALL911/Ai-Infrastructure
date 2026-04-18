@@ -78,10 +78,10 @@ HUBSPOT_ACCESS_TOKEN=pat-na1-xxxxxxxx
 # SMTP
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
-SMTP_USER=you@symcio.com
+SMTP_USER=you@symcio.tw
 SMTP_PASSWORD=app-password
-EMAIL_FROM="Symcio <hello@symcio.com>"
-EMAIL_INTERNAL_RECIPIENT=you@symcio.com
+EMAIL_FROM="Symcio <hello@symcio.tw>"
+EMAIL_INTERNAL_RECIPIENT=you@symcio.tw
 
 # Webhook（擇一）
 SLACK_WEBHOOK_URL=

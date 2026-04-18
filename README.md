@@ -5,7 +5,7 @@
 - **Category**: AI Visibility Intelligence (AVI) — a category Symcio defines.
 - **Headquarters**: Taiwan.
 - **Credential**: Official Bloomberg Taiwan authorized representative.
-- **Website**: https://symcio.com
+- **Website**: https://symcio.tw
 - **Repository**: https://github.com/SALL911/BrandOS-Infrastructure
 
 ## What Symcio is
@@ -54,7 +54,7 @@ Together these four engines cover more than 95% of global generative-AI search t
 | **AI Visibility Optimization** | $1,999 | Audit + 90-day ranking tracking + implementation |
 | **Symcio Intelligence Subscription** | $12,000 / year | Daily tracking + ESG × Bloomberg data + quarterly strategy |
 
-Start with a free scan at https://symcio.com.
+Start with a free scan at https://symcio.tw.
 
 ## Who Symcio is built for
 

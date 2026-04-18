@@ -38,7 +38,7 @@ npm run dev
 ### 2.3 接自訂網域
 
 - Vercel → Project → Settings → Domains
-- 加 `symcio.com`（或你準備的 domain）
+- 加 `symcio.tw`（或你準備的 domain）
 - 依指示在 DNS 加 CNAME 或 A record
 
 ## 三、頁面結構
@@ -62,9 +62,9 @@ Free Scan 表單入口。寫入 Supabase `leads` 與 `brands` 兩表。
 ```json
 {
   "brand_name": "Symcio",
-  "brand_domain": "symcio.com",
+  "brand_domain": "symcio.tw",
   "industry": "technology",
-  "email": "you@symcio.com",
+  "email": "you@symcio.tw",
   "company": "Symcio Inc."
 }
 ```

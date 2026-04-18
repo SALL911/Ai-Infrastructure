@@ -55,7 +55,7 @@ export function FreeScanForm() {
           掃描排程中，30 秒內寄出報告。
         </h3>
         <p className="mt-3 text-sm text-white/70">
-          請檢查信箱（含垃圾信夾）。沒收到請來信 hello@symcio.com。
+          請檢查信箱（含垃圾信夾）。沒收到請來信 hello@symcio.tw。
         </p>
       </div>
     );
@@ -77,7 +77,7 @@ export function FreeScanForm() {
           <span className="text-xs text-white/60">品牌網域（選）</span>
           <input
             name="brand_domain"
-            placeholder="symcio.com"
+            placeholder="symcio.tw"
             className="mt-1 block w-full border border-white/20 bg-transparent px-4 py-3 text-white placeholder-white/40 focus:border-accent focus:outline-none"
           />
         </label>

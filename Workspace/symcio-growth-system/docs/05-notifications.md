@@ -40,8 +40,8 @@ async notifyAll(lead: Lead): Promise<NotificationResult> {
 ### 收到的範例
 
 ```
-From: Symcio <hello@symcio.com>
-To: you@symcio.com
+From: Symcio <hello@symcio.tw>
+To: you@symcio.tw
 Subject: [Symcio][HOT] New Lead: Dana Lee (100)
 
 New lead captured in Symcio Growth System
