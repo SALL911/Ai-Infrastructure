@@ -1,22 +1,44 @@
-# BrandOS MVP — AI Visibility + Brand Score Service
+# Symcio MVP — AI Visibility Intelligence 服務
 
 ## 一、MVP 定位（WHY）
 
-**一句話**：讓企業主花 $299 USD 看見自家品牌在 ChatGPT、Claude、Gemini、Perplexity 上的可見度排名，並拿到一份可執行的改善建議。
+**一句話**：Symcio 是 AI 時代的 SimilarWeb + SEMrush + Bloomberg——企業在 AI 引擎裡的**曝光、排名、影響力**量化平台。
+
+**三個第一**：
+- 台灣**第一個**「AI 曝光可量化系統」
+- 台灣**唯一**「跨 ChatGPT / Gemini 的品牌可見度指標」
+- **全球第一個**「AI 搜尋排名監測平台」
+
+**MVP 交付價值**：讓企業主花 $299 USD 拿到四引擎（ChatGPT / Claude / Gemini / Perplexity）AI 曝光量化報告與改善建議。
 
 **為什麼會付錢**：
-- 傳統 SEO 已不夠——50% 以上的 B2B 買家先問 AI、再開 Google
-- 多數企業**完全不知道**自己在 AI 搜尋的表現
-- Symcio 是台灣第一家把這個服務產品化、並有 Bloomberg 授權代表背書的公司
+- 傳統 SEO 已不夠——> 50% 的 B2B 買家**先問 AI、再開 Google**
+- 多數企業**完全無法量化**自己在 AI 搜尋的表現
+- 三大定位護城河：
+  1. Bloomberg 授權代表身份（台灣唯一）
+  2. 四引擎同框比對（市場唯一）
+  3. ESG × AI 雙軌整合（類別定義者）
+
+> 完整品類定位見 [`docs/POSITIONING.md`](POSITIONING.md)。
 
 ## 二、服務產品化結構
 
-| 產品 | 價格 | 交付物 | 交付時間 |
-|------|------|--------|---------|
-| **Free Scan**（引流） | $0 | 1 個查詢 × 4 AI 模型的可見度快照 | 即時（< 2 min）|
-| **GEO Audit**（主推） | $299 USD | 20 個查詢 × 4 模型 + 競品對比 + 改善建議 PDF | 24 小時內 |
-| **GEO Optimization**（升級）| $1,999 USD | Audit + 實作優化 + 3 個月追蹤 | 30 天 |
-| **Brand Score AI**（年約）| $12,000/年 | 七維評分 + 每月報告 + 季度策略會議 | 訂閱制 |
+對應三大支柱（Exposure / Ranking / Influence）分層定價：
+
+| 產品 | 價格 | 涵蓋支柱 | 交付物 | 交付時間 |
+|------|------|---------|--------|---------|
+| **Free Scan**（引流） | $0 | Exposure only | 1 個查詢 × 4 AI 引擎的曝光快照 | 即時（< 2 min）|
+| **AI Visibility Audit**（主推） | $299 USD | Exposure + Ranking | 20 個查詢 × 4 引擎 + 競品同框對比 + 改善建議 PDF | 24 小時內 |
+| **AI Visibility Optimization**（升級）| $1,999 USD | 三支柱全開 | Audit + 實作優化 + 90 天排名追蹤 + 影響力儀表板 | 30 天 |
+| **Symcio Intelligence Subscription**（年約）| $12,000/年 | 三支柱 + ESG × Bloomberg | 每日追蹤 + 月報 + 季策略會議 + API 存取 | 訂閱制 |
+
+### 三大支柱對應產品線
+
+| Pillar | 類比 | 涵蓋產品 | 核心指標 |
+|--------|------|---------|---------|
+| **Exposure**（曝光）| SimilarWeb | Free Scan 起 | Mention Rate, Category Share |
+| **Ranking**（排名）| SEMrush | $299 Audit 起 | Average Rank, Top-3 Share |
+| **Influence**（影響力）| Bloomberg | $1,999 起 | Sentiment, Narrative Ownership, ESG Alignment |
 
 ## 三、使用者旅程（Happy Path）
 

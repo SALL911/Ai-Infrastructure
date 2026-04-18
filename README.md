@@ -1,19 +1,31 @@
-# AI Infrastructure Protocol
-### A Global Governance Layer for Brand, ESG, and AI
+# Symcio — AI Visibility Intelligence
+### The SimilarWeb + SEMrush + Bloomberg for the AI Era
+
+**台灣第一個「AI 曝光可量化系統」**
+**台灣唯一「跨 ChatGPT / Gemini 的品牌可見度指標」**
+**全球第一個「AI 搜尋排名監測平台」**
+
+> 專門做：企業在 AI 裡的**曝光、排名與影響力**量化與治理。
+
+完整定位與品類定義：[`docs/POSITIONING.md`](docs/POSITIONING.md)
 
 ---
 
 ## 🌍 Vision
 
-We are building the world's first **AI-Native Governance Infrastructure** that transforms:
+We are building the world's first **AI Visibility Intelligence (AVI) platform** and governance infrastructure that transforms:
 
-- Brand → Verifiable Asset  
-- ESG → Auditable Data  
-- AI → Governed System  
+- Brand → Measurable AI Exposure
+- ESG → Auditable Data
+- AI → Governed Visibility System
+
+**Category creation**: SimilarWeb quantified web traffic. SEMrush quantified search rankings. Bloomberg quantified financial data. **Symcio quantifies brand presence in the AI era.**
 
 Inspired by:
-- Bloomberg (financial data infrastructure)
-- SpaceX (physical infrastructure)
+- Bloomberg (financial data infrastructure + 授權代表體系)
+- SimilarWeb (traffic & category benchmarking)
+- SEMrush (rank-tracking rigor)
+- SpaceX (infrastructure-first thinking)
 
 ---
 
@@ -138,6 +150,7 @@ MIT License
 
 | 起點 | 看這份 |
 |------|-------|
+| **品類定位 / 訊息矩陣** | [`docs/POSITIONING.md`](docs/POSITIONING.md) |
 | 早上起床照做 | [`docs/MORNING_CHECKLIST.md`](docs/MORNING_CHECKLIST.md) |
 | 系統架構總覽 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) |
 | MVP 服務規格 | [`docs/MVP_SPEC.md`](docs/MVP_SPEC.md) |

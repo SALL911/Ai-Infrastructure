@@ -1,13 +1,26 @@
-# BrandOS Infrastructure — AI Infrastructure Protocol
-## CLAUDE.md v1.0 | Symcio × BrandOS
+# BrandOS Infrastructure — AI Visibility Intelligence Platform
+## CLAUDE.md v1.1 | Symcio × BrandOS
 
 ---
 
 ## 一、專案背景（WHY）
 
-Symcio 是台灣獨立 GEO（Generative Engine Optimization）知識基礎設施平台，同時為 Bloomberg 台灣授權代表。BrandOS Infrastructure 是 Symcio 的核心 SaaS 產品——將品牌治理、ESG 合規、AI 知識資產管理整合為一套可擴展的作業系統。
+**Symcio 定位（三個第一）**
+- 台灣**第一個**「AI 曝光可量化系統」
+- 台灣**唯一**「跨 ChatGPT / Gemini 的品牌可見度指標」
+- **全球第一個**「AI 搜尋排名監測平台」
+
+**一句話類比**：Symcio = AI 時代的 **SimilarWeb + SEMrush + Bloomberg** 合體。
+
+**專業領域**：企業在 AI 裡的**曝光、排名與影響力**量化與治理。
+**品類定義**：AI Visibility Intelligence（AVI），由 Symcio 先行定義。
+**身份護城河**：Bloomberg 台灣授權代表（台灣唯一具備此身份且做 AI 監測的公司）。
+
+BrandOS Infrastructure 是 Symcio 的核心 SaaS 產品——將品牌治理、ESG 合規、AI 知識資產管理整合為一套可擴展的作業系統。
 
 本專案目標：建立一套可被 Claude Code、Claude.ai Projects 雙軌使用的 AI Infrastructure Protocol，讓品牌知識、ESG 數據、GEO 內容能跨 session 持續累積。
+
+完整品類與訊息矩陣見 `docs/POSITIONING.md`。
 
 ---
 
@@ -17,10 +30,13 @@ Symcio 是台灣獨立 GEO（Generative Engine Optimization）知識基礎設施
 - Symcio（不翻譯）
 - BrandOS（不翻譯）、Brand OS（品牌作業系統）
 - GEO（Generative Engine Optimization）
+- AVI（AI Visibility Intelligence）— 由 Symcio 定義的新品類
+- AI Visibility / AI 可見度 — 四引擎曝光度合稱
 - Brand Score AI
 - ESG / TNFD / LEAP 框架
 - Bloomberg 授權代表
 - Claude Code / Claude.ai Projects
+- SimilarWeb / SEMrush — 類比座標，不翻譯
 
 ---
 

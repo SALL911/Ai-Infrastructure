@@ -1,8 +1,11 @@
 # BrandOS Infrastructure — System Architecture
 
+> **Symcio 定位**：AI 時代的 SimilarWeb + SEMrush + Bloomberg。品類 = AI Visibility Intelligence（AVI）。
+> 完整定位：[`POSITIONING.md`](POSITIONING.md)
+
 ## 一、設計哲學（WHY）
 
-BrandOS Infrastructure 的目標是讓 Symcio 團隊與 AI 代理（Claude、Claude Code、Manus、Windsurf、Cursor 等）能在**同一個知識座標系**協作，而不是每個工具各自維護一份資料。
+BrandOS Infrastructure 是 Symcio AVI 平台的技術底座，目標是讓 Symcio 團隊與 AI 代理（Claude、Claude Code、Manus、Windsurf、Cursor 等）能在**同一個知識座標系**協作，而不是每個工具各自維護一份資料。
 
 核心原則：
 1. **單一真相來源（SSoT）**：GitHub repo + Supabase = 所有資料的正式出處
