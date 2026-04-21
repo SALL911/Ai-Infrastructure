@@ -63,6 +63,21 @@ export default function Page() {
               </div>
             ))}
           </div>
+
+          <div className="mt-8 flex flex-wrap gap-3">
+            <a
+              href="#scan"
+              className="inline-block bg-ink px-5 py-3 text-sm font-semibold text-white no-underline hover:bg-ink/90"
+            >
+              免費掃描我的品牌 →
+            </a>
+            <a
+              href="/schema-generator"
+              className="inline-block border border-ink px-5 py-3 text-sm font-semibold text-ink no-underline hover:bg-ink hover:text-white"
+            >
+              Schema + Wikidata 生成器 →
+            </a>
+          </div>
         </div>
       </section>
 
