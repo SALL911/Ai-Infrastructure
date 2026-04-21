@@ -1,0 +1,72 @@
+name: GEO Audit Queue (prospects)
+
+# WHY：把新 prospect（從 /api/schema、/api/scan 提交）每小時掃過一遍，寫 DB +
+# 首次掃瞄完成寄 Free Scan email。跟 geo-audit.yml（Symcio 內部每日 benchmark）
+# 分開，兩者互不干擾。
+
+on:
+  schedule:
+    # 每小時整點。若 Supabase 沒新 prospect，script 會立刻 no-op return。
+    - cron: '0 * * * *'
+  workflow_dispatch:
+    inputs:
+      batch_size:
+        description: '單次最多掃幾個品牌'
+        required: false
+        default: '10'
+      rescan_days:
+        description: '距離上次掃超過幾天就重掃'
+        required: false
+        default: '7'
+      dry_run:
+        description: '設為 true 則不寫 DB 也不寄信'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: geo-audit-queue
+  cancel-in-progress: false
+
+jobs:
+  queue:
+    name: Scan prospect brands
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run queue scan
+        env:
+          # AI engines
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
+          # Supabase
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # Composio Gmail（缺則 email 降級）
+          COMPOSIO_API_KEY: ${{ secrets.COMPOSIO_API_KEY }}
+          COMPOSIO_USER_ID: ${{ secrets.COMPOSIO_USER_ID }}
+          COMPOSIO_GMAIL_CONNECTION_ID: ${{ secrets.COMPOSIO_GMAIL_CONNECTION_ID }}
+          # Queue tuning
+          QUEUE_BATCH_SIZE: ${{ github.event.inputs.batch_size || '10' }}
+          QUEUE_RESCAN_DAYS: ${{ github.event.inputs.rescan_days || '7' }}
+          DRY_RUN: ${{ github.event.inputs.dry_run == 'true' && '1' || '' }}
+        run: python scripts/geo_audit_queue.py
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## GEO Audit Queue" >> $GITHUB_STEP_SUMMARY
+          echo "- Batch size: ${{ github.event.inputs.batch_size || '10' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Rescan window: ${{ github.event.inputs.rescan_days || '7' }} days" >> $GITHUB_STEP_SUMMARY
+          echo "- Dry run: ${{ github.event.inputs.dry_run || 'false' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY

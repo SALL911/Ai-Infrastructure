@@ -78,10 +78,21 @@ async function persistLead(input: Input): Promise<{ ok: boolean; error?: string 
       industry: input.industry || "default",
       market: input.country || "Taiwan",
       status: "prospect",
+      primary_email: input.email,
     });
     if (brandErr) {
       // 不擋流程：lead 已存，brands 失敗只記 log。
       console.error("[api/schema] brands insert failed", brandErr);
+    }
+  } else {
+    // 已存在的 brand：補上 primary_email 若尚未設，確保 queue 有地方寄信
+    const { error: updErr } = await sb
+      .from("brands")
+      .update({ primary_email: input.email })
+      .eq("id", existing.id)
+      .is("primary_email", null);
+    if (updErr) {
+      console.error("[api/schema] brands primary_email backfill failed", updErr);
     }
   }
   return { ok: true };

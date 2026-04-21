@@ -73,6 +73,7 @@ export async function POST(req: Request) {
       industry: body.industry || "technology",
       market: "Taiwan",
       status: "prospect",
+      primary_email: email,
     });
     if (brandErr) {
       console.error("[scan] brands insert failed", brandErr);
