@@ -39,3 +39,6 @@ Thumbs.db
 # ========== Client data（CLAUDE.md 禁止規則）==========
 client_data/
 client_secrets/
+
+# ========== Pipeline outputs（本機執行產出，不進 repo）==========
+outputs/

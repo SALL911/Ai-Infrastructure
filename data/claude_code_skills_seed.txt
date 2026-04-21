@@ -1,0 +1,20 @@
+# Claude Code Skills — YouTube research seed list (curated 2026-04-21)
+# 一行一個 URL，# 開頭為註解。
+# 選擇依據：2026 年、主題聚焦 skills / workflows，而非一般 Claude 介紹。
+# 更新原則：跑完 pipeline 覺得某支產出低價值 → 從此清單移除，下次跑過濾掉。
+
+# ── 直球主題：skills 本身 ──
+https://www.youtube.com/watch?v=KjEFy5wjFQg  # Top 10 Claude Code Skills, Plugins & CLIs (April 2026)
+https://www.youtube.com/watch?v=Xs942zwWfdY  # Top 5 Claude Code Skills That Will 10x Your Productivity (2026)
+https://www.youtube.com/watch?v=bFC1QGEQ2E8  # Claude Skills Explained: 4 Skills to 10x Your Coding Workflow
+https://www.youtube.com/watch?v=YkpEX_jlb04  # Full Claude Skills Tutorial for Beginners 2026
+https://www.youtube.com/watch?v=rlYBZswdd8A  # FULL Claude Skills Tutorial (Step By Step) 2026
+
+# ── 工作流：skills 怎麼組合使用 ──
+https://www.youtube.com/watch?v=sy65ARFI9Bg  # My Claude Code Workflow for 2026
+https://www.youtube.com/watch?v=yZvDo_n12ns  # Claude Code Workflows That Will 10x Your Productivity
+https://www.youtube.com/watch?v=38t5UBCa4OI  # Every Claude Code Workflow Explained (When to Use Each)
+https://www.youtube.com/watch?v=QZCJ4aEhrMk  # Boris Cherny Workflow (Mastering Claude Code 2026)
+
+# ── 整體脈絡：作為對照輸入 ──
+https://www.youtube.com/watch?v=LlFgLsffbBs  # The ONLY Claude Code Tutorial You'll Ever Need in 2026
