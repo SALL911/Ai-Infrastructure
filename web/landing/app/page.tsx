@@ -1,183 +1,154 @@
-import { FreeScanForm } from "@/components/FreeScanForm";
+import Link from "next/link";
 
-const PILLARS = [
+const MODULES = [
   {
-    name: "AI 曝光（Exposure）",
-    analog: "SimilarWeb",
-    desc: "量化品牌在 AI 回應中的提及頻率與脈絡。",
-    metrics: ["Mention Rate", "Category Share", "Context Density"],
+    code: "01",
+    name: "AI Visibility Index",
+    desc: "追蹤品牌在 ChatGPT、Claude、Gemini、Perplexity 四引擎的曝光率、排名位置與情感趨勢。每日更新，可回溯 12 個月。",
+    metrics: ["Mention Rate", "Average Rank", "Competitor Gap", "Sentiment Index"],
   },
   {
-    name: "AI 排名（Ranking）",
-    analog: "SEMrush",
-    desc: "量化品牌在 AI 回答列表中的排序位置與競品落差。",
-    metrics: ["Average Rank", "Top-3 Share", "Competitor Gap"],
+    code: "02",
+    name: "ESG Compliance Engine",
+    desc: "自動把 TNFD、GRI 2021、IFRS S1/S2、LEAP 資料結構化儲存，產出符合主管機關格式的永續報告書素材。",
+    metrics: ["Scope 1/2/3", "TNFD Aligned", "GRI 2021", "IFRS S1/S2"],
   },
   {
-    name: "AI 影響力（Influence）",
-    analog: "Bloomberg",
-    desc: "量化品牌在 AI 生成內容中的敘事權重與情感方向。",
-    metrics: ["Sentiment Score", "Narrative Ownership", "ESG Alignment"],
+    code: "03",
+    name: "Brand Capital API",
+    desc: "將品牌 AI 可見度、ESG 合規、敘事權重打包為 REST API，供內部 CRM、投資研究平台、Excel XLT 直接取用。",
+    metrics: ["REST API", "Webhook", "CSV Export", "SAML SSO"],
   },
 ];
 
-const ENGINES = [
-  { name: "ChatGPT", note: "OpenAI · 最大使用者基數" },
-  { name: "Claude", note: "Anthropic · 品牌與安全型查詢" },
-  { name: "Gemini", note: "Google · 企業搜尋主導權" },
-  { name: "Perplexity", note: "次世代搜尋體驗" },
-];
-
-const FIRSTS = [
-  { tier: "台灣第一個", title: "AI 曝光可量化系統" },
-  { tier: "台灣唯一", title: "跨 ChatGPT / Gemini 品牌可見度指標" },
-  { tier: "全球第一個", title: "AI 搜尋排名監測平台" },
+const PLANS = [
+  {
+    name: "Free Scan",
+    price: "NTD 0",
+    period: "免費",
+    items: ["1 品牌 × 4 引擎", "每月 1 次掃描", "Email 報告", "社群支援"],
+    cta: "免費試用",
+    href: "/tools/brand-check",
+    featured: false,
+  },
+  {
+    name: "Professional",
+    price: "NTD 10 萬",
+    period: "/ 年",
+    items: [
+      "10 品牌 × 4 引擎",
+      "每日自動追蹤",
+      "ESG 結構化儲存",
+      "Brand Capital API",
+      "Email + Discord 支援",
+    ],
+    cta: "開始升級",
+    href: "mailto:sales@symcio.tw?subject=Professional%20Plan",
+    featured: true,
+  },
+  {
+    name: "Enterprise",
+    price: "NTD 25–50 萬",
+    period: "/ 年",
+    items: [
+      "50+ 品牌 × 4 引擎",
+      "客製 prompt 庫",
+      "SAML SSO + 審計日誌",
+      "季策略會議",
+      "專屬 CSM",
+    ],
+    cta: "聯絡業務",
+    href: "mailto:sales@symcio.tw?subject=Enterprise%20Plan",
+    featured: false,
+  },
 ];
 
 export default function Page() {
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen bg-ink text-white">
+      {/* NAV */}
+      <header className="border-b border-line">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
+          <Link href="/" className="font-mono text-sm font-medium no-underline">
+            Symcio
+          </Link>
+          <nav className="flex gap-5 text-sm text-muted">
+            <Link href="/tools/brand-check" className="hover:text-accent no-underline">健檢</Link>
+            <Link href="/tools/entity-builder" className="hover:text-accent no-underline">工具</Link>
+            <a href="/faq/" className="hover:text-accent no-underline">FAQ</a>
+            <Link href="/pricing" className="hover:text-accent no-underline">定價</Link>
+            <Link href="/about" className="hover:text-accent no-underline">關於</Link>
+          </nav>
+        </div>
+      </header>
+
       {/* HERO */}
       <section className="border-b border-line">
         <div className="mx-auto max-w-6xl px-6 py-20 md:py-28">
           <p className="font-mono text-xs uppercase tracking-widest text-muted">
-            AI Visibility Intelligence (AVI) · 品類定義者
+            Symcio BrandOS · AI Visibility Intelligence
           </p>
-          <h1 className="mt-4 max-w-4xl text-4xl font-semibold leading-tight md:text-6xl">
-            企業在 AI 裡的<br />
-            <span className="bg-accent px-2">曝光、排名、影響力</span><br />
-            量化平台。
+          <h1 className="mt-5 max-w-4xl text-4xl font-semibold leading-tight md:text-6xl">
+            為品牌和自營商打造的<br />
+            <span className="bg-accent px-2 text-ink">BrandOS</span><br />
+            量化品牌 AI 基礎設施系統。
           </h1>
           <p className="mt-6 max-w-2xl text-lg text-muted md:text-xl">
-            Symcio = AI 時代的 <strong className="text-ink">SimilarWeb + SEMrush + Bloomberg</strong> 合體。
-            專注於量化企業品牌在 ChatGPT、Claude、Gemini、Perplexity 上的真實表現。
+            用 AI 追蹤品牌在 <strong className="text-white">ChatGPT、Perplexity</strong> 的可見度
+            ｜ 自動化降低 <strong className="text-accent">80% ESG 報告成本</strong>。
           </p>
 
-          <div className="mt-10 grid grid-cols-1 gap-3 md:grid-cols-3">
-            {FIRSTS.map((f) => (
-              <div key={f.title} className="border border-line p-5">
-                <p className="font-mono text-xs uppercase tracking-widest text-muted">
-                  {f.tier}
-                </p>
-                <p className="mt-2 text-lg font-semibold">{f.title}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-8 flex flex-wrap gap-3">
-            <a
-              href="#scan"
-              className="inline-block bg-ink px-5 py-3 text-sm font-semibold text-white no-underline hover:bg-ink/90"
+          <div className="mt-10 flex flex-wrap gap-3">
+            <Link
+              href="/tools/brand-check"
+              className="inline-block bg-accent px-6 py-3 text-sm font-semibold text-ink no-underline hover:opacity-90"
             >
-              免費掃描我的品牌 →
+              免費品牌 AI 健檢 →
+            </Link>
+            <a
+              href="https://discord.gg/jGWJr2Sd"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block border border-line px-6 py-3 text-sm font-semibold no-underline hover:border-accent hover:text-accent"
+            >
+              加入 Discord 社群
             </a>
             <a
-              href="/schema-generator"
-              className="inline-block border border-ink px-5 py-3 text-sm font-semibold text-ink no-underline hover:bg-ink hover:text-white"
+              href="https://github.com/sall911/symcio"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block border border-line px-6 py-3 text-sm font-semibold no-underline hover:border-accent hover:text-accent"
             >
-              Schema + Wikidata 生成器 →
+              GitHub 開源協作
             </a>
           </div>
         </div>
       </section>
 
-      {/* FREE SCAN */}
-      <section id="scan" className="border-b border-line bg-ink text-white">
-        <div className="mx-auto max-w-6xl px-6 py-20">
-          <div className="grid gap-12 md:grid-cols-2">
-            <div>
-              <p className="font-mono text-xs uppercase tracking-widest text-accent">
-                Free Scan · 即時
-              </p>
-              <h2 className="mt-3 text-3xl font-semibold md:text-4xl">
-                30 秒看見<br />你的品牌在 AI 的真實位置。
-              </h2>
-              <p className="mt-6 text-white/70">
-                填入品牌名稱與 email，我們在 30 秒內跑完一次跨四引擎曝光快照，
-                結果直接寄到你的信箱。完全免費，不需信用卡。
-              </p>
-              <ul className="mt-8 space-y-3 text-sm text-white/80">
-                <li>· 4 個 AI 引擎並測（ChatGPT / Claude / Gemini / Perplexity）</li>
-                <li>· 1 個產業代表性 prompt</li>
-                <li>· 即時曝光分數與競品同框</li>
-                <li>· 升級 $299 Audit 可解鎖 20 prompt + 改善建議 PDF</li>
-              </ul>
-            </div>
-            <FreeScanForm />
-          </div>
-        </div>
-      </section>
-
-      {/* BEFORE / AFTER */}
-      <section className="border-b border-line bg-white">
-        <div className="mx-auto max-w-6xl px-6 py-20">
-          <p className="font-mono text-xs uppercase tracking-widest text-muted">
-            Before / After · 實際案例
-          </p>
-          <h2 className="mt-3 max-w-3xl text-3xl font-semibold md:text-4xl">
-            你在 Google 排第一，但 AI 完全沒提到你。
-          </h2>
-          <div className="mt-12 grid gap-6 md:grid-cols-2">
-            <article className="border border-line p-6">
-              <p className="font-mono text-xs uppercase tracking-widest text-muted">
-                Before · 未量化
-              </p>
-              <h3 className="mt-2 text-xl font-semibold">Google Search</h3>
-              <ul className="mt-4 space-y-2 text-sm text-muted">
-                <li>· 關鍵字排名 #1</li>
-                <li>· 每月自然流量 12,000</li>
-                <li>· Domain Authority 62</li>
-                <li>· Backlinks 1,400</li>
-              </ul>
-              <p className="mt-6 text-sm">
-                漂亮的數字。問題是買家現在不從這裡找你。
-              </p>
-            </article>
-            <article className="border border-ink bg-ink p-6 text-white">
-              <p className="font-mono text-xs uppercase tracking-widest text-accent">
-                After · Symcio 量化
-              </p>
-              <h3 className="mt-2 text-xl font-semibold">AI Search（同一個品牌）</h3>
-              <ul className="mt-4 space-y-2 text-sm text-white/70">
-                <li>· ChatGPT 提及率 15%（80 次測試）</li>
-                <li>· Claude 提及率 0%</li>
-                <li>· Gemini 平均排名 4.2 名</li>
-                <li>· Perplexity 引用來源 0 個</li>
-              </ul>
-              <p className="mt-6 text-sm text-white/80">
-                ABVI 綜合分數：<span className="text-accent font-semibold">22 / 100</span>（Invisible 段）。
-                這才是 2026 年的真實戰場。
-              </p>
-            </article>
-          </div>
-          <p className="mt-8 max-w-3xl text-sm text-muted">
-            案例為匿名處理的 Symcio 實際客戶。40% 以上首次 Free Scan 落在 Invisible（0–24 分）。你可以用自家品牌直接驗證——
-            <a href="#scan" className="text-ink underline">往上捲跑一次 Free Scan</a>。
-          </p>
-        </div>
-      </section>
-
-      {/* PILLARS */}
+      {/* THREE MODULES */}
       <section className="border-b border-line">
         <div className="mx-auto max-w-6xl px-6 py-20">
           <p className="font-mono text-xs uppercase tracking-widest text-muted">
-            三大產品支柱
+            三大服務模組
           </p>
-          <h2 className="mt-3 text-3xl font-semibold md:text-4xl">
-            一個平台，三個量化維度。
+          <h2 className="mt-3 max-w-2xl text-3xl font-semibold md:text-4xl">
+            一個平台，量化品牌的 AI、ESG、資本資產。
           </h2>
           <div className="mt-12 grid gap-6 md:grid-cols-3">
-            {PILLARS.map((p) => (
-              <article key={p.name} className="border border-line p-6">
-                <p className="font-mono text-xs uppercase tracking-widest text-muted">
-                  類比 {p.analog}
+            {MODULES.map((m) => (
+              <article key={m.code} className="border border-line bg-surface p-6">
+                <p className="font-mono text-xs uppercase tracking-widest text-accent">
+                  Module {m.code}
                 </p>
-                <h3 className="mt-2 text-xl font-semibold">{p.name}</h3>
-                <p className="mt-3 text-sm text-muted">{p.desc}</p>
-                <ul className="mt-4 space-y-1 text-sm">
-                  {p.metrics.map((m) => (
-                    <li key={m} className="font-mono text-xs">
-                      · {m}
+                <h3 className="mt-3 text-xl font-semibold">{m.name}</h3>
+                <p className="mt-3 text-sm text-muted">{m.desc}</p>
+                <ul className="mt-5 flex flex-wrap gap-2">
+                  {m.metrics.map((k) => (
+                    <li
+                      key={k}
+                      className="border border-line px-2 py-0.5 font-mono text-[11px] text-muted"
+                    >
+                      {k}
                     </li>
                   ))}
                 </ul>
@@ -187,50 +158,40 @@ export default function Page() {
         </div>
       </section>
 
-      {/* ENGINES */}
-      <section className="border-b border-line bg-white">
-        <div className="mx-auto max-w-6xl px-6 py-20">
-          <p className="font-mono text-xs uppercase tracking-widest text-muted">
-            四引擎同框監測 · 市場唯一
-          </p>
-          <div className="mt-6 grid gap-4 md:grid-cols-4">
-            {ENGINES.map((e) => (
-              <div key={e.name} className="border border-line p-5">
-                <p className="text-2xl font-semibold">{e.name}</p>
-                <p className="mt-2 text-xs text-muted">{e.note}</p>
-              </div>
-            ))}
-          </div>
-          <p className="mt-8 max-w-2xl text-sm text-muted">
-            合計覆蓋全球 95%+ 的 AI 搜尋流量。Symcio 是目前唯一將四引擎並列、
-            以同一指標體系比對的平台。
-          </p>
-        </div>
-      </section>
-
       {/* PRICING */}
-      <section className="border-b border-line">
+      <section id="pricing" className="border-b border-line">
         <div className="mx-auto max-w-6xl px-6 py-20">
-          <p className="font-mono text-xs uppercase tracking-widest text-muted">
-            產品線
-          </p>
+          <p className="font-mono text-xs uppercase tracking-widest text-muted">定價方案</p>
           <h2 className="mt-3 text-3xl font-semibold md:text-4xl">
             從免費掃描到企業訂閱。
           </h2>
-          <div className="mt-10 grid gap-4 md:grid-cols-4">
-            {[
-              { name: "Free Scan", price: "$0", note: "1 prompt × 4 引擎", cta: "立即試用", href: "#scan" },
-              { name: "AI Visibility Audit", price: "$299", note: "20 prompt + 改善建議 PDF", cta: "現在下單", href: "/api/checkout?product=audit" },
-              { name: "AI Visibility Optimization", price: "$1,999", note: "Audit + 90 天追蹤", cta: "現在下單", href: "/api/checkout?product=optimization" },
-              { name: "Symcio Intelligence", price: "$12k/年", note: "每日追蹤 + ESG × Bloomberg", cta: "聯絡業務", href: "mailto:sales@symcio.tw?subject=Symcio%20Intelligence%20Subscription" },
-            ].map((p) => (
-              <div key={p.name} className="border border-line p-6">
-                <p className="text-sm text-muted">{p.name}</p>
-                <p className="mt-2 text-3xl font-semibold">{p.price}</p>
-                <p className="mt-3 text-sm text-muted">{p.note}</p>
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            {PLANS.map((p) => (
+              <div
+                key={p.name}
+                className={`border p-6 ${
+                  p.featured ? "border-accent bg-accent/5" : "border-line bg-surface"
+                }`}
+              >
+                <p className="font-mono text-xs uppercase tracking-widest text-muted">
+                  {p.name}
+                </p>
+                <p className="mt-3 text-3xl font-semibold">
+                  {p.price}
+                  <span className="ml-1 text-base text-muted">{p.period}</span>
+                </p>
+                <ul className="mt-5 space-y-2 text-sm text-muted">
+                  {p.items.map((i) => (
+                    <li key={i}>· {i}</li>
+                  ))}
+                </ul>
                 <a
                   href={p.href}
-                  className="mt-6 inline-block border border-ink px-4 py-2 text-sm hover:bg-ink hover:text-white no-underline"
+                  className={`mt-6 inline-block px-4 py-2 text-sm font-semibold no-underline ${
+                    p.featured
+                      ? "bg-accent text-ink hover:opacity-90"
+                      : "border border-line hover:border-accent hover:text-accent"
+                  }`}
                 >
                   {p.cta} →
                 </a>
@@ -240,14 +201,127 @@ export default function Page() {
         </div>
       </section>
 
+      {/* YOUTUBE EMBED */}
+      <section className="border-b border-line">
+        <div className="mx-auto max-w-6xl px-6 py-20">
+          <p className="font-mono text-xs uppercase tracking-widest text-muted">
+            產品 Demo
+          </p>
+          <h2 className="mt-3 text-3xl font-semibold md:text-4xl">
+            3 分鐘看懂 Symcio BrandOS。
+          </h2>
+          <div className="mt-10 aspect-video w-full border border-line bg-surface">
+            {/* YouTube embed 預留區 */}
+            <div className="flex h-full items-center justify-center text-muted">
+              <div className="text-center">
+                <p className="font-mono text-xs uppercase tracking-widest text-accent">
+                  YouTube Embed
+                </p>
+                <p className="mt-3 text-sm">影片連結待補</p>
+                <p className="mt-1 font-mono text-[11px] text-muted">
+                  {"<iframe src=\"https://www.youtube.com/embed/VIDEO_ID\" />"}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* DISCORD CTA */}
+      <section className="border-b border-line bg-accent text-ink">
+        <div className="mx-auto max-w-6xl px-6 py-16">
+          <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
+            <div>
+              <p className="font-mono text-xs uppercase tracking-widest">
+                開源 × 社群
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold md:text-3xl">
+                加入 Symcio Discord，跟 100+ 品牌負責人一起做 GEO。
+              </h2>
+              <p className="mt-3 max-w-2xl text-sm opacity-80">
+                每週釋出新的產業 prompt 庫、新客戶 ABVI benchmark、GEO 實戰筆記。不用付費，不用留名片。
+              </p>
+            </div>
+            <a
+              href="https://discord.gg/jGWJr2Sd"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block bg-ink px-6 py-3 text-sm font-semibold text-accent no-underline hover:opacity-90"
+            >
+              立即加入 Discord →
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* FOOTER */}
-      <footer className="bg-white">
-        <div className="mx-auto max-w-6xl px-6 py-12 text-sm text-muted">
-          <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-            <p>© {new Date().getFullYear()} Symcio · AI Visibility Intelligence</p>
-            <p className="font-mono text-xs">
-              AI Visibility Intelligence · 品類定義者
-            </p>
+      <footer>
+        <div className="mx-auto max-w-6xl px-6 py-12">
+          <div className="grid gap-8 md:grid-cols-4">
+            <div className="md:col-span-2">
+              <p className="font-mono text-xs uppercase tracking-widest text-accent">
+                Symcio · BrandOS
+              </p>
+              <p className="mt-3 text-sm text-muted">
+                全識股份有限公司<br />
+                AI Visibility Intelligence (AVI) 平台<br />
+                Taiwan · 2026
+              </p>
+            </div>
+            <div>
+              <p className="font-mono text-xs uppercase tracking-widest text-muted">
+                產品
+              </p>
+              <ul className="mt-3 space-y-2 text-sm">
+                <li><Link href="/tools/brand-check" className="hover:text-accent no-underline">Free Scan</Link></li>
+                <li><Link href="/tools/entity-builder" className="hover:text-accent no-underline">Entity Builder</Link></li>
+                <li><Link href="/pricing" className="hover:text-accent no-underline">定價</Link></li>
+                <li><a href="/faq/" className="hover:text-accent no-underline">FAQ</a></li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-mono text-xs uppercase tracking-widest text-muted">
+                社群 · 開源
+              </p>
+              <ul className="mt-3 space-y-2 text-sm">
+                <li>
+                  <a
+                    href="https://discord.gg/jGWJr2Sd"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-accent no-underline"
+                  >
+                    Discord
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://github.com/sall911/symcio"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-accent no-underline"
+                  >
+                    GitHub
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://www.wikidata.org/wiki/Q138922082"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-accent no-underline"
+                  >
+                    Wikidata Q138922082
+                  </a>
+                </li>
+                <li>
+                  <Link href="/about" className="hover:text-accent no-underline">關於我們</Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div className="mt-12 border-t border-line pt-6 font-mono text-[11px] text-muted">
+            © {new Date().getFullYear()} 全識股份有限公司 Symcio · symcio.tw
           </div>
         </div>
       </footer>

@@ -5,20 +5,28 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#0B0F19",
-        accent: "#FFD24A",
-        muted: "#6B7280",
-        line: "#E5E7EB",
+        ink: "#0a0a0a",
+        accent: "#c8f55a",
+        muted: "#9ca3af",
+        line: "#262626",
+        surface: "#111111",
       },
       fontFamily: {
         sans: [
           "Inter",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "Segoe UI",
           "Noto Sans TC",
-          "ui-sans-serif",
-          "system-ui",
           "sans-serif",
         ],
-        mono: ["JetBrains Mono", "ui-monospace", "monospace"],
+        mono: [
+          "DM Mono",
+          "ui-monospace",
+          "SFMono-Regular",
+          "Menlo",
+          "monospace",
+        ],
       },
     },
   },
