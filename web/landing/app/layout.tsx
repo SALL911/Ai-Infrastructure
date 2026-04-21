@@ -14,9 +14,30 @@ export const metadata: Metadata = {
   },
 };
 
+const ORGANIZATION_SCHEMA = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "全識股份有限公司",
+  alternateName: ["Symcio", "全識", "BrandOS"],
+  url: "https://symcio.tw",
+  sameAs: [
+    "https://www.wikidata.org/wiki/Q138922082",
+    "https://github.com/sall911/symcio",
+    "https://discord.gg/jGWJr2Sd",
+  ],
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="zh-Hant">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(ORGANIZATION_SCHEMA),
+          }}
+        />
+      </head>
       <body>{children}</body>
     </html>
   );
