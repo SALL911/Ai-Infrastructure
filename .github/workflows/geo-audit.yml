@@ -16,6 +16,19 @@ on:
         description: 'Industry category (technology / finance / consumer_goods / default)'
         required: false
         default: 'technology'
+  # Triggered by Stripe webhook (web/landing/app/api/webhooks/stripe) after
+  # a paid checkout.session.completed event. Event payload looks like:
+  #   { "event_type": "paid-audit",
+  #     "client_payload": {
+  #       "brand_name": "Nike",
+  #       "brand_domain": "nike.com",
+  #       "brand_industry": "consumer_goods",
+  #       "order_id": "ord_...",
+  #       "customer_email": "..."
+  #     }
+  #   }
+  repository_dispatch:
+    types: [paid-audit]
 
 permissions:
   contents: write
@@ -38,9 +51,12 @@ jobs:
 
       - name: Run GEO audit
         env:
-          BRAND_NAME: ${{ github.event.inputs.brand_name || vars.BRAND_NAME || 'Symcio' }}
-          BRAND_DOMAIN: ${{ github.event.inputs.brand_domain || vars.BRAND_DOMAIN }}
-          BRAND_INDUSTRY: ${{ github.event.inputs.brand_industry || vars.BRAND_INDUSTRY || 'technology' }}
+          # repository_dispatch 優先 > workflow_dispatch > vars > default
+          BRAND_NAME: ${{ github.event.client_payload.brand_name || github.event.inputs.brand_name || vars.BRAND_NAME || 'Symcio' }}
+          BRAND_DOMAIN: ${{ github.event.client_payload.brand_domain || github.event.inputs.brand_domain || vars.BRAND_DOMAIN }}
+          BRAND_INDUSTRY: ${{ github.event.client_payload.brand_industry || github.event.inputs.brand_industry || vars.BRAND_INDUSTRY || 'technology' }}
+          ORDER_ID: ${{ github.event.client_payload.order_id }}
+          CUSTOMER_EMAIL: ${{ github.event.client_payload.customer_email }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}

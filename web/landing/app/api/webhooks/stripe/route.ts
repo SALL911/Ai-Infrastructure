@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 import { getStripe } from "@/lib/stripe/client";
+import { fireRepositoryDispatch } from "@/lib/github/dispatch";
+import { send as sendEmail, renderAuditConfirmation } from "@/lib/email/resend";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -30,46 +32,95 @@ function supabaseAdmin() {
 
 async function handleCheckoutCompleted(
   session: Stripe.Checkout.Session,
-): Promise<{ ok: boolean; error?: string }> {
+): Promise<{ ok: boolean; error?: string; warnings: string[] }> {
+  const warnings: string[] = [];
   const sb = supabaseAdmin();
-  if (!sb) return { ok: false, error: "supabase-not-configured" };
 
   const metadata = session.metadata ?? {};
   const email = session.customer_email ?? session.customer_details?.email ?? null;
   const amountTotal = session.amount_total ?? 0;
   const priceUsd = amountTotal / 100;
+  const product: "audit" | "optimization" =
+    metadata.product === "optimization" ? "optimization" : "audit";
+  const brandName = metadata.brand || "Unknown";
 
-  // Attempt to link to existing brand by metadata.brand (best-effort)
+  let orderId: string | null = null;
   let brandId: string | null = null;
-  const brandName = metadata.brand;
-  if (brandName) {
-    const { data } = await sb
-      .from("brands")
+
+  // 1. Supabase: persist order + update lead status.
+  if (sb) {
+    if (brandName && brandName !== "Unknown") {
+      const { data } = await sb
+        .from("brands")
+        .select("id")
+        .eq("name", brandName)
+        .maybeSingle();
+      brandId = data?.id ?? null;
+    }
+
+    const { data: inserted, error } = await sb
+      .from("orders")
+      .insert({
+        brand_id: brandId,
+        product,
+        price: priceUsd,
+        payment_status: "paid",
+        delivery_status: "pending",
+      })
       .select("id")
-      .eq("name", brandName)
       .maybeSingle();
-    brandId = data?.id ?? null;
+
+    if (error) {
+      return { ok: false, error: error.message, warnings };
+    }
+    orderId = inserted?.id ?? null;
+
+    if (email) {
+      await sb
+        .from("leads")
+        .update({ status: "converted" })
+        .eq("email", email);
+    }
+  } else {
+    warnings.push("supabase-not-configured");
   }
 
-  const { error } = await sb.from("orders").insert({
-    brand_id: brandId,
-    product: metadata.product === "optimization" ? "optimization" : "audit",
-    price: priceUsd,
-    payment_status: "paid",
-    delivery_status: "pending",
+  // 2. GitHub repository_dispatch → triggers geo-audit.yml to run real audit.
+  const dispatchResp = await fireRepositoryDispatch({
+    eventType: "paid-audit",
+    clientPayload: {
+      brand_name: brandName,
+      brand_domain: metadata.brand_domain || "",
+      brand_industry: metadata.brand_industry || "technology",
+      product,
+      order_id: orderId,
+      customer_email: email,
+      stripe_session_id: session.id,
+    },
   });
+  if (!dispatchResp.ok) warnings.push(`dispatch: ${dispatchResp.error}`);
 
-  if (error) return { ok: false, error: error.message };
-
-  // Also update lead status if matching email exists
+  // 3. Confirmation email via Resend.
   if (email) {
-    await sb
-      .from("leads")
-      .update({ status: "converted" })
-      .eq("email", email);
+    const from = process.env.RESEND_FROM_ADDRESS || "Symcio <hello@symcio.tw>";
+    const { subject, html } = renderAuditConfirmation({
+      brandName,
+      customerEmail: email,
+      product,
+    });
+    const emailResp = await sendEmail({
+      from,
+      to: email,
+      subject,
+      html,
+      replyTo: "sales@symcio.tw",
+    });
+    if (!emailResp.ok) warnings.push(`resend: ${emailResp.error}`);
+  } else {
+    warnings.push("no-customer-email");
   }
 
-  return { ok: true };
+  return { ok: true, warnings };
 }
 
 export async function POST(req: Request): Promise<Response> {
@@ -111,7 +162,14 @@ export async function POST(req: Request): Promise<Response> {
         // Return 500 so Stripe retries
         return NextResponse.json({ ok: false, error: result.error }, { status: 500 });
       }
-      return NextResponse.json({ ok: true, event: event.type });
+      if (result.warnings.length > 0) {
+        console.warn("[stripe-webhook] partial success", result.warnings);
+      }
+      return NextResponse.json({
+        ok: true,
+        event: event.type,
+        warnings: result.warnings,
+      });
     }
     default:
       // Acknowledge all other events so Stripe doesn't retry them indefinitely
