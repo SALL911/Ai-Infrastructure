@@ -1,5 +1,7 @@
 # Symcio — AI Visibility Intelligence
 
+> **⚠️ Current deployment status (2026-04-21):** `symcio.tw` is still pointing at a legacy Lovable page; the Next.js app in `web/landing/` (including `/schema-generator`, Free Scan, Stripe checkout, and all `/api/*` routes) is live only on the Vercel preview URL. DNS cutover runbook: [`docs/DOMAIN_CUTOVER.md`](docs/DOMAIN_CUTOVER.md). Smoke test script: `scripts/smoke_schema_generator.sh <host>`.
+
 **Symcio is the AI-era SimilarWeb + SEMrush + Bloomberg: a platform that quantifies enterprise brand exposure, ranking, and influence across generative AI engines (ChatGPT, Claude, Gemini, Perplexity).**
 
 - **Category**: AI Visibility Intelligence (AVI) — a category Symcio defines.
