@@ -17,10 +17,10 @@ SYMCIO AI VISIBILITY AUDIT
 Industry: {Industry}
 Audit Date: {YYYY-MM-DD}
 Prepared by: Symcio
-Bloomberg Taiwan 授權代表
+AI Visibility Intelligence · Taiwan
 ```
 
-視覺：Bloomberg Terminal 風格（深 ink 底 + 亮黃強調），無圖示雜訊。
+視覺：金融終端機風格（深 ink 底 + 亮黃強調），無圖示雜訊。
 
 ---
 
@@ -158,7 +158,7 @@ score = (mentioned ? 50 : 0)
 
 ### Section 7 — About Symcio（半頁）
 
-Symcio 是 AI Visibility Intelligence (AVI) 平台 —— AI 時代的 SimilarWeb + SEMrush + Bloomberg。我們是 Bloomberg 台灣授權代表，專注量化企業在 AI 引擎裡的曝光、排名與影響力。
+Symcio 是 AI Visibility Intelligence (AVI) 平台 —— 類比於 SimilarWeb + SEMrush + Bloomberg 合體的 AI 時代版本。我們量化企業在 ChatGPT / Claude / Gemini / Perplexity 四個 AI 引擎裡的曝光、排名與影響力。
 
 - 網站：symcio.tw
 - 開源方法論：github.com/SALL911/BrandOS-Infrastructure

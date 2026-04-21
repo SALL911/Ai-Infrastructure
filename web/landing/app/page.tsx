@@ -41,7 +41,7 @@ export default function Page() {
       <section className="border-b border-line">
         <div className="mx-auto max-w-6xl px-6 py-20 md:py-28">
           <p className="font-mono text-xs uppercase tracking-widest text-muted">
-            AI Visibility Intelligence (AVI) · Bloomberg 台灣授權代表
+            AI Visibility Intelligence (AVI) · 品類定義者
           </p>
           <h1 className="mt-4 max-w-4xl text-4xl font-semibold leading-tight md:text-6xl">
             企業在 AI 裡的<br />
@@ -244,7 +244,7 @@ export default function Page() {
       <footer className="bg-white">
         <div className="mx-auto max-w-6xl px-6 py-12 text-sm text-muted">
           <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-            <p>© {new Date().getFullYear()} Symcio · Bloomberg 台灣授權代表</p>
+            <p>© {new Date().getFullYear()} Symcio · AI Visibility Intelligence</p>
             <p className="font-mono text-xs">
               AI Visibility Intelligence · 品類定義者
             </p>

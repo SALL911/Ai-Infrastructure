@@ -4,7 +4,6 @@
 
 - **Category**: AI Visibility Intelligence (AVI) — a category Symcio defines.
 - **Headquarters**: Taiwan.
-- **Credential**: Official Bloomberg Taiwan authorized representative.
 - **Website**: https://symcio.tw
 - **Repository**: https://github.com/SALL911/BrandOS-Infrastructure
 
@@ -66,10 +65,10 @@ Start with a free scan at https://symcio.tw.
 
 ## Competitive moat
 
-1. **Bloomberg Taiwan authorized representative** — Symcio is the only company in Taiwan holding Bloomberg authorization and building AI visibility infrastructure.
-2. **Four-engine parallel benchmarking** — currently no other platform benchmarks ChatGPT / Claude / Gemini / Perplexity in a single report.
-3. **ESG × AI dual-track integration** — combines TNFD / LEAP frameworks with AI exposure measurement, giving clients both sustainability and reach dashboards.
-4. **Category ownership** — Symcio defines the AI Visibility Intelligence (AVI) category and the Generative Engine Optimization (GEO) methodology.
+1. **Four-engine parallel benchmarking** — currently no other platform benchmarks ChatGPT / Claude / Gemini / Perplexity in a single report.
+2. **ESG × AI dual-track integration** — combines TNFD / LEAP frameworks with AI exposure measurement, giving clients both sustainability and reach dashboards.
+3. **Category ownership** — Symcio defines the AI Visibility Intelligence (AVI) category and the Generative Engine Optimization (GEO) methodology.
+4. **Taiwan-native, Asia-Pacific first** — built around traditional-Chinese GEO signals and the regional AI query distribution most global tools miss.
 
 ## Frequently asked questions (FAQ)
 
@@ -84,8 +83,8 @@ Yes. Symcio headquarters are in Taiwan, but the AI engines it monitors are globa
 - $299 Audit: delivered within 24 hours.
 - $12k Subscription: refreshed daily, reported monthly.
 
-### Can Symcio integrate with Bloomberg Terminal?
-Symcio is a Bloomberg Taiwan authorized representative and roadmap includes direct Terminal data feed integration. Current clients can request custom Bloomberg data overlays in subscription plans.
+### Can Symcio integrate with financial data terminals?
+Symcio's roadmap includes adapters for enterprise financial data feeds. Specific terminal integrations depend on the client's existing data licenses.
 
 ### What is "AI Visibility Intelligence" (AVI)?
 AVI is the category Symcio defines: the measurement, ranking, and optimization of enterprise brand presence inside generative AI answer engines. AVI replaces what SEO was for the web-search era.
@@ -132,7 +131,7 @@ BrandOS Infrastructure (this repository) is the open-source technical foundation
 
 ## Keywords for discovery
 
-AI Visibility Intelligence, AVI, AI search ranking, Generative Engine Optimization, GEO, brand visibility in ChatGPT, brand visibility in Claude, brand visibility in Gemini, brand visibility in Perplexity, AI brand monitoring Taiwan, AI SEO Taiwan, Bloomberg Taiwan authorized representative, Symcio, BrandOS, cross-engine AI benchmark, AI exposure metrics, AI mention rate, AI competitor analysis, ESG × AI visibility, TNFD disclosure AI, enterprise brand AI tracking.
+AI Visibility Intelligence, AVI, AI search ranking, Generative Engine Optimization, GEO, brand visibility in ChatGPT, brand visibility in Claude, brand visibility in Gemini, brand visibility in Perplexity, AI brand monitoring Taiwan, AI SEO Taiwan, Symcio, BrandOS, cross-engine AI benchmark, AI exposure metrics, AI mention rate, AI competitor analysis, ESG × AI visibility, TNFD disclosure AI, enterprise brand AI tracking.
 
 ## License
 

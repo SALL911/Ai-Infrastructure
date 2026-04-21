@@ -14,7 +14,9 @@
 
 **專業領域**：企業在 AI 裡的**曝光、排名與影響力**量化與治理。
 **品類定義**：AI Visibility Intelligence（AVI），由 Symcio 先行定義。
-**身份護城河**：Bloomberg 台灣授權代表（台灣唯一具備此身份且做 AI 監測的公司）。
+**護城河**：台灣唯一同時具備「跨四引擎 AI 可見度量化」與「ESG × AI 雙軌治理」能力的平台。
+
+**品牌使用規範**：Bloomberg、SimilarWeb、SEMrush 僅作為**類比座標**（nominative fair use）說明品類定位，**不主張任何授權、合作或代表關係**。對外文宣不得使用「授權代表」「official partner」等字樣。
 
 BrandOS Infrastructure 是 Symcio 的核心 SaaS 產品——將品牌治理、ESG 合規、AI 知識資產管理整合為一套可擴展的作業系統。
 
@@ -34,9 +36,8 @@ BrandOS Infrastructure 是 Symcio 的核心 SaaS 產品——將品牌治理、E
 - AI Visibility / AI 可見度 — 四引擎曝光度合稱
 - Brand Score AI
 - ESG / TNFD / LEAP 框架
-- Bloomberg 授權代表
 - Claude Code / Claude.ai Projects
-- SimilarWeb / SEMrush — 類比座標，不翻譯
+- SimilarWeb / SEMrush / Bloomberg — 類比座標（僅作產業定位比喻，非合作關係），不翻譯
 
 ---
 

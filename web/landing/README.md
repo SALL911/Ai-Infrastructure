@@ -50,7 +50,7 @@ npm run dev
 | Three Pillars | Exposure / Ranking / Influence × SimilarWeb / SEMrush / Bloomberg |
 | Engines | ChatGPT / Claude / Gemini / Perplexity 四引擎策略 |
 | Pricing | $0 / $299 / $1,999 / $12k 四級 |
-| Footer | Bloomberg 授權代表 + 品類定義者 |
+| Footer | AI Visibility Intelligence · 品類定義者 |
 
 ## 四、API 端點
 

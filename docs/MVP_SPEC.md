@@ -15,9 +15,9 @@
 - 傳統 SEO 已不夠——> 50% 的 B2B 買家**先問 AI、再開 Google**
 - 多數企業**完全無法量化**自己在 AI 搜尋的表現
 - 三大定位護城河：
-  1. Bloomberg 授權代表身份（台灣唯一）
-  2. 四引擎同框比對（市場唯一）
-  3. ESG × AI 雙軌整合（類別定義者）
+  1. 四引擎同框比對（市場唯一）
+  2. ESG × AI 雙軌整合（類別定義者）
+  3. 繁中 GEO 與亞太 query 分佈（區域訊號最完整）
 
 > 完整品類定位見 [`docs/POSITIONING.md`](POSITIONING.md)。
 
@@ -156,7 +156,7 @@ competitors_count 用於後續 radar chart 比較
 6. Resend 寄出第一封報告信（給自己）
 7. Stripe 開立帳號 + $299 product
 8. 自己跑一次 Audit → 用自己 Symcio 品牌驗證流程
-9. 寫 3 篇 Bloomberg 授權代表視角的 GEO 內容（LinkedIn）
+9. 寫 3 篇 GEO 方法論 / AVI 品類定義視角的內容（LinkedIn）
 10. 發佈 + 找前 10 個測試客戶（免費換案例）
 
 ## 八、KPI（第一個月目標）

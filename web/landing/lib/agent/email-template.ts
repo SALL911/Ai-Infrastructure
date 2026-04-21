@@ -105,7 +105,7 @@ export function renderReportEmail(report: FakeReport): {
         </td></tr>
 
         <tr><td style="padding:16px 32px;border-top:1px solid #eee;color:${MUTED};font-size:11px;">
-          Symcio · Bloomberg 台灣授權代表 · <a href="https://symcio.tw" style="color:${MUTED};">symcio.tw</a>
+          Symcio · AI Visibility Intelligence · <a href="https://symcio.tw" style="color:${MUTED};">symcio.tw</a>
           <br>
           你因在 symcio.tw 提交 Free Scan 收到此信。若非本人操作可忽略。
         </td></tr>

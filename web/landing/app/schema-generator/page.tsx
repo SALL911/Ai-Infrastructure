@@ -91,7 +91,7 @@ export default function SchemaGeneratorPage() {
       <footer className="bg-white">
         <div className="mx-auto max-w-6xl px-6 py-12 text-sm text-muted">
           <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-            <p>© {new Date().getFullYear()} Symcio · Bloomberg 台灣授權代表</p>
+            <p>© {new Date().getFullYear()} Symcio · AI Visibility Intelligence</p>
             <p className="font-mono text-xs">AI Visibility Intelligence · 品類定義者</p>
           </div>
         </div>

@@ -83,7 +83,7 @@ Repo 內容（皆在本 repo `benchmark/ai-brand-visibility-index/` 已準備）
 格式：痛點 → 證據 → CTA（留言 "AI" 或 DM 申請免費分析）
 
 ✅ 動作：
-- [ ] 早上 9:00 Asia/Taipei 發文（Bloomberg 授權代表身份加持）
+- [ ] 早上 9:00 Asia/Taipei 發文（AVI 品類定義者視角）
 - [ ] 私訊池接上 Calendly 預約連結
 - [ ] 每個 DM 回覆 5 分鐘內
 

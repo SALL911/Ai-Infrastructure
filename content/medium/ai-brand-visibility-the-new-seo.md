@@ -89,7 +89,7 @@ Symcio is the AI-era SimilarWeb + SEMrush + Bloomberg.
 - **What SEMrush did for Google rankings, we do for ChatGPT rankings.**
 - **What Bloomberg did for financial data, we do for brand influence in AI.**
 
-We are Taiwan's first platform for quantifiable AI brand exposure, Taiwan's only cross-engine brand-visibility index, and the world's first AI-search ranking intelligence platform. Symcio is a Bloomberg Taiwan authorized representative.
+We are Taiwan's first platform for quantifiable AI brand exposure, Taiwan's only cross-engine brand-visibility index, and the world's first AI-search ranking intelligence platform.
 
 ### How to get your first benchmark
 
@@ -119,4 +119,4 @@ Symcio builds all three.
 - Free Scan (1 prompt × 4 engines): [symcio.tw](https://symcio.tw) → "免費掃描我的品牌"
 - Full $299 AI Visibility Audit: contact [sales@symcio.tw](mailto:sales@symcio.tw)
 
-*About the author*: Symcio is an AI Visibility Intelligence platform and Bloomberg Taiwan authorized representative.
+*About the author*: Symcio is an AI Visibility Intelligence (AVI) platform based in Taiwan, quantifying brand presence across ChatGPT, Claude, Gemini, and Perplexity.
