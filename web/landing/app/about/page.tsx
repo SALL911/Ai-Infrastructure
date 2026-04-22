@@ -82,6 +82,38 @@ export default function AboutPage() {
               </ol>
             </div>
 
+            <div className="border-l-2 border-accent pl-6">
+              <h2 className="font-mono text-xs uppercase tracking-widest text-accent">
+                BCI · Brand Capital Index
+              </h2>
+              <p className="mt-4 text-white">
+                Symcio 定義的新指標，把金融資本、AI 可見度、品牌參與度三個原本不相關的市場統一成單一時序：
+              </p>
+              <p className="mt-3 font-mono text-sm text-accent">
+                BCI = w_F · F + w_V · V + w_E · E
+              </p>
+              <p className="mt-3 text-white">
+                公式抽象完整公開；權重向量是 Symcio 的核心 IP。對照 InterBrand Brand Strength Score 的 Presence / Engagement / Relevance 三個因子，在 AI 時代重新定義座標系。
+              </p>
+              <p className="mt-4">
+                <a
+                  href="https://github.com/SALL911/BrandOS-Infrastructure/blob/main/docs/BCI_METHODOLOGY.md"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-accent"
+                >
+                  方法論白皮書（GitHub）→
+                </a>
+                <span className="mx-2 text-muted">·</span>
+                <a
+                  href="/api/bci/Symcio"
+                  className="text-accent"
+                >
+                  公開 API 範例 →
+                </a>
+              </p>
+            </div>
+
             <div>
               <h2 className="font-mono text-xs uppercase tracking-widest text-accent">
                 聯絡我們

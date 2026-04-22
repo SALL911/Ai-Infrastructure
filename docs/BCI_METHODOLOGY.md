@@ -197,6 +197,34 @@ class MarketDataProvider(Protocol):
 
 ---
 
-## 版本
+## 九、公開版 vs 企業版
 
-- v1.0（2026-04）初版 — F/V/E 三維 + 6 產業權重
+Symcio 的承諾是「公式開源、權重閉源、資料分層」。具體對照：
+
+| 項目 | 公開版（免費）| 企業版（付費 / 聯絡 info@symcio.tw）|
+|------|------------|----------------------------------|
+| 公式抽象 | ✅ 本文件完整公開 | ✅ 本文件完整公開 |
+| 權重向量（`w_*`、`a*`、`b*`、`c*`）| ❌ 僅 schema，值 = 0.0 | ✅ 產業別實際權重 |
+| 資料更新頻率 | 每日（03:00 Taipei cron）| 每日 + 即時 webhook（15 min p95）|
+| AI 引擎覆蓋 | 4（ChatGPT / Claude / Gemini / Perplexity）| 4 + 客戶自建（企業內部 LLM）|
+| F-axis 資料源 | Yahoo Finance + MOPS TW | 上述 + 客戶自備 Bloomberg Terminal（stub 可 plug-in）|
+| 歷史時序深度 | 最近 90 天 | 完整歷史 + 時序 API |
+| 產業別 benchmark | ❌ | ✅ 同產業 percentile |
+| 自訂權重（客戶定義）| ❌ | ✅ 可覆寫產業預設 |
+| 競品同框分析 | ❌ | ✅ 最多 5 個競品 parallel tracking |
+| API 回傳欄位 | `total_bci + updated_at` | 子項分數 + raw metrics + 衍生指標 |
+| SLA | Best effort | 99.5% uptime |
+| 資料匯出 | ❌ | ✅ CSV / Parquet / webhook |
+| White-label 嵌入 | ❌ | ✅（Enterprise 方案）|
+
+公開版的取得方式：
+- API：`GET https://symcio.tw/api/bci/{brand_id_or_name}` — 品牌若已被 Symcio 追蹤，回 `{ok, brand, total_bci, industry_key, snapshot_date, updated_at}`
+- 自行部署：`scripts/bci_engine.py` 可在自己的 Supabase + GitHub Actions 上跑；權重用 `BCI_WEIGHTS_JSON` env 自己填（預設會 warning 並用中性權重）
+
+企業版聯絡：`info@symcio.tw`
+
+---
+
+## 十、版本
+
+- v1.0（2026-04）初版 — F/V/E 三維 + 6 產業權重；公開版 / 企業版分層定義
