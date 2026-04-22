@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { TypeformEmbed } from "@/components/TypeformEmbed";
 
 export const metadata: Metadata = {
   title: "關於全識 | Symcio BrandOS",
@@ -103,6 +104,18 @@ export default function AboutPage() {
                   <a href="https://www.wikidata.org/wiki/Q138922082" target="_blank" rel="noopener noreferrer" className="ml-2 text-accent">Wikidata Q138922082</a>
                 </li>
               </ul>
+
+              <div className="mt-8 border border-line bg-surface p-6">
+                <p className="font-mono text-xs uppercase tracking-widest text-accent">
+                  或透過表單留下需求
+                </p>
+                <p className="mt-2 text-sm text-muted">
+                  填完自動進入 Symcio 流程（Typeform → Supabase → 24 小時內回覆）。
+                </p>
+                <div className="mt-4">
+                  <TypeformEmbed />
+                </div>
+              </div>
             </div>
           </div>
 
