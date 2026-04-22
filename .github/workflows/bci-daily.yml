@@ -1,0 +1,60 @@
+name: BCI Daily Snapshot
+
+on:
+  schedule:
+    # 每日台北 03:00（UTC 19:00 前一天）— geo-audit 02:00 完成後再跑，確保 V 是當日資料
+    - cron: '0 19 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (no DB writes)'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bci-daily
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    name: Compute BCI for all active brands
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run BCI engine
+        env:
+          # Supabase（寫 bci_snapshots）
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+          # BCI 權重向量（IP 核心；正式環境必填）
+          # 格式：{"v1": {"technology": {"wF":0.35,"wV":0.4,...}, "finance": {...}}}
+          BCI_WEIGHTS_JSON: ${{ secrets.BCI_WEIGHTS_JSON }}
+          BCI_WEIGHTS_VERSION: ${{ vars.BCI_WEIGHTS_VERSION || 'v1' }}
+
+          # Market data provider（F-axis）
+          BCI_MARKET_PROVIDER: ${{ vars.BCI_MARKET_PROVIDER || 'yfinance' }}
+          ALPHAVANTAGE_API_KEY: ${{ secrets.ALPHAVANTAGE_API_KEY }}
+
+          # Bloomberg 預設關閉；啟用需客戶自備 Terminal 授權 + blpapi
+          BLOOMBERG_ENABLED: 'false'
+
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+        run: python scripts/bci_engine.py
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## BCI Daily Snapshot" >> $GITHUB_STEP_SUMMARY
+          echo "- Weights version: ${{ vars.BCI_WEIGHTS_VERSION || 'v1' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Market provider: ${{ vars.BCI_MARKET_PROVIDER || 'yfinance' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Dry run: ${{ github.event.inputs.dry_run || 'false' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
