@@ -379,7 +379,135 @@ def main() -> int:
         insert_resp = supabase_insert("visibility_results", rows)
         print(f"Supabase insert: {insert_resp}")
 
+    # Paid flow: email the report to the customer.
+    # Triggered only when CUSTOMER_EMAIL is set (= repository_dispatch from Stripe
+    # webhook). Daily cron has no CUSTOMER_EMAIL, so this block is skipped silently.
+    customer_email = os.environ.get("CUSTOMER_EMAIL", "").strip()
+    order_id = os.environ.get("ORDER_ID", "").strip()
+    if customer_email:
+        send_report_email(customer_email, brand, report, order_id)
+        mark_order_completed(order_id, avg_score)
+
     return 0
+
+
+# ---------- Paid-flow email delivery ----------
+
+def send_report_email(to: str, brand: str, report: dict, order_id: str) -> None:
+    """POST to Resend REST; stdlib urllib to avoid adding a dep."""
+    key = os.environ.get("RESEND_API_KEY")
+    if not key:
+        print("[email] RESEND_API_KEY not set; skipping report delivery", file=sys.stderr)
+        return
+
+    html = _build_report_html(brand, report)
+    body = json.dumps({
+        "from": "Symcio <info@symcio.tw>",
+        "to": [to],
+        "subject": f"[Symcio] {brand} AI 可見度報告（{report['timestamp'][:10]}）",
+        "html": html,
+        "reply_to": "info@symcio.tw",
+    }).encode("utf-8")
+
+    req = request.Request(
+        "https://api.resend.com/emails",
+        data=body,
+        headers={
+            "Authorization": f"Bearer {key}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    try:
+        with request.urlopen(req, timeout=20) as resp:
+            raw = resp.read().decode("utf-8", errors="replace")
+            print(f"[email] sent to {to} (order={order_id or 'n/a'}): {raw[:200]}")
+    except HTTPError as exc:
+        err = exc.read().decode("utf-8", errors="replace")
+        print(f"[email] HTTP {exc.code}: {err[:200]}", file=sys.stderr)
+    except URLError as exc:
+        print(f"[email] network error: {exc}", file=sys.stderr)
+
+
+def _build_report_html(brand: str, report: dict) -> str:
+    # Top 5 mentions & top 5 gaps — concise, fits Gmail clip threshold
+    mentioned_rows = [r for r in report["results"] if r.get("mentioned")]
+    gaps = [r for r in report["results"] if not r.get("mentioned")][:5]
+    top_mentions = sorted(mentioned_rows, key=lambda r: r.get("score", 0), reverse=True)[:5]
+
+    mention_lines = "".join(
+        f"<li><b>{r['engine']}</b> · rank {r.get('rank_position') or '—'} · {r['sentiment']} — <i>{r['query'][:80]}</i></li>"
+        for r in top_mentions
+    ) or "<li style=\"color:#c33\">未在任何引擎被提及</li>"
+
+    gap_lines = "".join(
+        f"<li>{r['engine']}: <i>{r['query'][:80]}</i></li>"
+        for r in gaps
+    ) or "<li>無遺漏</li>"
+
+    return f"""<!doctype html>
+<html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:640px;margin:0 auto;color:#0a0a0a;background:#fff;padding:32px">
+  <div style="border-bottom:1px solid #e5e5e5;padding-bottom:16px;margin-bottom:24px">
+    <div style="font-family:Menlo,monospace;font-size:11px;letter-spacing:2px;color:#888;text-transform:uppercase">Symcio · AI Visibility Intelligence</div>
+    <h1 style="margin:8px 0 0;font-size:24px">{brand} AI 可見度報告</h1>
+    <div style="color:#666;font-size:13px">{report['timestamp'][:10]} · {report['total_queries']} 筆查詢 · 跨 4 引擎</div>
+  </div>
+
+  <div style="display:flex;gap:24px;margin-bottom:28px">
+    <div style="flex:1">
+      <div style="font-size:11px;letter-spacing:1px;color:#666;text-transform:uppercase">AVG SCORE</div>
+      <div style="font-size:36px;font-weight:700;color:#0a0a0a">{report['avg_score']}</div>
+    </div>
+    <div style="flex:1">
+      <div style="font-size:11px;letter-spacing:1px;color:#666;text-transform:uppercase">MENTION RATE</div>
+      <div style="font-size:36px;font-weight:700;color:#0a0a0a">{report['mention_rate_pct']}%</div>
+    </div>
+  </div>
+
+  <h2 style="font-size:16px;margin:24px 0 8px">Top 5 正向提及</h2>
+  <ul style="font-size:14px;line-height:1.7;color:#333;padding-left:18px">{mention_lines}</ul>
+
+  <h2 style="font-size:16px;margin:24px 0 8px">Top 5 未提及盲區</h2>
+  <ul style="font-size:14px;line-height:1.7;color:#333;padding-left:18px">{gap_lines}</ul>
+
+  <div style="margin-top:32px;padding:16px;background:#f7f7f7;border-radius:6px;font-size:13px;color:#444">
+    <b>下一步建議</b>：針對「未提及盲區」製作對應 GEO 內容、更新結構化資料（Wikidata / FAQ Schema）、跑 7 天再量。
+    可以回信 info@symcio.tw 預約一次方法論 call。
+  </div>
+
+  <div style="margin-top:24px;font-size:11px;color:#999;border-top:1px solid #eee;padding-top:12px">
+    Symcio / 全識股份有限公司 · AI Visibility Intelligence (AVI) 平台<br>
+    方法論：<a href="https://github.com/SALL911/BrandOS-Infrastructure" style="color:#888">github.com/SALL911/BrandOS-Infrastructure</a>
+  </div>
+</body></html>"""
+
+
+def mark_order_completed(order_id: str, avg_score: float) -> None:
+    """Flip orders row to completed status; stdlib only."""
+    if not order_id:
+        return
+    url = os.environ.get("SUPABASE_URL")
+    key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+    if not (url and key):
+        return
+
+    body = json.dumps({"status": "completed", "score": avg_score}).encode("utf-8")
+    req = request.Request(
+        f"{url.rstrip('/')}/rest/v1/orders?id=eq.{order_id}",
+        data=body,
+        headers={
+            "apikey": key,
+            "Authorization": f"Bearer {key}",
+            "Content-Type": "application/json",
+            "Prefer": "return=minimal",
+        },
+        method="PATCH",
+    )
+    try:
+        with request.urlopen(req, timeout=15) as resp:
+            print(f"[orders] {order_id} -> completed (HTTP {resp.status})")
+    except (HTTPError, URLError) as exc:
+        print(f"[orders] mark-completed failed: {exc}", file=sys.stderr)
 
 
 if __name__ == "__main__":

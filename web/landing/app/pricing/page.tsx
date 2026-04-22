@@ -1,127 +1,159 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "定價方案 | Symcio BrandOS",
+  title: "定價方案 — Symcio BrandOS",
   description:
-    "免費版 NTD 0 · 專業版 NTD 10 萬/年 · 企業版 NTD 25–50 萬/年。Symcio BrandOS 三方案對照。",
+    "免費版 NTD 0 · 專業版 NTD 100,000/年 · 企業版 NTD 250,000–500,000/年。Symcio BrandOS 三方案對照，依循 ISO 10668。",
 };
 
 const PLANS = [
   {
-    name: "Free Scan",
+    name: "免費版 Free",
     price: "NTD 0",
     period: "永久免費",
     tagline: "驗證品牌在 AI 的基準分數。",
     items: [
-      "1 個品牌監測",
-      "每月 1 次 Free Scan",
+      "BCI 品牌可見度快速診斷（1 次/月）",
       "ChatGPT / Claude / Gemini / Perplexity 四引擎",
-      "1 個產業 prompt",
-      "ABVI 綜合分數",
-      "Email 報告（HTML）",
-      "Discord 社群支援",
+      "基礎 GEO 改善建議",
+      "Discord 社群參與",
+      "Entity Builder 工具使用",
     ],
+    missing: ["PDF 完整報告", "競品追蹤", "顧問諮詢"],
     cta: "立即試用",
-    ctaHref: "/tools/brand-check",
+    ctaHref: "/audit",
     featured: false,
   },
   {
-    name: "Professional",
-    price: "NTD 10 萬",
-    period: "/ 年",
-    tagline: "中小企業與新創的實戰主力。",
+    name: "專業版 Professional",
+    price: "NTD 100,000",
+    period: "/ 年（月付 NTD 9,000）",
+    tagline: "成長型品牌的實戰主力。",
     items: [
-      "10 個品牌監測",
-      "每日自動追蹤",
-      "20 prompt × 4 引擎",
-      "競品 Benchmark 儀表板",
-      "ESG 結構化儲存（TNFD / GRI / IFRS S1/S2）",
-      "Brand Capital REST API",
-      "每月趨勢報告",
-      "Email + Discord 技術支援",
+      "免費版全部功能",
+      "每月 BCI 完整報告（含 PDF）",
+      "Wikidata + Schema.org 實體建置與管理",
+      "GEO 內容策略規劃",
+      "四大 AI 平台持續追蹤",
+      "5 個競品 AI 可見度月報",
+      "季度策略會議（線上）",
     ],
-    cta: "開始升級",
-    ctaHref: "mailto:info@symcio.tw?subject=Professional%20Plan",
+    missing: ["ESG / TNFD 報告", "Brand Capital API"],
+    cta: "聯繫我們",
+    ctaHref: "mailto:sall@symcio.tw?subject=%E5%B0%88%E6%A5%AD%E7%89%88%E6%96%B9%E6%A1%88%E8%A9%A2%E5%95%8F",
     featured: true,
   },
   {
-    name: "Enterprise",
-    price: "NTD 25–50 萬",
-    period: "/ 年",
-    tagline: "上市櫃公司、日歐客戶供應鏈、代理商。",
+    name: "企業版 Enterprise",
+    price: "NTD 250–500k",
+    period: "/ 年（依規模）",
+    tagline: "上市櫃公司、金融機構、跨國品牌。",
     items: [
-      "50+ 品牌監測（白標 API 可選）",
-      "客製產業 prompt 庫",
-      "SAML 2.0 SSO + MFA",
-      "審計日誌（SOC 2 相容）",
-      "季策略會議 + 專屬 CSM",
-      "資料境內選擇（TW / JP / EU）",
-      "自架部署支援（On-Premise）",
-      "SLA 99.9% + 24 小時支援",
+      "專業版全部功能",
+      "ESG / TNFD 永續報告自動化",
+      "Brand Capital API 授權",
+      "BCI 品牌資本指數完整分析",
+      "運動產業發展條例 175% 抵稅方案支援",
+      "專屬品牌治理顧問（每月 2 次）",
+      "金融機構品牌數據授權",
+      "SLA 99.5% + 24 小時支援",
     ],
-    cta: "聯絡業務",
-    ctaHref: "mailto:info@symcio.tw?subject=Enterprise%20Plan",
+    missing: [],
+    cta: "預約 Demo",
+    ctaHref: "mailto:sall@symcio.tw?subject=%E4%BC%81%E6%A5%AD%E7%89%88Demo%E9%A0%90%E7%B4%84",
     featured: false,
   },
 ];
 
+const FAQ = [
+  {
+    q: "BCI 的方法論是什麼？",
+    a: "BCI (Brand Capital Index) 依循 ISO 10668 國際品牌評價標準，整合財務品牌價值 (FBV)、自然資本價值 (NCV) 和 AI 可見度價值 (AIV) 三個維度。FBV 參考 Interbrand 方法論、NCV 基於 TNFD LEAP 框架、AIV 為 Symcio 獨創的跨四引擎（ChatGPT / Perplexity / Google AI / Claude）加權提及率。",
+  },
+  {
+    q: "免費版和付費版的主要差異？",
+    a: "免費版提供一次性的快速診斷，適合初步了解品牌在 AI 的表現。付費版提供持續追蹤、競品分析、GEO 策略規劃和專屬顧問服務，幫助品牌在 AI 時代持續提升可見度。企業版額外包含 ESG/TNFD 報告自動化與 Brand Capital API 授權。",
+  },
+  {
+    q: "多久可以看到 AI 可見度提升？",
+    a: "基礎建設（Wikidata + Schema.org）上線後約 2–4 週開始見效；AI 引擎重新爬取後，Knowledge Graph 會開始「認識」您的品牌。持續的 GEO 內容策略通常在 3–6 個月內帶來顯著的 AI 可見度提升，並反映在 BCI 分數上。",
+  },
+];
+
 export default function PricingPage() {
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: FAQ.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
+
   return (
     <main className="min-h-screen bg-ink text-white">
-      <header className="border-b border-line">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-          <Link href="/" className="font-mono text-sm font-medium no-underline">
-            Symcio
-          </Link>
-          <nav className="flex gap-5 text-sm text-muted">
-            <Link href="/tools/brand-check" className="hover:text-accent no-underline">健檢</Link>
-            <a href="/faq/" className="hover:text-accent no-underline">FAQ</a>
-            <Link href="/about" className="hover:text-accent no-underline">關於</Link>
-          </nav>
-        </div>
-      </header>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+
+      <Navigation />
 
       <section className="border-b border-line">
         <div className="mx-auto max-w-6xl px-6 py-16 md:py-20">
-          <p className="font-mono text-xs uppercase tracking-widest text-accent">定價方案</p>
-          <h1 className="mt-4 max-w-3xl text-4xl font-semibold leading-tight md:text-5xl">
-            三種方案，<br />從驗證到企業規模。
+          <p className="font-mono text-xs uppercase tracking-[0.25em] text-accent">
+            Pricing · 定價方案
+          </p>
+          <h1 className="mt-4 max-w-3xl text-4xl font-extrabold leading-tight md:text-5xl">
+            選擇適合您的
+            <br />
+            品牌治理方案
           </h1>
           <p className="mt-5 max-w-2xl text-lg text-muted">
-            先免費掃一次取基準分數，再決定要不要升級。年約可分期。
+            從免費健檢到全方位品牌資本管理 — 依循 ISO 10668。
           </p>
 
           <div className="mt-12 grid gap-6 lg:grid-cols-3">
             {PLANS.map((p) => (
               <div
                 key={p.name}
-                className={`border p-6 md:p-8 ${
-                  p.featured ? "border-accent bg-accent/5" : "border-line bg-surface"
-                }`}
+                className={`relative rounded-card border ${p.featured ? "border-accent bg-accent/5" : "border-line bg-surface"} p-6 md:p-8`}
               >
-                <p className="font-mono text-xs uppercase tracking-widest text-muted">
-                  {p.name}
-                </p>
-                <p className="mt-3 text-3xl font-semibold md:text-4xl">
+                {p.featured && (
+                  <span className="absolute -top-3 right-6 rounded-full bg-accent px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-[1px] text-ink">
+                    最受歡迎
+                  </span>
+                )}
+                <h3 className="text-xl font-bold text-white">{p.name}</h3>
+                <p className="mt-3 font-mono text-3xl font-bold md:text-4xl">
                   {p.price}
-                  <span className="ml-1 text-base text-muted">{p.period}</span>
                 </p>
-                <p className="mt-3 text-sm text-muted">{p.tagline}</p>
+                <p className="mt-1 text-sm text-muted">{p.period}</p>
+                <p className="mt-4 text-sm text-muted">{p.tagline}</p>
                 <ul className="mt-6 space-y-2 text-sm">
                   {p.items.map((i) => (
                     <li key={i} className="flex gap-2">
-                      <span className="text-accent">·</span>
+                      <span className="text-excellent">✓</span>
                       <span className="text-white/90">{i}</span>
+                    </li>
+                  ))}
+                  {p.missing.map((i) => (
+                    <li key={i} className="flex gap-2 opacity-50">
+                      <span>−</span>
+                      <span>{i}</span>
                     </li>
                   ))}
                 </ul>
                 <a
                   href={p.ctaHref}
-                  className={`mt-8 inline-block w-full px-5 py-3 text-center text-sm font-semibold no-underline ${
+                  className={`mt-8 inline-block w-full rounded-card px-5 py-3 text-center text-sm font-semibold no-underline transition ${
                     p.featured
-                      ? "bg-accent text-ink hover:opacity-90"
-                      : "border border-line hover:border-accent hover:text-accent"
+                      ? "bg-accent text-ink hover:scale-[1.02]"
+                      : "border border-line-soft text-white hover:border-accent hover:text-accent"
                   }`}
                 >
                   {p.cta} →
@@ -130,24 +162,39 @@ export default function PricingPage() {
             ))}
           </div>
 
-          <div className="mt-16 border-l-2 border-accent bg-surface p-6">
-            <p className="font-mono text-xs uppercase tracking-widest text-accent">常見問題</p>
-            <ul className="mt-4 space-y-3 text-sm text-muted">
-              <li>· 付款方式：電匯（公司對公司）、信用卡（Stripe）</li>
-              <li>· 試用期：7 天 Professional 試用可聯絡業務申請</li>
-              <li>· 年約可否分期：可，Professional 半年兩期、Enterprise 季付</li>
-              <li>· 是否開發票：是，統一發票（三聯式），可申請 175% 運動產業抵稅</li>
-              <li>· 資料境內：預設 Tokyo，歐盟客戶可選 Frankfurt，台灣境內部署需 Enterprise</li>
-            </ul>
-            <a
-              href="/faq/enterprise/"
-              className="mt-5 inline-block font-mono text-xs text-accent no-underline"
-            >
-              完整 FAQ →
-            </a>
+          {/* FAQ */}
+          <div className="mt-20">
+            <h2 className="text-2xl font-bold md:text-3xl">常見問答</h2>
+            <div className="mt-6 divide-y divide-line">
+              {FAQ.map((f, i) => (
+                <details key={i} className="group py-5" open={i === 0}>
+                  <summary className="flex cursor-pointer items-start justify-between gap-4 list-none">
+                    <h3 className="text-base font-semibold text-white md:text-lg">
+                      {f.q}
+                    </h3>
+                    <span className="mt-1 font-mono text-lg text-accent group-open:rotate-45 transition-transform">
+                      +
+                    </span>
+                  </summary>
+                  <p className="mt-4 text-sm leading-[1.8] text-muted md:text-base">
+                    {f.a}
+                  </p>
+                </details>
+              ))}
+            </div>
+            <div className="mt-8">
+              <Link
+                href="/faq/enterprise"
+                className="font-mono text-xs text-accent no-underline hover:underline"
+              >
+                查看完整 FAQ（5 個受眾 × 10 題）→
+              </Link>
+            </div>
           </div>
         </div>
       </section>
+
+      <Footer />
     </main>
   );
 }

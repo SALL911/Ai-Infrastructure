@@ -1,0 +1,36 @@
+name: BCI Tests
+
+on:
+  push:
+    paths:
+      - 'scripts/bci_engine.py'
+      - 'scripts/bci_calibrate.py'
+      - 'scripts/providers/**'
+      - 'scripts/tests/**'
+      - 'supabase/migrations/*bci*.sql'
+      - '.github/workflows/bci-test.yml'
+  pull_request:
+    paths:
+      - 'scripts/bci_engine.py'
+      - 'scripts/bci_calibrate.py'
+      - 'scripts/providers/**'
+      - 'scripts/tests/**'
+      - 'supabase/migrations/*bci*.sql'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unittest:
+    name: BCI unit tests (stdlib only)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run unittest suite
+        run: python -m unittest discover -s scripts/tests -v
