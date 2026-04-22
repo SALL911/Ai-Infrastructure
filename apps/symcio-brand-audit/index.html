@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Symcio Brand AI Audit — 你的品牌在 AI 世界裡看得見嗎？</title>
+  <meta name="description" content="3 分鐘免費診斷你的品牌在 ChatGPT、Perplexity、Google AI、Claude 的可見度。依循 ISO 10668 的 BCI 品牌資本指數方法論。">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Symcio Brand AI Audit — 你的品牌在 AI 世界裡看得見嗎？">
+  <meta property="og:description" content="3 分鐘免費診斷品牌在 ChatGPT / Perplexity / Google AI / Claude 的可見度。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://symcio-brandos-audit-mvp.netlify.app/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Symcio Brand AI Audit">
+  <meta name="twitter:description" content="BCI 品牌資本指數 — 3 分鐘免費診斷">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- GA4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-QPB9W2885C"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-QPB9W2885C');
+  </script>
+
+  <!-- Schema.org Organization -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "全識股份有限公司",
+    "alternateName": ["Symcio", "BrandOS"],
+    "url": "https://symcio.tw",
+    "logo": "https://symcio-brandos-audit-mvp.netlify.app/favicon.svg",
+    "description": "台灣第一個 AI 曝光可量化系統，定義 AI Visibility Intelligence (AVI) 品類。",
+    "sameAs": [
+      "https://github.com/sall911/symcio",
+      "https://discord.gg/jGWJr2Sd",
+      "https://www.wikidata.org/wiki/Q138922082"
+    ]
+  }
+  </script>
+
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container">
+      <a href="/" class="logo">
+        <span class="logo-mark">S</span>
+        <div>
+          <div class="logo-name">Symcio</div>
+          <div class="logo-sub">Brand AI Audit</div>
+        </div>
+      </a>
+      <div class="header-actions">
+        <a href="/pricing.html">方案</a>
+        <a href="https://github.com/sall911/symcio" target="_blank" rel="noopener" onclick="SymcioAnalytics.githubClick('header')">GitHub</a>
+        <a class="btn btn-primary" href="https://discord.gg/jGWJr2Sd" target="_blank" rel="noopener" onclick="SymcioAnalytics.discordClick('header')">加入社群</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container-narrow">
+        <h1>你的品牌在 AI 世界裡<br>看得見嗎？</h1>
+        <p class="hero-sub">3 分鐘免費診斷 — 了解品牌在 ChatGPT、Perplexity、Google AI、Claude 的表現</p>
+        <div class="typing" id="typing-line"></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container-narrow">
+        <div class="form-card" id="form-card">
+          <div class="form-steps">
+            <div class="form-step-indicator active" id="step-ind-1"></div>
+            <div class="form-step-indicator" id="step-ind-2"></div>
+          </div>
+
+          <form id="audit-form" autocomplete="off" novalidate>
+            <!-- Step 1 -->
+            <div class="step active" data-step="1">
+              <h3 style="font-size:18px;margin-bottom:18px;">Step 1 · 品牌資料</h3>
+
+              <div class="form-group">
+                <label for="brandNameZh">品牌中文名稱 *</label>
+                <input type="text" id="brandNameZh" name="brandNameZh" placeholder="例：鮮乳坊" required>
+              </div>
+
+              <div class="form-group">
+                <label for="brandNameEn">品牌英文名稱 *</label>
+                <input type="text" id="brandNameEn" name="brandNameEn" placeholder="例：Xian Nai Fang" required>
+              </div>
+
+              <div class="form-group">
+                <label for="website">官方網站 URL *</label>
+                <input type="url" id="website" name="website" placeholder="https://" required>
+              </div>
+
+              <div class="form-group">
+                <label for="industry">產業類別 *</label>
+                <select id="industry" name="industry" required>
+                  <option value="">請選擇…</option>
+                  <option>食品飲料</option>
+                  <option>科技軟體</option>
+                  <option>金融服務</option>
+                  <option>零售電商</option>
+                  <option>製造業</option>
+                  <option>醫療健康</option>
+                  <option>教育培訓</option>
+                  <option>餐飲服務</option>
+                  <option>媒體娛樂</option>
+                  <option>能源環保</option>
+                  <option>其他</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="description">品牌一句話描述</label>
+                <textarea id="description" name="description" placeholder="用一句話描述品牌做什麼"></textarea>
+              </div>
+
+              <div class="form-nav">
+                <span></span>
+                <button type="button" class="btn btn-primary" id="to-step-2">下一步 →</button>
+              </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="step" data-step="2">
+              <h3 style="font-size:18px;margin-bottom:18px;">Step 2 · 企業資料</h3>
+
+              <div class="form-group">
+                <label for="companySize">公司規模 *</label>
+                <select id="companySize" name="companySize" required>
+                  <option value="">請選擇…</option>
+                  <option>1-10人</option>
+                  <option>11-50人</option>
+                  <option>51-200人</option>
+                  <option>200人以上</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="revenue">年營收</label>
+                <select id="revenue" name="revenue">
+                  <option>不方便透露</option>
+                  <option>NTD 500萬以下</option>
+                  <option>500萬-3000萬</option>
+                  <option>3000萬-1億</option>
+                  <option>1億-5億</option>
+                  <option>5億以上</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="email">Email *</label>
+                <input type="email" id="email" name="email" placeholder="you@company.com" required>
+              </div>
+
+              <div class="form-group">
+                <label for="contactName">姓名 *</label>
+                <input type="text" id="contactName" name="contactName" required>
+              </div>
+
+              <div class="form-group">
+                <label for="title">職稱</label>
+                <input type="text" id="title" name="title" placeholder="選填">
+              </div>
+
+              <div class="form-nav">
+                <button type="button" class="btn btn-secondary" id="back-step-1">← 上一步</button>
+                <button type="submit" class="btn btn-primary" id="submit-btn">開始 AI 診斷 →</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Diagnostic overlay -->
+  <div class="diag-overlay" id="diag-overlay" aria-hidden="true">
+    <div class="diag-logo">S</div>
+    <div class="diag-stage" id="diag-stage">掃描 AI 搜尋引擎資料庫…</div>
+    <div class="diag-bar"><div class="diag-bar-fill" id="diag-bar-fill"></div></div>
+    <div class="diag-pct" id="diag-pct">0%</div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div>Symcio / 全識股份有限公司 · BCI 依循 ISO 10668</div>
+      <div style="margin-top:8px">
+        <a href="/pricing.html">方案</a>
+        <a href="https://github.com/sall911/symcio" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://discord.gg/jGWJr2Sd" target="_blank" rel="noopener">Discord</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/analytics.js"></script>
+  <script>
+    // --- Typing animation ---
+    (function () {
+      const el = document.getElementById('typing-line');
+      const lines = [
+        '正在分析 台積電 的 AI 可見度…',
+        '正在分析 鮮乳坊 的 AI 可見度…',
+        '正在分析 鼎泰豐 的 AI 可見度…',
+        '正在分析 國泰金 的 AI 可見度…'
+      ];
+      let li = 0, ci = 0, deleting = false;
+      function tick() {
+        const current = lines[li];
+        if (!deleting) {
+          ci++;
+          el.textContent = current.slice(0, ci);
+          if (ci === current.length) { deleting = true; setTimeout(tick, 1400); return; }
+        } else {
+          ci--;
+          el.textContent = current.slice(0, ci);
+          if (ci === 0) { deleting = false; li = (li + 1) % lines.length; }
+        }
+        setTimeout(tick, deleting ? 30 : 60);
+      }
+      tick();
+    })();
+
+    // --- Form navigation ---
+    const form = document.getElementById('audit-form');
+    const step1 = form.querySelector('[data-step="1"]');
+    const step2 = form.querySelector('[data-step="2"]');
+    const ind1 = document.getElementById('step-ind-1');
+    const ind2 = document.getElementById('step-ind-2');
+
+    SymcioAnalytics.formStart(null);
+
+    document.getElementById('to-step-2').addEventListener('click', function () {
+      const required = ['brandNameZh', 'brandNameEn', 'website', 'industry'];
+      for (const id of required) {
+        const f = document.getElementById(id);
+        if (!f.value.trim()) { f.focus(); f.reportValidity(); return; }
+      }
+      step1.classList.remove('active');
+      step2.classList.add('active');
+      ind2.classList.add('active');
+      SymcioAnalytics.formStep2(document.getElementById('industry').value);
+    });
+
+    document.getElementById('back-step-1').addEventListener('click', function () {
+      step2.classList.remove('active');
+      step1.classList.add('active');
+      ind2.classList.remove('active');
+    });
+
+    // --- Submit + diagnostic animation ---
+    const overlay = document.getElementById('diag-overlay');
+    const stageEl = document.getElementById('diag-stage');
+    const barFill = document.getElementById('diag-bar-fill');
+    const pctEl = document.getElementById('diag-pct');
+
+    const stages = [
+      { pct: 18, text: '掃描 AI 搜尋引擎資料庫…', ms: 2000 },
+      { pct: 36, text: '分析品牌在 ChatGPT 的提及率…', ms: 2000 },
+      { pct: 50, text: '分析品牌在 Perplexity 的引用頻率…', ms: 1000 },
+      { pct: 72, text: '比對同產業競品 AI 可見度…', ms: 2000 },
+      { pct: 92, text: '計算 BCI 品牌資本指數…', ms: 2000 },
+      { pct: 100, text: '報告生成完成 ✓', ms: 1000 }
+    ];
+
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      const data = Object.fromEntries(new FormData(form).entries());
+      const industry = data.industry;
+      const brand = data.brandNameZh;
+
+      SymcioAnalytics.formSubmit(industry, brand);
+
+      overlay.classList.add('active');
+      overlay.setAttribute('aria-hidden', 'false');
+
+      let idx = 0;
+      function runStage() {
+        if (idx >= stages.length) {
+          // Stash data in sessionStorage (URL params would hit length limits on long descriptions)
+          sessionStorage.setItem('symcio_audit_input', JSON.stringify(data));
+          // Also pass a minimal URL param for shareability / debug
+          const params = new URLSearchParams({ brand, industry });
+          location.href = '/report.html?' + params.toString();
+          return;
+        }
+        const s = stages[idx];
+        stageEl.textContent = s.text;
+        barFill.style.width = s.pct + '%';
+        pctEl.textContent = s.pct + '%';
+        idx++;
+        setTimeout(runStage, s.ms);
+      }
+      runStage();
+    });
+  </script>
+</body>
+</html>

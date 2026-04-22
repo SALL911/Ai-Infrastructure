@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>品牌 AI 可見度診斷報告 — Symcio Brand AI Audit</title>
+  <meta name="description" content="Symcio BCI 品牌資本指數報告 — ChatGPT / Perplexity / Google AI / Claude 四引擎可見度分析。">
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+  <meta property="og:title" content="Symcio Brand AI Audit Report">
+  <meta name="twitter:card" content="summary">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-QPB9W2885C"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-QPB9W2885C');
+  </script>
+
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container">
+      <a href="/" class="logo">
+        <span class="logo-mark">S</span>
+        <div>
+          <div class="logo-name">Symcio</div>
+          <div class="logo-sub">Brand AI Audit</div>
+        </div>
+      </a>
+      <div class="header-actions">
+        <a href="/">重新診斷</a>
+        <a href="/pricing.html">方案</a>
+        <a class="btn btn-primary" href="https://discord.gg/jGWJr2Sd" target="_blank" rel="noopener" onclick="SymcioAnalytics.discordClick('report-header')">加入社群</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <div class="report-header">
+        <div class="meta mono" id="report-meta">載入中…</div>
+        <h1 id="report-title">品牌 AI 可見度診斷報告</h1>
+        <div class="meta">依循 ISO 10668 國際品牌評價標準 · BCI v2 methodology</div>
+      </div>
+
+      <!-- Section 1: BCI Total -->
+      <section class="section">
+        <h2>1 · BCI 品牌資本指數</h2>
+        <div class="bci-ring-wrap">
+          <div class="bci-ring" id="bci-ring">
+            <div class="bci-ring-label">
+              <div class="bci-ring-score mono" id="bci-score">–</div>
+              <div class="bci-ring-max">/ 100</div>
+            </div>
+          </div>
+          <div class="bci-tier" id="bci-tier">–</div>
+        </div>
+      </section>
+
+      <!-- Section 2: Radar -->
+      <section class="section">
+        <h2>2 · BCI 三維分析</h2>
+        <h3>FBV · NCV · AIV 三軸雷達</h3>
+        <div class="chart-box" style="max-width:500px;margin:0 auto;">
+          <canvas id="radar-chart" height="340"></canvas>
+        </div>
+      </section>
+
+      <!-- Section 3: AI Engines -->
+      <section class="section">
+        <h2>3 · 四大 AI 引擎評分</h2>
+        <h3>跨引擎可見度分佈</h3>
+        <div id="engines-list" style="max-width:720px;"></div>
+      </section>
+
+      <!-- Section 4: GEO Checks -->
+      <section class="section">
+        <h2>4 · GEO 基礎建設檢查</h2>
+        <h3>AI 看得懂你的品牌嗎？</h3>
+        <ul class="geo-list" id="geo-list"></ul>
+        <div class="geo-total" id="geo-total">GEO 完整度：– / 5</div>
+      </section>
+
+      <!-- Section 5: Competitors -->
+      <section class="section">
+        <h2>5 · 同產業競品 AI 可見度比較</h2>
+        <div class="chart-box" style="max-width:760px;">
+          <canvas id="competitor-chart" height="260"></canvas>
+        </div>
+      </section>
+
+      <!-- Section 6: Recommendations -->
+      <section class="section">
+        <h2>6 · 改善建議與行動計畫</h2>
+        <h3>優先順序由 BCI 算法排序</h3>
+        <div class="rec-grid" id="rec-grid"></div>
+      </section>
+
+      <!-- Section 7: Methodology -->
+      <section class="section">
+        <h2>7 · 方法論說明</h2>
+        <details class="methodology">
+          <summary>BCI 方法論、權重與依據</summary>
+          <div class="formula">BCI = α · FBV + β · NCV + γ · AIV &nbsp;&nbsp; (α=0.50, β=0.25, γ=0.25)</div>
+          <p><b>FBV · Financial Brand Value</b>：依循 ISO 10668 財務精神，整合營收、公司規模、產業品牌角色指數 (Brand Role Index)、品牌強度。</p>
+          <p><b>NCV · Nature Capital Value</b>：基於 TNFD LEAP 框架，結合產業自然依賴度基準與 biocredit 估算。</p>
+          <p><b>AIV · AI Visibility Value</b>：Symcio 獨創；跨 ChatGPT (35%) / Perplexity (25%) / Google AI (25%) / Claude (15%) 加權提及率。</p>
+          <p style="margin-top:10px;">
+            本報告為 MVP v2 版本（含 Prompt Scoring）。生產環境會串接真實 API 結果；方法論定義見
+            <a href="https://github.com/sall911/symcio" target="_blank" rel="noopener">github.com/sall911/symcio</a>。
+          </p>
+        </details>
+      </section>
+
+      <!-- Section 8: CTA -->
+      <section class="section">
+        <h2>8 · 下一步</h2>
+        <div class="cta-row">
+          <button class="btn btn-primary" id="pdf-btn">📄 下載 PDF 報告</button>
+          <a class="btn btn-secondary" href="/pricing.html">🔓 解鎖進階分析</a>
+          <a class="btn btn-secondary" href="https://discord.gg/jGWJr2Sd" target="_blank" rel="noopener" onclick="SymcioAnalytics.discordClick('report-cta')">💬 加入 Discord</a>
+          <a class="btn btn-secondary" href="mailto:sall@symcio.tw?subject=品牌AI可見度諮詢">📞 預約顧問諮詢</a>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div id="pdf-content"></div>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div>Symcio / 全識股份有限公司 · BCI 依循 ISO 10668 · 本報告由 MVP v2 演算生成</div>
+    </div>
+  </footer>
+
+  <!-- Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="/js/analytics.js"></script>
+  <script src="/js/scoring-v2.js"></script>
+  <script src="/js/charts.js"></script>
+  <script src="/js/pdf-generator.js"></script>
+
+  <script>
+    // --- Load input data ---
+    function loadInput() {
+      try {
+        const stored = sessionStorage.getItem('symcio_audit_input');
+        if (stored) return JSON.parse(stored);
+      } catch (e) { /* fallthrough */ }
+      const p = new URLSearchParams(location.search);
+      return {
+        brandNameZh: p.get('brand') || '未命名品牌',
+        brandNameEn: p.get('en') || '',
+        website: p.get('website') || '',
+        industry: p.get('industry') || '其他',
+        description: '',
+        companySize: '11-50人',
+        revenue: '不方便透露'
+      };
+    }
+
+    const input = loadInput();
+    const result = SymcioScoring.calculateBCI(input);
+    const tier = SymcioScoring.bciTier(result.BCI);
+
+    // --- Header ---
+    const today = (() => {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    })();
+    document.title = `${result.brandName} AI 可見度報告 — Symcio`;
+    document.getElementById('report-meta').textContent = `報告日期 ${today} · 產業 ${result.industry}`;
+    document.getElementById('report-title').textContent = `${result.brandName} 品牌 AI 可見度診斷報告`;
+
+    // --- BCI ring ---
+    const ring = document.getElementById('bci-ring');
+    ring.style.setProperty('--score', result.BCI);
+    ring.style.setProperty('--ring-color', tier.color);
+    document.getElementById('bci-score').textContent = result.BCI;
+    const tierEl = document.getElementById('bci-tier');
+    tierEl.textContent = tier.label;
+    tierEl.classList.add(tier.key);
+
+    // --- Radar ---
+    SymcioCharts.renderRadar('radar-chart', result);
+
+    // --- AI engines ---
+    const engines = [
+      { name: 'ChatGPT',    score: result.chatgptScore,    color: '#2dd4a0' },
+      { name: 'Perplexity', score: result.perplexityScore, color: '#378ADD' },
+      { name: 'Google AI',  score: result.googleAIScore,   color: '#fbbf24' },
+      { name: 'Claude',     score: result.claudeScore,     color: '#c084fc' }
+    ];
+    const enginesList = document.getElementById('engines-list');
+    engines.forEach((e, i) => {
+      enginesList.insertAdjacentHTML('beforeend', `
+        <div class="engine-row">
+          <div class="engine-name">${e.name}</div>
+          <div class="engine-bar-wrap"><div class="engine-bar-fill" data-score="${e.score}" style="background:${e.color};"></div></div>
+          <div class="engine-score mono">${e.score}</div>
+        </div>`);
+    });
+    // Animate
+    setTimeout(() => {
+      document.querySelectorAll('.engine-bar-fill').forEach(bar => {
+        bar.style.width = bar.getAttribute('data-score') + '%';
+      });
+    }, 150);
+
+    // --- GEO checks ---
+    const geoLabels = {
+      schemaOrg: 'Schema.org 結構化資料',
+      wikidata: 'Wikidata 品牌實體',
+      knowledgePanel: 'Google Knowledge Panel',
+      linkedin: 'LinkedIn 公司頁面',
+      ssl: 'SSL 憑證'
+    };
+    const geoListEl = document.getElementById('geo-list');
+    Object.entries(result.geoChecks).forEach(([key, ok]) => {
+      geoListEl.insertAdjacentHTML('beforeend', `
+        <li class="geo-item">
+          <span class="geo-icon ${ok ? 'pass' : 'fail'}">${ok ? '✓' : '×'}</span>
+          <span>${geoLabels[key]}</span>
+        </li>`);
+    });
+    document.getElementById('geo-total').textContent = `GEO 完整度：${result.geoScore} / 5`;
+
+    // --- Competitors chart ---
+    SymcioCharts.renderCompetitorBar('competitor-chart', result);
+
+    // --- Recommendations ---
+    const recGrid = document.getElementById('rec-grid');
+    const priorityClass = { '高': 'high', '中': 'medium', '低': 'low' };
+    result.recommendations.forEach(r => {
+      recGrid.insertAdjacentHTML('beforeend', `
+        <div class="rec-card">
+          <span class="rec-priority ${priorityClass[r.priority] || 'low'}">優先度：${r.priority}</span>
+          <h4>${r.title}</h4>
+          <p>${r.desc}</p>
+          <div class="rec-action">→ ${r.action}</div>
+        </div>`);
+    });
+
+    // --- PDF button ---
+    document.getElementById('pdf-btn').addEventListener('click', () => SymcioPDF.download(result));
+
+    // --- Report view event ---
+    SymcioAnalytics.reportView(result.brandName, result.BCI, tier.key);
+  </script>
+</body>
+</html>
