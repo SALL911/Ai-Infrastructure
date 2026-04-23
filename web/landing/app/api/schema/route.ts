@@ -3,6 +3,10 @@ import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
 import { generate, OrgType } from "@/lib/schema/generator";
 import { saveLeadToNotion, sendGmail } from "@/lib/agent/composio";
+import {
+  WALLET_COOKIE_NAME,
+  decodeWalletCookie,
+} from "@/lib/wallet/siwe-cookie";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -45,7 +49,10 @@ function supabaseClient() {
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
-async function persistLead(input: Input): Promise<{ ok: boolean; error?: string }> {
+async function persistLead(
+  input: Input,
+  wallet: { address: string; ens: string } | null,
+): Promise<{ ok: boolean; error?: string }> {
   const sb = supabaseClient();
   if (!sb) return { ok: false, error: "supabase-not-configured" };
 
@@ -60,7 +67,9 @@ async function persistLead(input: Input): Promise<{ ok: boolean; error?: string 
       `domain=${input.url || ""}`,
       `country=${input.country || ""}`,
       `wikidata_qid=${input.wikidataQid || ""}`,
-    ].join("; "),
+      wallet ? `wallet=${wallet.address}` : "",
+      wallet?.ens ? `ens=${wallet.ens}` : "",
+    ].filter(Boolean).join("; "),
   });
   if (leadErr) return { ok: false, error: leadErr.message };
 
@@ -71,6 +80,14 @@ async function persistLead(input: Input): Promise<{ ok: boolean; error?: string 
     .eq("name", input.brandName)
     .maybeSingle();
 
+  const walletFields = wallet
+    ? {
+        owner_wallet: wallet.address.toLowerCase(),
+        ens: wallet.ens || null,
+        wallet_verified_at: new Date().toISOString(),
+      }
+    : {};
+
   if (!existing) {
     const { error: brandErr } = await sb.from("brands").insert({
       name: input.brandName,
@@ -79,20 +96,25 @@ async function persistLead(input: Input): Promise<{ ok: boolean; error?: string 
       market: input.country || "Taiwan",
       status: "prospect",
       primary_email: input.email,
+      ...walletFields,
     });
     if (brandErr) {
       // 不擋流程：lead 已存，brands 失敗只記 log。
       console.error("[api/schema] brands insert failed", brandErr);
     }
   } else {
-    // 已存在的 brand：補上 primary_email 若尚未設，確保 queue 有地方寄信
+    // 已存在的 brand：補上 primary_email 與 wallet 欄位（若尚未設）
+    const update: Record<string, unknown> = {};
+    update.primary_email = input.email;
+    if (wallet) {
+      Object.assign(update, walletFields);
+    }
     const { error: updErr } = await sb
       .from("brands")
-      .update({ primary_email: input.email })
-      .eq("id", existing.id)
-      .is("primary_email", null);
+      .update(update)
+      .eq("id", existing.id);
     if (updErr) {
-      console.error("[api/schema] brands primary_email backfill failed", updErr);
+      console.error("[api/schema] brands update failed", updErr);
     }
   }
   return { ok: true };
@@ -157,6 +179,15 @@ export async function POST(req: Request): Promise<NextResponse<ApiResponse>> {
     return NextResponse.json({ ok: false, error: msg }, { status: 400 });
   }
 
+  // 讀 SIWE 驗證 cookie（若有）。HttpOnly 所以前端送什麼都不信，只信 cookie。
+  const walletCookie = req.headers
+    .get("cookie")
+    ?.split(";")
+    .map((c) => c.trim())
+    .find((c) => c.startsWith(`${WALLET_COOKIE_NAME}=`))
+    ?.split("=")[1];
+  const wallet = decodeWalletCookie(walletCookie);
+
   const output = generate({
     brandName: parsed.brandName,
     legalName: parsed.legalName,
@@ -174,9 +205,11 @@ export async function POST(req: Request): Promise<NextResponse<ApiResponse>> {
     wikidataQid: parsed.wikidataQid,
     sameAs: parsed.sameAs,
     aiVisibilityClaim: parsed.aiVisibilityClaim,
+    ownerWallet: wallet?.address || "",
+    ens: wallet?.ens || "",
   });
 
-  const sbResp = await persistLead(parsed);
+  const sbResp = await persistLead(parsed, wallet);
 
   const notionResp = await saveLeadToNotion({
     brandName: parsed.brandName,

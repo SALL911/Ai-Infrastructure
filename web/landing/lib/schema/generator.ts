@@ -35,6 +35,9 @@ export interface BrandInput {
   sameAs: string[];           // 官方社群 / LinkedIn / Crunchbase 等 URL
   // Symcio 專屬欄位：AI 可見度宣告（為了餵 AI 的敘事權重）
   aiVisibilityClaim: string;
+  // Web3 Step 1：品牌主用 MetaMask 簽章認領後帶入
+  ownerWallet?: string;      // 0x + 40 hex，小寫
+  ens?: string;              // 例：symcio.eth
 }
 
 export interface GeneratorOutput {
@@ -57,6 +60,14 @@ function buildJsonLd(input: BrandInput, warnings: string[]): Record<string, unkn
   const sameAs = cleanSameAs(input.sameAs);
   if (input.wikidataQid && /^Q\d+$/.test(input.wikidataQid)) {
     sameAs.unshift(`https://www.wikidata.org/entity/${input.wikidataQid}`);
+  }
+  // Web3 驗證過的錢包 → Etherscan + ENS 連結放進 sameAs，讓 AI 引擎與搜尋爬蟲
+  // 把鏈上身分與品牌實體關聯。ENS 放最前面（最容易閱讀）。
+  if (input.ens && /^[a-z0-9-]+(\.[a-z0-9-]+)+$/i.test(input.ens)) {
+    sameAs.unshift(`https://app.ens.domains/${input.ens}`);
+  }
+  if (input.ownerWallet && /^0x[a-fA-F0-9]{40}$/.test(input.ownerWallet)) {
+    sameAs.unshift(`https://etherscan.io/address/${input.ownerWallet.toLowerCase()}`);
   }
 
   const address =
@@ -244,4 +255,6 @@ export const EMPTY_INPUT: BrandInput = {
   wikidataQid: "",
   sameAs: [],
   aiVisibilityClaim: "",
+  ownerWallet: "",
+  ens: "",
 };

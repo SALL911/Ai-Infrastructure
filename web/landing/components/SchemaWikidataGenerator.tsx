@@ -2,6 +2,7 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import { BrandInput, EMPTY_INPUT, generate, OrgType } from "@/lib/schema/generator";
+import { ConnectWalletButton, WalletIdentity } from "@/components/ConnectWalletButton";
 
 type SubmitState = "idle" | "submitting" | "success" | "error";
 
@@ -17,6 +18,7 @@ const ORG_TYPES: OrgType[] = [
 export function SchemaWikidataGenerator() {
   const [input, setInput] = useState<BrandInput>(EMPTY_INPUT);
   const [sameAsRaw, setSameAsRaw] = useState("");
+  const [wallet, setWallet] = useState<WalletIdentity | null>(null);
   const [submit, setSubmit] = useState<SubmitState>("idle");
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -27,8 +29,10 @@ export function SchemaWikidataGenerator() {
         .split(/\r?\n/)
         .map((s) => s.trim())
         .filter(Boolean),
+      ownerWallet: wallet?.address || "",
+      ens: wallet?.ens || "",
     });
-  }, [input, sameAsRaw]);
+  }, [input, sameAsRaw, wallet]);
 
   function set<K extends keyof BrandInput>(key: K, value: BrandInput[K]) {
     setInput((prev) => ({ ...prev, [key]: value }));
@@ -77,6 +81,8 @@ export function SchemaWikidataGenerator() {
   return (
     <div className="grid gap-8 lg:grid-cols-2">
       <form onSubmit={onSubmit} className="space-y-4">
+        <ConnectWalletButton onVerified={setWallet} />
+
         <Field label="品牌名稱 *">
           <input
             required

@@ -39,6 +39,10 @@ export default function SchemaGeneratorPage() {
               <p className="mt-2">送出後自動排進 Free Scan，寄四引擎曝光報告到信箱</p>
             </li>
           </ol>
+          <p className="mt-6 max-w-3xl text-xs text-muted">
+            Web3 品牌可選擇用 MetaMask 簽名認領，Etherscan 與 ENS 連結會自動寫進 JSON-LD 的{" "}
+            <code>sameAs</code>，強化鏈上身分與品牌實體的關聯。簽章免費，不會觸發任何鏈上交易。
+          </p>
         </div>
       </section>
 
