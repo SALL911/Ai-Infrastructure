@@ -152,27 +152,251 @@ export async function POST(req: Request): Promise<Response> {
     );
   }
 
-  switch (event.type) {
-    case "checkout.session.completed": {
-      const result = await handleCheckoutCompleted(
-        event.data.object as Stripe.Checkout.Session,
-      );
-      if (!result.ok) {
-        console.error("[stripe-webhook] handler failed", result.error);
-        // Return 500 so Stripe retries
-        return NextResponse.json({ ok: false, error: result.error }, { status: 500 });
-      }
-      if (result.warnings.length > 0) {
-        console.warn("[stripe-webhook] partial success", result.warnings);
-      }
+  // Replay protection — subscription_events UNIQUE on stripe_event_id
+  const sb = supabaseAdmin();
+  if (sb) {
+    const { data: dup } = await sb
+      .from("subscription_events")
+      .select("id")
+      .eq("stripe_event_id", event.id)
+      .maybeSingle();
+    if (dup) {
       return NextResponse.json({
         ok: true,
         event: event.type,
-        warnings: result.warnings,
+        replay: true,
       });
     }
-    default:
-      // Acknowledge all other events so Stripe doesn't retry them indefinitely
-      return NextResponse.json({ ok: true, event: event.type, handled: false });
   }
+
+  try {
+    switch (event.type) {
+      case "checkout.session.completed": {
+        const session = event.data.object as Stripe.Checkout.Session;
+        const mode = session.mode;
+        if (mode === "subscription") {
+          await handleSubscriptionCheckout(session);
+          await recordEvent(event, session);
+        } else {
+          const result = await handleCheckoutCompleted(session);
+          await recordEvent(event, session);
+          if (!result.ok) {
+            return NextResponse.json(
+              { ok: false, error: result.error },
+              { status: 500 },
+            );
+          }
+        }
+        return NextResponse.json({ ok: true, event: event.type });
+      }
+
+      case "customer.subscription.created":
+      case "customer.subscription.updated":
+      case "customer.subscription.deleted": {
+        const sub = event.data.object as Stripe.Subscription;
+        await handleSubscriptionChange(sub);
+        await recordEvent(event, null, sub);
+        return NextResponse.json({ ok: true, event: event.type });
+      }
+
+      case "invoice.payment_succeeded":
+      case "invoice.payment_failed": {
+        const invoice = event.data.object as Stripe.Invoice;
+        await handleInvoice(event.type, invoice);
+        await recordEvent(event, null, null, invoice);
+        return NextResponse.json({ ok: true, event: event.type });
+      }
+
+      default:
+        return NextResponse.json({
+          ok: true,
+          event: event.type,
+          handled: false,
+        });
+    }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("[stripe-webhook] handler threw", event.type, msg);
+    return NextResponse.json(
+      { ok: false, event: event.type, error: msg },
+      { status: 500 },
+    );
+  }
+}
+
+/* ============ Subscription handlers ============ */
+
+async function handleSubscriptionCheckout(session: Stripe.Checkout.Session) {
+  const sb = supabaseAdmin();
+  if (!sb) return;
+
+  const memberId =
+    (session.metadata?.member_id as string | undefined) ||
+    (session.client_reference_id as string | undefined);
+  const customerId =
+    typeof session.customer === "string"
+      ? session.customer
+      : session.customer?.id;
+  const subscriptionId =
+    typeof session.subscription === "string"
+      ? session.subscription
+      : session.subscription?.id;
+
+  if (!memberId || !customerId || !subscriptionId) {
+    console.warn(
+      "[stripe-webhook] subscription checkout missing linkage",
+      { memberId, customerId, subscriptionId },
+    );
+    return;
+  }
+
+  // Attach Stripe IDs immediately; subscription.updated will fill status.
+  await sb
+    .from("members")
+    .update({
+      stripe_customer_id: customerId,
+      stripe_subscription_id: subscriptionId,
+    })
+    .eq("id", memberId);
+}
+
+async function handleSubscriptionChange(sub: Stripe.Subscription) {
+  const sb = supabaseAdmin();
+  if (!sb) return;
+
+  const customerId =
+    typeof sub.customer === "string" ? sub.customer : sub.customer.id;
+  const priceId = sub.items.data[0]?.price.id ?? null;
+
+  const { priceIdToPlan } = await import("@/lib/stripe/client");
+  const mapped = priceIdToPlan(priceId);
+
+  const plan = sub.status === "active" || sub.status === "trialing"
+    ? mapped?.plan ?? "pro"
+    : "free";
+  const quota = sub.status === "active" || sub.status === "trialing"
+    ? mapped?.quota ?? 30
+    : 3;
+
+  // Stripe API 2026-03-25 moved current_period_end onto subscription items.
+  const periodEndSeconds = sub.items.data[0]?.current_period_end;
+  const currentPeriodEnd =
+    typeof periodEndSeconds === "number"
+      ? new Date(periodEndSeconds * 1000).toISOString()
+      : null;
+
+  // Locate member by Stripe customer ID (set during checkout).
+  const { data: member } = await sb
+    .from("members")
+    .select("id")
+    .eq("stripe_customer_id", customerId)
+    .maybeSingle();
+
+  if (!member) {
+    console.warn(
+      "[stripe-webhook] no member for customer",
+      customerId,
+      "event for",
+      sub.id,
+    );
+    return;
+  }
+
+  await sb
+    .from("members")
+    .update({
+      stripe_subscription_id: sub.id,
+      subscription_status: sub.status,
+      subscription_price_id: priceId,
+      current_period_end: currentPeriodEnd,
+      cancel_at_period_end: sub.cancel_at_period_end ?? false,
+      plan,
+      monthly_audit_quota: quota,
+    })
+    .eq("id", member.id);
+}
+
+async function handleInvoice(
+  eventType: string,
+  invoice: Stripe.Invoice,
+) {
+  // No-op for now — subscription_events logs it for review.
+  // Future: send receipt / dunning email on payment_failed.
+  if (eventType === "invoice.payment_failed") {
+    console.warn(
+      "[stripe-webhook] payment failed for customer",
+      typeof invoice.customer === "string"
+        ? invoice.customer
+        : invoice.customer?.id,
+      "invoice",
+      invoice.id,
+    );
+  }
+}
+
+async function recordEvent(
+  event: Stripe.Event,
+  session: Stripe.Checkout.Session | null,
+  subscription: Stripe.Subscription | null = null,
+  invoice: Stripe.Invoice | null = null,
+) {
+  const sb = supabaseAdmin();
+  if (!sb) return;
+
+  const customerId =
+    (session &&
+      (typeof session.customer === "string"
+        ? session.customer
+        : session.customer?.id)) ||
+    (subscription &&
+      (typeof subscription.customer === "string"
+        ? subscription.customer
+        : subscription.customer.id)) ||
+    (invoice &&
+      (typeof invoice.customer === "string"
+        ? invoice.customer
+        : invoice.customer?.id)) ||
+    null;
+
+  const subscriptionId =
+    (session &&
+      (typeof session.subscription === "string"
+        ? session.subscription
+        : session.subscription?.id)) ||
+    subscription?.id ||
+    null;
+
+  const memberId = customerId
+    ? (
+        await sb
+          .from("members")
+          .select("id")
+          .eq("stripe_customer_id", customerId)
+          .maybeSingle()
+      ).data?.id ?? null
+    : null;
+
+  await sb
+    .from("subscription_events")
+    .insert({
+      stripe_event_id: event.id,
+      event_type: event.type,
+      member_id: memberId,
+      stripe_customer_id: customerId,
+      stripe_subscription_id: subscriptionId,
+      status:
+        subscription?.status ||
+        invoice?.status ||
+        (session?.payment_status as string | null) ||
+        null,
+      amount_total:
+        session?.amount_total ??
+        invoice?.amount_paid ??
+        null,
+      currency:
+        session?.currency ??
+        invoice?.currency ??
+        null,
+      raw_event: event,
+    });
 }

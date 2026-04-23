@@ -18,9 +18,16 @@ export default async function SettingsPage() {
 
   const { data: member } = await supabase
     .from("members")
-    .select("display_name, email, company_name, title, plan, created_at")
+    .select(
+      "display_name, email, company_name, title, plan, created_at, subscription_status, stripe_customer_id, current_period_end, cancel_at_period_end, monthly_audit_quota, audits_used_this_month",
+    )
     .eq("id", user.id)
     .maybeSingle();
+
+  const hasSubscription = !!member?.stripe_customer_id;
+  const periodEnd = member?.current_period_end
+    ? new Date(member.current_period_end as string).toLocaleDateString("zh-TW")
+    : null;
 
   const rows = [
     { label: "Email", value: member?.email || user.email || "—" },
@@ -30,6 +37,24 @@ export default async function SettingsPage() {
     {
       label: "方案",
       value: (member?.plan || "free").toUpperCase(),
+    },
+    {
+      label: "訂閱狀態",
+      value: member?.subscription_status
+        ? String(member.subscription_status).toUpperCase() +
+          (member.cancel_at_period_end ? " · 期末取消" : "")
+        : "—",
+    },
+    {
+      label: "本期結束",
+      value: periodEnd || "—",
+    },
+    {
+      label: "本月配額",
+      value:
+        member?.monthly_audit_quota != null
+          ? `${member.audits_used_this_month ?? 0} / ${member.monthly_audit_quota}`
+          : "—",
     },
     {
       label: "加入時間",
@@ -65,6 +90,38 @@ export default async function SettingsPage() {
             </div>
           ))}
         </dl>
+      </div>
+
+      <div className="rounded-card border border-line bg-surface p-6">
+        <h3 className="text-lg font-bold">訂閱與付款</h3>
+        {hasSubscription ? (
+          <>
+            <p className="mt-2 text-sm text-muted">
+              管理你的訂閱、換方案、查看發票、更新付款方式 — 全部在 Stripe
+              自助 portal 完成。
+            </p>
+            <form action="/api/billing/portal" method="post" className="mt-4">
+              <button
+                type="submit"
+                className="rounded-card bg-accent px-5 py-2.5 text-sm font-bold text-ink hover:scale-[1.02] transition"
+              >
+                前往 Stripe 管理 →
+              </button>
+            </form>
+          </>
+        ) : (
+          <>
+            <p className="mt-2 text-sm text-muted">
+              尚未訂閱付費方案。升級到 Pro 可解鎖每月 30 次完整 BCI 報告、競品追蹤、GEO 策略規劃。
+            </p>
+            <a
+              href="/pricing"
+              className="mt-4 inline-block rounded-card bg-accent px-5 py-2.5 text-sm font-bold text-ink no-underline hover:scale-[1.02] transition"
+            >
+              查看方案 →
+            </a>
+          </>
+        )}
       </div>
 
       <div className="rounded-card border border-line bg-surface p-6">

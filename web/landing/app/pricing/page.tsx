@@ -28,13 +28,13 @@ const PLANS = [
     featured: false,
   },
   {
-    name: "專業版 Professional",
-    price: "NTD 100,000",
-    period: "/ 年（月付 NTD 9,000）",
+    name: "專業版 · 月付",
+    price: "NTD 9,000",
+    period: "/ 月 · Stripe 自動續費",
     tagline: "成長型品牌的實戰主力。",
     items: [
       "免費版全部功能",
-      "每月 BCI 完整報告（含 PDF）",
+      "每月 30 次 BCI 完整報告（含 PDF）",
       "Wikidata + Schema.org 實體建置與管理",
       "GEO 內容策略規劃",
       "四大 AI 平台持續追蹤",
@@ -42,9 +42,24 @@ const PLANS = [
       "季度策略會議（線上）",
     ],
     missing: ["ESG / TNFD 報告", "Brand Capital API"],
-    cta: "聯繫我們",
-    ctaHref: "mailto:sall@symcio.tw?subject=%E5%B0%88%E6%A5%AD%E7%89%88%E6%96%B9%E6%A1%88%E8%A9%A2%E5%95%8F",
+    cta: "訂閱 Pro 月付 →",
+    ctaHref: "/api/checkout?mode=subscription&plan=pro_monthly",
     featured: true,
+  },
+  {
+    name: "專業版 · 年付",
+    price: "NTD 100,000",
+    period: "/ 年（省 8,000）",
+    tagline: "年約版，較月付省 2 個月。",
+    items: [
+      "月付專業版全部功能",
+      "額外兩個月免費",
+      "優先客服響應",
+    ],
+    missing: ["ESG / TNFD 報告", "Brand Capital API"],
+    cta: "訂閱 Pro 年付 →",
+    ctaHref: "/api/checkout?mode=subscription&plan=pro_yearly",
+    featured: false,
   },
   {
     name: "企業版 Enterprise",
@@ -117,7 +132,7 @@ export default function PricingPage() {
             從免費健檢到全方位品牌資本管理 — 依循 ISO 10668。
           </p>
 
-          <div className="mt-12 grid gap-6 lg:grid-cols-3">
+          <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
             {PLANS.map((p) => (
               <div
                 key={p.name}
