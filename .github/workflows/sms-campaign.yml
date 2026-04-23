@@ -1,0 +1,53 @@
+name: SMS Campaign Dispatch
+
+# WHY：Mitake 若鎖 IP 白名單，GitHub Actions runner IP 雖動態但仍有官方 ranges
+# 可申請。而且 campaign 發送是長時任務，Vercel edge function 容易 timeout。
+# 故意不排 cron — campaign 要人工 workflow_dispatch 發，避免誤寄。
+
+on:
+  workflow_dispatch:
+    inputs:
+      campaign_id:
+        description: '指定 campaign UUID；若空則跑所有 due campaigns'
+        required: false
+      dry_run:
+        description: 'true = 不實際呼叫 Mitake，僅列出目標名單'
+        required: false
+        default: 'true'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sms-campaign
+  cancel-in-progress: false
+
+jobs:
+  send:
+    name: Send SMS Campaign
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run campaign dispatcher
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          MITAKE_USERNAME: ${{ secrets.MITAKE_USERNAME }}
+          MITAKE_PASSWORD: ${{ secrets.MITAKE_PASSWORD }}
+          CAMPAIGN_ID: ${{ github.event.inputs.campaign_id }}
+          DRY_RUN: ${{ github.event.inputs.dry_run == 'true' && '1' || '' }}
+        run: python scripts/sms_send_campaign.py
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## SMS Campaign" >> $GITHUB_STEP_SUMMARY
+          echo "- Campaign ID: ${{ github.event.inputs.campaign_id || '(all due)' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Dry run: ${{ github.event.inputs.dry_run }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
