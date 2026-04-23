@@ -2,6 +2,7 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import { BrandInput, EMPTY_INPUT, generate, OrgType } from "@/lib/schema/generator";
+import { getAttribution } from "@/lib/utm/capture";
 
 type SubmitState = "idle" | "submitting" | "success" | "error";
 
@@ -55,6 +56,7 @@ export function SchemaWikidataGenerator() {
             .split(/\r?\n/)
             .map((s) => s.trim())
             .filter(Boolean),
+          attribution: getAttribution(),
         }),
       });
       const data: { ok: boolean; error?: string } = await res.json();

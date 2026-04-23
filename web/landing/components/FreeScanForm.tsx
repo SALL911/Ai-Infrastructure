@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { getAttribution } from "@/lib/utm/capture";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
@@ -20,6 +21,7 @@ export function FreeScanForm() {
       industry: String(form.get("industry") || "technology"),
       email: String(form.get("email") || "").trim(),
       company: String(form.get("company") || "").trim(),
+      attribution: getAttribution(),
     };
 
     if (!payload.brand_name || !payload.email) {

@@ -13,6 +13,7 @@ import {
   type Revenue,
   type ScoringResult,
 } from "@/lib/scoring";
+import { getAttribution } from "@/lib/utm/capture";
 
 const AuditReport = dynamic(() => import("./AuditReport"), { ssr: false });
 
@@ -132,6 +133,34 @@ export default function AuditForm() {
     setResult(r);
     const tier = bciTier(r.BCI);
     ga("report_view", { brand: r.brandName, bci: r.BCI, tier: tier.key });
+
+    // Silent lead capture → leads 表（含 UTM 歸因）。Fire-and-forget，不擋 UI。
+    try {
+      fetch("/api/audit-leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          brand_name_zh: form.brandNameZh,
+          brand_name_en: form.brandNameEn,
+          website: form.website,
+          industry: form.industry,
+          company_size: form.companySize,
+          revenue: form.revenue,
+          email: form.email,
+          contact_name: form.contactName,
+          title: form.title,
+          bci: r.BCI,
+          tier: tier.key,
+          attribution: getAttribution(),
+        }),
+        keepalive: true,
+      }).catch(() => {
+        /* lead 失敗不影響使用者看報告 */
+      });
+    } catch {
+      /* ignore */
+    }
+
     setTimeout(() => {
       reportRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 200);
