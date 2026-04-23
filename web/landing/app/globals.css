@@ -22,3 +22,73 @@ body {
 a {
   @apply underline-offset-4 hover:underline;
 }
+
+/* ============ /docs markdown typography ============ */
+
+.docs-content {
+  @apply text-base leading-[1.8] text-white/90;
+}
+
+.docs-content h1,
+.docs-content h2,
+.docs-content h3,
+.docs-content h4 {
+  @apply font-bold text-white scroll-mt-20;
+}
+
+.docs-content h1 { @apply mt-10 mb-4 text-3xl; }
+.docs-content h2 { @apply mt-10 mb-4 text-2xl border-b border-line pb-3; }
+.docs-content h3 { @apply mt-8 mb-3 text-xl; }
+.docs-content h4 { @apply mt-6 mb-2 text-lg; }
+
+.docs-content p  { @apply my-4; }
+.docs-content ul { @apply my-4 list-disc pl-6 space-y-2; }
+.docs-content ol { @apply my-4 list-decimal pl-6 space-y-2; }
+.docs-content li { @apply marker:text-accent; }
+
+.docs-content strong { @apply font-bold text-white; }
+.docs-content em     { @apply italic text-white/95; }
+
+.docs-content a {
+  @apply text-accent underline decoration-accent/40 hover:decoration-accent;
+}
+
+.docs-content code {
+  @apply font-mono text-[0.9em] bg-surface-2 text-accent px-1.5 py-0.5 rounded border border-line-soft;
+}
+
+.docs-content pre {
+  @apply my-6 overflow-x-auto rounded-card border border-line-soft bg-surface-2 p-4 text-sm;
+}
+.docs-content pre code {
+  @apply bg-transparent border-0 p-0 text-white;
+}
+
+.docs-content blockquote {
+  @apply my-6 border-l-2 border-accent bg-surface pl-5 py-3 text-muted italic;
+}
+
+.docs-content table {
+  @apply my-6 w-full border-collapse text-sm;
+}
+.docs-content thead {
+  @apply border-b border-line bg-surface;
+}
+.docs-content th,
+.docs-content td {
+  @apply border border-line px-4 py-2.5 text-left align-top;
+}
+.docs-content th {
+  @apply font-semibold text-white font-mono text-[11px] uppercase tracking-wider;
+}
+.docs-content tbody tr:nth-child(even) {
+  @apply bg-surface/50;
+}
+
+.docs-content hr {
+  @apply my-10 border-0 h-px bg-line;
+}
+
+.docs-content img {
+  @apply my-6 rounded-card border border-line;
+}
