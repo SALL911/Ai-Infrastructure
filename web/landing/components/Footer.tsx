@@ -26,9 +26,11 @@ export function Footer() {
             </div>
             <ul className="mt-4 space-y-2 text-sm text-muted">
               <li><Link href="/audit" className="no-underline hover:text-accent">Brand AI Audit</Link></li>
+              <li><Link href="/news" className="no-underline hover:text-accent">每日 ESG/SDG 新聞</Link></li>
               <li><Link href="/pricing" className="no-underline hover:text-accent">方案與定價</Link></li>
+              <li><Link href="/docs" className="no-underline hover:text-accent">文件 / 方法論</Link></li>
               <li><Link href="/tools" className="no-underline hover:text-accent">工具套件</Link></li>
-              <li><Link href="/faq/enterprise" className="no-underline hover:text-accent">知識庫</Link></li>
+              <li><Link href="/faq/enterprise" className="no-underline hover:text-accent">知識庫 (FAQ)</Link></li>
               <li><Link href="/about" className="no-underline hover:text-accent">關於 Symcio</Link></li>
             </ul>
           </div>

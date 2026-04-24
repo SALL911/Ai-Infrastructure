@@ -5,10 +5,11 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 const LINKS: { href: string; label: string }[] = [
-  { href: "/", label: "首頁" },
   { href: "/audit", label: "診斷" },
+  { href: "/news", label: "新聞" },
   { href: "/pricing", label: "方案" },
-  { href: "/faq/enterprise", label: "知識庫" },
+  { href: "/docs", label: "文件" },
+  { href: "/faq/enterprise", label: "FAQ" },
   { href: "/tools", label: "工具" },
   { href: "/about", label: "關於" },
 ];
