@@ -24,14 +24,36 @@ export interface RenderedDoc {
   updated_at: string | null;
 }
 
-const DOCS_DIR = path.resolve(process.cwd(), "..", "..", "docs");
-// web/landing → ../../docs = repo-root/docs
+// Resolve docs from two locations, in order:
+//   1. web/landing/.docs-cache/  ← populated by scripts/copy-docs.js prebuild
+//      (Vercel-safe: always inside the project root)
+//   2. ../../docs/                ← repo-root/docs (works locally; may fail
+//      under Vercel's "Root Directory" sandbox on some builds)
+const DOCS_CACHE = path.resolve(process.cwd(), ".docs-cache");
+const DOCS_REPO_ROOT = path.resolve(process.cwd(), "..", "..", "docs");
+
+async function readDoc(filename: string): Promise<{
+  raw: string;
+  stats: import("fs").Stats;
+} | null> {
+  for (const dir of [DOCS_CACHE, DOCS_REPO_ROOT]) {
+    try {
+      const abs = path.join(dir, filename);
+      const raw = await fs.readFile(abs, "utf-8");
+      const stats = await fs.stat(abs);
+      return { raw, stats };
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
 
 export async function loadDoc(filename: string): Promise<RenderedDoc | null> {
   try {
-    const abs = path.join(DOCS_DIR, filename);
-    const raw = await fs.readFile(abs, "utf-8");
-    const stats = await fs.stat(abs);
+    const found = await readDoc(filename);
+    if (!found) return null;
+    const { raw, stats } = found;
 
     const { data, content } = matter(raw);
     const processed = await remark()

@@ -9,3 +9,9 @@ dist/
 *.log
 .DS_Store
 *.tsbuildinfo
+.docs-cache/
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
