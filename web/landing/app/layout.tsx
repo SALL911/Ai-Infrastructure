@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Suspense } from "react";
 import "./globals.css";
-import { PostHogProvider } from "@/components/PostHogProvider";
-import { UtmCapture } from "@/components/UtmCapture";
 
 export const metadata: Metadata = {
   title: "Symcio — BrandOS 量化品牌 AI 基礎設施系統",
@@ -59,12 +56,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Script>
       </head>
       <body>
-        <Suspense fallback={null}>
-          <PostHogProvider>
-            <UtmCapture />
-            {children}
-          </PostHogProvider>
-        </Suspense>
+        {children}
         {/* Start of HubSpot Embed Code */}
         <Script
           id="hs-script-loader"

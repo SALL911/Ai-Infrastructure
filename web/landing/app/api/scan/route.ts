@@ -4,27 +4,12 @@ import { createClient } from "@supabase/supabase-js";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-interface Attribution {
-  utm_source?: string;
-  utm_medium?: string;
-  utm_campaign?: string;
-  utm_content?: string;
-  utm_term?: string;
-  referrer?: string;
-  first_landing_url?: string;
-  first_touch_at?: string;
-  fbclid?: string;
-  gclid?: string;
-  li_fat_id?: string;
-}
-
 interface ScanPayload {
   brand_name?: string;
   brand_domain?: string;
   industry?: string;
   email?: string;
   company?: string;
-  attribution?: Attribution;
 }
 
 function getSupabase() {
@@ -60,8 +45,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, queued: false, reason: "supabase-not-configured" });
   }
 
-  const a = body.attribution || {};
-
   // 寫 leads（總是寫，當作 CRM 入口）
   const { error: leadErr } = await supabase.from("leads").insert({
     name: body.company || brand_name,
@@ -70,17 +53,6 @@ export async function POST(req: Request) {
     source: "landing-free-scan",
     status: "new",
     notes: `industry=${body.industry || "technology"}; domain=${body.brand_domain || ""}`,
-    utm_source: a.utm_source,
-    utm_medium: a.utm_medium,
-    utm_campaign: a.utm_campaign,
-    utm_content: a.utm_content,
-    utm_term: a.utm_term,
-    referrer: a.referrer,
-    first_landing_url: a.first_landing_url,
-    first_touch_at: a.first_touch_at ?? null,
-    fbclid: a.fbclid,
-    gclid: a.gclid,
-    li_fat_id: a.li_fat_id,
   });
   if (leadErr) {
     console.error("[scan] leads insert failed", leadErr);

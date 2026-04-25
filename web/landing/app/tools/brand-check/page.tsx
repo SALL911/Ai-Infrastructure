@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { TypeformEmbed } from "@/components/TypeformEmbed";
+import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "免費品牌 AI 健檢 | Symcio BrandOS",
@@ -11,18 +13,7 @@ export const metadata: Metadata = {
 export default function BrandCheckPage() {
   return (
     <main className="min-h-screen bg-ink text-white">
-      <header className="border-b border-line">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-          <Link href="/" className="font-mono text-sm font-medium no-underline">
-            Symcio
-          </Link>
-          <nav className="flex gap-5 text-sm text-muted">
-            <a href="/faq/" className="hover:text-accent no-underline">FAQ</a>
-            <Link href="/pricing" className="hover:text-accent no-underline">定價</Link>
-            <Link href="/about" className="hover:text-accent no-underline">關於</Link>
-          </nav>
-        </div>
-      </header>
+      <Navigation />
 
       <section className="border-b border-line">
         <div className="mx-auto max-w-6xl px-6 py-16 md:py-20">
@@ -34,6 +25,13 @@ export default function BrandCheckPage() {
           </h1>
           <p className="mt-5 max-w-2xl text-lg text-muted">
             四個引擎、一個 prompt、一封信。完全免費，不需要信用卡，不會轉售你的名單。
+          </p>
+          <p className="mt-4 max-w-2xl text-sm text-muted">
+            想要更完整的 BCI 三維分析？試試{" "}
+            <Link href="/audit" className="text-accent no-underline">
+              新版 Brand AI Audit（10 欄表單 + PDF 報告）
+            </Link>
+            。
           </p>
 
           <div className="mt-12 grid gap-12 md:grid-cols-2">
@@ -56,11 +54,11 @@ export default function BrandCheckPage() {
                 </li>
                 <li className="flex gap-3">
                   <span className="font-mono text-accent">04</span>
-                  <span>ABVI 綜合分數報告寄到你的 email（約 30 秒內）</span>
+                  <span>AVI 綜合分數報告寄到你的 email（約 30 秒內）</span>
                 </li>
               </ol>
 
-              <div className="mt-10 border-l-2 border-accent bg-surface p-5">
+              <div className="mt-10 rounded-card border-l-2 border-accent bg-surface p-5">
                 <p className="font-mono text-xs uppercase tracking-widest text-accent">
                   想要完整版？
                 </p>
@@ -77,12 +75,14 @@ export default function BrandCheckPage() {
               </div>
             </div>
 
-            <div className="border border-line bg-surface p-6">
+            <div className="rounded-card border border-line bg-surface p-6">
               <TypeformEmbed />
             </div>
           </div>
         </div>
       </section>
+
+      <Footer />
     </main>
   );
 }

@@ -10,23 +10,6 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-const AttributionSchema = z
-  .object({
-    utm_source: z.string().max(100).optional(),
-    utm_medium: z.string().max(100).optional(),
-    utm_campaign: z.string().max(200).optional(),
-    utm_content: z.string().max(200).optional(),
-    utm_term: z.string().max(200).optional(),
-    referrer: z.string().max(500).optional(),
-    first_landing_url: z.string().max(500).optional(),
-    first_touch_at: z.string().optional(),
-    fbclid: z.string().max(200).optional(),
-    gclid: z.string().max(200).optional(),
-    li_fat_id: z.string().max(200).optional(),
-  })
-  .optional()
-  .default({});
-
 const RequestSchema = z.object({
   brand_name: z.string().trim().min(1).max(200),
   brand_domain: z.string().trim().max(500).optional().default(""),
@@ -36,7 +19,6 @@ const RequestSchema = z.object({
     .default("technology"),
   email: z.string().trim().email().max(254),
   company: z.string().trim().max(200).optional().default(""),
-  attribution: AttributionSchema,
 });
 
 type ApiResponse =
@@ -66,7 +48,6 @@ async function saveLeadToSupabase(
   const sb = supabaseClient();
   if (!sb) return { ok: false, error: "supabase-not-configured" };
 
-  const a = input.attribution || {};
   const { error } = await sb.from("leads").insert({
     name: input.company || input.brand_name,
     company: input.company || input.brand_name,
@@ -78,17 +59,6 @@ async function saveLeadToSupabase(
       `domain=${input.brand_domain || ""}`,
       `composite_score=${compositeScore}`,
     ].join("; "),
-    utm_source: a.utm_source,
-    utm_medium: a.utm_medium,
-    utm_campaign: a.utm_campaign,
-    utm_content: a.utm_content,
-    utm_term: a.utm_term,
-    referrer: a.referrer,
-    first_landing_url: a.first_landing_url,
-    first_touch_at: a.first_touch_at ?? null,
-    fbclid: a.fbclid,
-    gclid: a.gclid,
-    li_fat_id: a.li_fat_id,
   });
   return { ok: !error, error: error?.message };
 }

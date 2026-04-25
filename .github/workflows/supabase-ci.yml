@@ -40,6 +40,29 @@ jobs:
       - name: Install PostgreSQL client
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
 
+      - name: Bootstrap Supabase auth schema stub
+        env:
+          PGPASSWORD: postgres
+        run: |
+          # Production Supabase pre-creates the auth schema (auth.users table,
+          # auth.uid()/auth.role()/auth.jwt() helper functions) for every
+          # project. Vanilla Postgres 15 in CI has none of this, so migrations
+          # that reference auth.* fail. Stub the minimum surface our
+          # migrations touch so the schema can be applied; real Supabase
+          # provides the production implementation.
+          psql -h localhost -U postgres -d brandos_ci -v ON_ERROR_STOP=1 -c "
+            CREATE SCHEMA IF NOT EXISTS auth;
+            CREATE TABLE IF NOT EXISTS auth.users (
+              id                  UUID PRIMARY KEY,
+              email               VARCHAR(255),
+              raw_user_meta_data  JSONB,
+              created_at          TIMESTAMPTZ DEFAULT NOW()
+            );
+            CREATE OR REPLACE FUNCTION auth.uid()  RETURNS UUID LANGUAGE SQL STABLE AS \$\$ SELECT NULL::UUID \$\$;
+            CREATE OR REPLACE FUNCTION auth.role() RETURNS TEXT LANGUAGE SQL STABLE AS \$\$ SELECT NULL::TEXT \$\$;
+            CREATE OR REPLACE FUNCTION auth.jwt()  RETURNS JSONB LANGUAGE SQL STABLE AS \$\$ SELECT NULL::JSONB \$\$;
+          "
+
       - name: Apply migrations
         env:
           PGPASSWORD: postgres
@@ -106,8 +129,13 @@ jobs:
 
       - name: Check for .env files
         run: |
-          if git ls-files | grep -E '(^|/)\.env(\.|$)' | grep -v '\.env\.example$'; then
-            echo "ERROR: .env files must not be committed"
+          # Match any tracked file whose basename starts with `.env` (e.g.
+          # `.env`, `.env.local`, `.env.production.local`), but allow any
+          # *.example template (e.g. `.env.example`, `.env.vercel.local.example`).
+          offenders=$(git ls-files | grep -E '(^|/)\.env(\.|$)' | grep -v '\.example$' || true)
+          if [ -n "$offenders" ]; then
+            echo "ERROR: .env files must not be committed:"
+            echo "$offenders"
             exit 1
           fi
 

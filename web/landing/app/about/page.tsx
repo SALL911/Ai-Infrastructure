@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { TypeformEmbed } from "@/components/TypeformEmbed";
+import { MethodologyComparison } from "@/components/MethodologyComparison";
+import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "關於全識 | Symcio BrandOS",
@@ -11,18 +14,7 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <main className="min-h-screen bg-ink text-white">
-      <header className="border-b border-line">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-          <Link href="/" className="font-mono text-sm font-medium no-underline">
-            Symcio
-          </Link>
-          <nav className="flex gap-5 text-sm text-muted">
-            <Link href="/tools/brand-check" className="hover:text-accent no-underline">健檢</Link>
-            <a href="/faq/" className="hover:text-accent no-underline">FAQ</a>
-            <Link href="/pricing" className="hover:text-accent no-underline">定價</Link>
-          </nav>
-        </div>
-      </header>
+      <Navigation />
 
       <section className="border-b border-line">
         <div className="mx-auto max-w-4xl px-6 py-16 md:py-20">
@@ -68,6 +60,8 @@ export default function AboutPage() {
               SimilarWeb 量化網站流量、SEMrush 量化 Google 排名、Bloomberg 量化金融資料——
               Symcio 量化品牌在 AI 的曝光、排名、影響力。
             </p>
+
+            <MethodologyComparison />
 
             <div className="border-l-2 border-accent pl-6">
               <h2 className="font-mono text-xs uppercase tracking-widest text-accent">
@@ -167,6 +161,8 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+
+      <Footer />
     </main>
   );
 }

@@ -12,9 +12,11 @@ import {
   Tooltip,
   BarElement,
 } from "chart.js";
-import { useMemo, useRef } from "react";
+import Link from "next/link";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Bar, Radar } from "react-chartjs-2";
 import { bciTier, type ScoringResult } from "@/lib/scoring";
+import { createClient } from "@/lib/supabase/client";
 
 ChartJS.register(
   RadialLinearScale,
@@ -48,9 +50,91 @@ function today() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-export default function AuditReport({ result }: { result: ScoringResult }) {
+type SaveState =
+  | { kind: "idle" }
+  | { kind: "saving" }
+  | { kind: "saved" }
+  | { kind: "anon" }
+  | { kind: "error"; message: string };
+
+export default function AuditReport({
+  result,
+  companySize,
+  revenue,
+  description,
+}: {
+  result: ScoringResult;
+  companySize?: string;
+  revenue?: string;
+  description?: string;
+}) {
   const tier = bciTier(result.BCI);
   const pdfRef = useRef<HTMLDivElement>(null);
+  const [saveState, setSaveState] = useState<SaveState>({ kind: "idle" });
+
+  // Auto-save to Supabase audit_history if member is signed in.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (cancelled) return;
+        if (!user) {
+          setSaveState({ kind: "anon" });
+          return;
+        }
+
+        setSaveState({ kind: "saving" });
+        const { error } = await supabase.from("audit_history").insert({
+          member_id: user.id,
+          brand_name_zh: result.brandName,
+          industry: result.industry,
+          description: description ?? null,
+          company_size: companySize ?? null,
+          revenue: revenue ?? null,
+          bci_total: result.BCI,
+          fbv_score: result.FBV,
+          ncv_score: result.NCV,
+          aiv_score: result.AIV,
+          chatgpt_score: result.chatgptScore,
+          perplexity_score: result.perplexityScore,
+          google_ai_score: result.googleAIScore,
+          claude_score: result.claudeScore,
+          tier: tier.key,
+          geo_score: result.geoScore,
+          geo_checks: result.geoChecks,
+          competitors: result.competitors,
+          recommendations: result.recommendations,
+          raw_result: result,
+          source: "web-audit",
+        });
+
+        if (cancelled) return;
+        if (error) {
+          setSaveState({ kind: "error", message: error.message });
+        } else {
+          setSaveState({ kind: "saved" });
+        }
+      } catch (err) {
+        if (cancelled) return;
+        // Supabase not configured — treat as anon
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg.includes("Missing NEXT_PUBLIC_SUPABASE")) {
+          setSaveState({ kind: "anon" });
+        } else {
+          setSaveState({ kind: "error", message: msg });
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const radarData = useMemo(
     () => ({
@@ -195,6 +279,9 @@ export default function AuditReport({ result }: { result: ScoringResult }) {
   return (
     <>
       <div className="mx-auto max-w-5xl">
+        {/* Save status banner */}
+        <SaveBanner state={saveState} />
+
         {/* Header */}
         <div className="border-b border-line pb-6 pt-2">
           <div className="font-mono text-xs text-muted">
@@ -442,6 +529,56 @@ export default function AuditReport({ result }: { result: ScoringResult }) {
         <PdfContent result={result} />
       </div>
     </>
+  );
+}
+
+function SaveBanner({ state }: { state: SaveState }) {
+  if (state.kind === "idle") return null;
+
+  if (state.kind === "saving") {
+    return (
+      <div className="mb-4 rounded-card border border-line bg-surface px-5 py-3 text-sm text-muted">
+        ⏳ 儲存到你的 BCI 歷史…
+      </div>
+    );
+  }
+  if (state.kind === "saved") {
+    return (
+      <div className="mb-4 rounded-card border border-excellent/40 bg-excellent/10 px-5 py-3 text-sm text-excellent">
+        ✓ 已儲存到你的 BCI 歷史 ·{" "}
+        <Link href="/dashboard/history" className="underline">
+          前往查看
+        </Link>
+      </div>
+    );
+  }
+  if (state.kind === "anon") {
+    return (
+      <div className="mb-4 rounded-card border border-warning/40 bg-warning/10 px-5 py-3 text-sm">
+        <span className="text-warning">
+          💡 登入後這份報告會自動存到你的 BCI 歷史。
+        </span>{" "}
+        <Link
+          href="/signup?next=/audit"
+          className="font-bold text-accent underline"
+        >
+          免費註冊
+        </Link>{" "}
+        或{" "}
+        <Link
+          href="/login?next=/audit"
+          className="font-bold text-accent underline"
+        >
+          登入
+        </Link>
+        。
+      </div>
+    );
+  }
+  return (
+    <div className="mb-4 rounded-card border border-danger/40 bg-danger/10 px-5 py-3 text-sm text-danger">
+      儲存失敗：{state.message}
+    </div>
   );
 }
 

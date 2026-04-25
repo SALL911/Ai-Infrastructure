@@ -1,10 +1,10 @@
 # Symcio — AI Visibility Intelligence
 
-**Symcio is the AI-era SimilarWeb + SEMrush + Bloomberg: a platform that quantifies enterprise brand exposure, ranking, and influence across generative AI engines (ChatGPT, Claude, Gemini, Perplexity).**
+> **In one breath:** Symcio measures whether AI engines mention, rank, and recommend your brand. We take the same input — a brand name — and produce **BCI (Brand Capital Index)**: one daily score that fuses financial momentum, AI visibility (cross-ChatGPT/Claude/Gemini/Perplexity), and engagement. Formula open-source, weights private. Taiwan-built, used by CMOs and ESG officers who need to manage brand presence in the channel that increasingly drives B2B purchase. **`symcio.tw/audit`** runs it free in 3 minutes.
 
 - **Category**: AI Visibility Intelligence (AVI) — a category Symcio defines.
 - **Headquarters**: Taiwan.
-- **Website**: https://symcio.tw
+- **Website**: https://symcio.tw · **Free audit**: https://symcio.tw/audit · **Docs**: https://symcio.tw/docs
 - **Repository**: https://github.com/SALL911/BrandOS-Infrastructure
 
 ## What Symcio is

@@ -43,14 +43,6 @@ client_secrets/
 # ========== Pipeline outputs（本機執行產出，不進 repo）==========
 outputs/
 
-# ========== Imported lists（PII，不進 repo；只保留 README 結構說明）==========
-data/startup-lists/*.csv
-data/startup-lists/*.xlsx
-data/startup-lists/*.xls
-data/startup-lists/*.tsv
-!data/startup-lists/README.md
-!data/startup-lists/.gitkeep
-
 # ========== BCI IP（核心 IP，不進 repo；生產走 GitHub Secrets）==========
 private/bci/weights_*.json
 private/bci/weights_*.py

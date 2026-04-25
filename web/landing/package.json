@@ -8,23 +8,30 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.64",
+    "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "2.45.4",
     "ai": "^6.0.168",
     "chart.js": "^4.5.1",
+    "gray-matter": "^4.0.3",
     "html2pdf.js": "^0.10.3",
     "next": "14.2.15",
-    "posthog-js": "^1.207.0",
     "react": "18.3.1",
     "react-chartjs-2": "^5.3.1",
     "react-dom": "18.3.1",
+    "remark": "^15.0.1",
+    "remark-gfm": "^4.0.1",
+    "remark-html": "^16.0.1",
     "stripe": "^22.0.2",
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@types/node": "20.16.10",
     "@types/react": "18.3.11",
     "@types/react-dom": "18.3.0",

@@ -17,23 +17,6 @@ const OrgTypeSchema = z.enum([
   "NGO",
 ]);
 
-const AttributionSchema = z
-  .object({
-    utm_source: z.string().max(100).optional(),
-    utm_medium: z.string().max(100).optional(),
-    utm_campaign: z.string().max(200).optional(),
-    utm_content: z.string().max(200).optional(),
-    utm_term: z.string().max(200).optional(),
-    referrer: z.string().max(500).optional(),
-    first_landing_url: z.string().max(500).optional(),
-    first_touch_at: z.string().optional(),
-    fbclid: z.string().max(200).optional(),
-    gclid: z.string().max(200).optional(),
-    li_fat_id: z.string().max(200).optional(),
-  })
-  .optional()
-  .default({});
-
 const RequestSchema = z.object({
   brandName: z.string().trim().min(1).max(200),
   legalName: z.string().trim().max(200).optional().default(""),
@@ -51,7 +34,6 @@ const RequestSchema = z.object({
   wikidataQid: z.string().trim().max(20).optional().default(""),
   sameAs: z.array(z.string().trim().max(500)).optional().default([]),
   aiVisibilityClaim: z.string().trim().max(300).optional().default(""),
-  attribution: AttributionSchema,
 });
 
 type Input = z.infer<typeof RequestSchema>;
@@ -67,7 +49,6 @@ async function persistLead(input: Input): Promise<{ ok: boolean; error?: string 
   const sb = supabaseClient();
   if (!sb) return { ok: false, error: "supabase-not-configured" };
 
-  const a = input.attribution || {};
   const { error: leadErr } = await sb.from("leads").insert({
     name: input.legalName || input.brandName,
     company: input.legalName || input.brandName,
@@ -80,17 +61,6 @@ async function persistLead(input: Input): Promise<{ ok: boolean; error?: string 
       `country=${input.country || ""}`,
       `wikidata_qid=${input.wikidataQid || ""}`,
     ].join("; "),
-    utm_source: a.utm_source,
-    utm_medium: a.utm_medium,
-    utm_campaign: a.utm_campaign,
-    utm_content: a.utm_content,
-    utm_term: a.utm_term,
-    referrer: a.referrer,
-    first_landing_url: a.first_landing_url,
-    first_touch_at: a.first_touch_at ?? null,
-    fbclid: a.fbclid,
-    gclid: a.gclid,
-    li_fat_id: a.li_fat_id,
   });
   if (leadErr) return { ok: false, error: leadErr.message };
 

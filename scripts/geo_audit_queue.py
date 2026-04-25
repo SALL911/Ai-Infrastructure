@@ -240,17 +240,14 @@ def sb_headers() -> dict[str, str]:
 
 
 def fetch_prospects(limit: int, rescan_days: int) -> list[dict]:
-    """撈 status='prospect' 且 (last_scanned_at is NULL 或 > rescan_days 天前)。
-    排序：priority DESC（高優先先掃）→ last_scanned_at NULLS FIRST（沒掃過的先）
-          → created_at ASC（老 lead 先）。
-    """
+    """撈 status='prospect' 且 (last_scanned_at is NULL 或 > rescan_days 天前)"""
+    # Supabase PostgREST 的 or filter 語法
     url = (
         f"{SUPABASE_URL}/rest/v1/brands"
-        f"?select=id,name,domain,industry,primary_email,first_scan_sent_at,"
-        f"last_scanned_at,priority,segment_tags,source_list"
+        f"?select=id,name,domain,industry,primary_email,first_scan_sent_at,last_scanned_at"
         f"&status=eq.prospect"
         f"&or=(last_scanned_at.is.null,last_scanned_at.lt.{_cutoff(rescan_days)})"
-        f"&order=priority.desc,last_scanned_at.asc.nullsfirst,created_at.asc"
+        f"&order=created_at.asc"
         f"&limit={limit}"
     )
     r = _http(url, headers=sb_headers())
@@ -435,10 +432,7 @@ def main() -> int:
         email = brand.get("primary_email")
         first_sent_before = brand.get("first_scan_sent_at")
 
-        priority = brand.get("priority") or 0
-        tags = brand.get("segment_tags") or []
-        tag_str = f" tags={','.join(tags)}" if tags else ""
-        print(f"\n── {brand_name} ({industry}) [pri={priority}{tag_str}] ──")
+        print(f"\n── {brand_name} ({industry}) ──")
         prompt = choose_prompt(industry)
 
         rows: list[dict] = []

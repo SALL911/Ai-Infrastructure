@@ -1,0 +1,153 @@
+{
+  "name": "Symcio · Daily Brand Valuation Broadcast",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "0 1 * * *" }]
+        }
+      },
+      "id": "cron-trigger",
+      "name": "Daily 09:00 Taipei (UTC 01:00)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://symcio.tw/api/bci/Symcio",
+        "options": { "timeout": 15000 }
+      },
+      "id": "fetch-bci",
+      "name": "Fetch current BCI",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const b = $json.body ?? $json;\nconst bci = b.total_bci ?? b.bci ?? null;\nconst updated = b.updated_at ?? b.snapshot_date ?? new Date().toISOString().slice(0, 10);\nconst title = `Symcio BCI 每日更新 · ${updated.slice(0, 10)}`;\nconst bodyShort = bci == null\n  ? `BCI 今日尚未更新。`\n  : `Symcio Brand Capital Index 今日 ${bci}/100。依循 ISO 10668 + TNFD + 跨四引擎 AI 可見度。`;\nconst bodyMedium = `${bodyShort}\\n\\n三軸拆解：Financial（市值動能）· Visibility（AI 引擎提及）· Engagement（品牌參與度）。公式公開、權重閉源。`;\n\nreturn { json: {\n  kind: 'daily_brand_valuation',\n  title,\n  body_short: bodyShort,\n  body_medium: bodyMedium,\n  link_path: '/about',\n  tags: ['BCI', '品牌估值', 'ESG', 'AI可見度'],\n  channels: ['discord', 'linkedin', 'x', 'threads', 'facebook'],\n  campaign: `daily_bci_${updated.slice(0, 10)}`,\n} };"
+      },
+      "id": "build-payload",
+      "name": "Build broadcast payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://symcio.tw/api/publish/broadcast",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $credentials.symcioBroadcast.secret }}"
+            },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": { "timeout": 30000 }
+      },
+      "id": "call-broadcast",
+      "name": "Call Symcio broadcast API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "typeValidation": "strict" },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.results.linkedin.ready }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "true" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "check-linkedin",
+      "name": "LinkedIn ready?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1120, 200]
+    },
+    {
+      "parameters": {
+        "resource": "post",
+        "text": "={{ $('Call Symcio broadcast API').item.json.results.linkedin.text }}",
+        "additionalFields": {
+          "visibility": "PUBLIC"
+        }
+      },
+      "id": "linkedin-post",
+      "name": "Post to LinkedIn",
+      "type": "n8n-nodes-base.linkedIn",
+      "typeVersion": 1,
+      "position": [1340, 200],
+      "credentials": { "linkedInOAuth2Api": { "id": "linkedin-company", "name": "Symcio LinkedIn" } }
+    },
+    {
+      "parameters": {
+        "text": "={{ $('Call Symcio broadcast API').item.json.results.x.text }}"
+      },
+      "id": "x-post",
+      "name": "Post to X",
+      "type": "n8n-nodes-base.twitter",
+      "typeVersion": 2,
+      "position": [1340, 340],
+      "credentials": { "twitterOAuth2Api": { "id": "x-symcio", "name": "Symcio X" } }
+    },
+    {
+      "parameters": {
+        "graphApiVersion": "v21.0",
+        "resource": "post",
+        "edge": "feed",
+        "message": "={{ $('Call Symcio broadcast API').item.json.results.facebook.text }}"
+      },
+      "id": "facebook-post",
+      "name": "Post to Facebook Page",
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [1340, 480],
+      "credentials": { "facebookGraphApi": { "id": "fb-symcio", "name": "Symcio FB Page" } }
+    }
+  ],
+  "connections": {
+    "Daily 09:00 Taipei (UTC 01:00)": {
+      "main": [[{ "node": "Fetch current BCI", "type": "main", "index": 0 }]]
+    },
+    "Fetch current BCI": {
+      "main": [[{ "node": "Build broadcast payload", "type": "main", "index": 0 }]]
+    },
+    "Build broadcast payload": {
+      "main": [[{ "node": "Call Symcio broadcast API", "type": "main", "index": 0 }]]
+    },
+    "Call Symcio broadcast API": {
+      "main": [
+        [
+          { "node": "LinkedIn ready?", "type": "main", "index": 0 },
+          { "node": "Post to X", "type": "main", "index": 0 },
+          { "node": "Post to Facebook Page", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "LinkedIn ready?": {
+      "main": [[{ "node": "Post to LinkedIn", "type": "main", "index": 0 }]]
+    }
+  },
+  "pinData": {},
+  "settings": { "executionOrder": "v1" },
+  "staticData": null,
+  "meta": {
+    "instanceId": "symcio-broadcast"
+  },
+  "tags": ["symcio", "broadcast", "daily"]
+}

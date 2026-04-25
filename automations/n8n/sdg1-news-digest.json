@@ -1,0 +1,114 @@
+{
+  "name": "Symcio · SDG1 Poverty Digest",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "0 2 * * 1" }]
+        }
+      },
+      "id": "weekly-mon",
+      "name": "Weekly Mon 10:00 Taipei",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "url": "=https://{{ $credentials.supabase.ref }}.supabase.co/rest/v1/news_items?sdg_number=eq.1&status=eq.published&order=published_at.desc&limit=5",
+        "options": {}
+      },
+      "id": "fetch-sdg1",
+      "name": "Fetch last week SDG1 items",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300],
+      "credentials": {
+        "httpHeaderAuth": { "id": "supabase-anon", "name": "Supabase anon key" }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = Array.isArray($input.all()[0].json) ? $input.all()[0].json : [];\nif (!items.length) { return []; }\n\nconst bullets = items.slice(0, 5).map((n, i) =>\n  `${i + 1}. **${n.title_zh}** — ${n.summary_zh.slice(0, 120)}${n.summary_zh.length > 120 ? '…' : ''}`\n).join('\\n\\n');\n\nconst today = new Date().toISOString().slice(0, 10);\nconst title = `SDG1 終結貧窮 · 本週新聞摘要 ${today}`;\nconst bodyMedium = `UN / 世界銀行 / IISD 本週對 SDG1（終結貧窮）相關新聞重點。附 Symcio BCI 視角：品牌若投入 SDG1 行動，對品牌資本的 F / V / E 三軸分別有何影響。\\n\\n${bullets}`;\nconst bodyShort = `${items.length} 則 SDG1 新聞 · ${today}`;\n\nreturn [{ json: {\n  kind: 'sdg1_digest',\n  title,\n  body_short: bodyShort,\n  body_medium: bodyMedium,\n  body_long: bodyMedium,\n  link_path: '/news?sdg=1',\n  tags: ['SDG1', '終結貧窮', 'ESG', 'BCI'],\n  channels: ['discord', 'linkedin', 'x', 'threads', 'facebook'],\n  campaign: `sdg1_digest_${today}`,\n} }];"
+      },
+      "id": "build",
+      "name": "Build digest payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://symcio.tw/api/publish/broadcast",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $credentials.symcioBroadcast.secret }}"
+            },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": { "timeout": 30000 }
+      },
+      "id": "call-broadcast",
+      "name": "Call Symcio broadcast API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "resource": "post",
+        "text": "={{ $('Call Symcio broadcast API').item.json.results.linkedin.text }}"
+      },
+      "id": "linkedin",
+      "name": "Post to LinkedIn",
+      "type": "n8n-nodes-base.linkedIn",
+      "typeVersion": 1,
+      "position": [1120, 200],
+      "credentials": { "linkedInOAuth2Api": { "id": "linkedin-company", "name": "Symcio LinkedIn" } }
+    },
+    {
+      "parameters": {
+        "text": "={{ $('Call Symcio broadcast API').item.json.results.x.text }}"
+      },
+      "id": "x",
+      "name": "Post to X",
+      "type": "n8n-nodes-base.twitter",
+      "typeVersion": 2,
+      "position": [1120, 340],
+      "credentials": { "twitterOAuth2Api": { "id": "x-symcio", "name": "Symcio X" } }
+    }
+  ],
+  "connections": {
+    "Weekly Mon 10:00 Taipei": {
+      "main": [[{ "node": "Fetch last week SDG1 items", "type": "main", "index": 0 }]]
+    },
+    "Fetch last week SDG1 items": {
+      "main": [[{ "node": "Build digest payload", "type": "main", "index": 0 }]]
+    },
+    "Build digest payload": {
+      "main": [[{ "node": "Call Symcio broadcast API", "type": "main", "index": 0 }]]
+    },
+    "Call Symcio broadcast API": {
+      "main": [
+        [
+          { "node": "Post to LinkedIn", "type": "main", "index": 0 },
+          { "node": "Post to X", "type": "main", "index": 0 }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": { "executionOrder": "v1" },
+  "meta": { "instanceId": "symcio-sdg1" },
+  "tags": ["symcio", "sdg1", "weekly"]
+}
