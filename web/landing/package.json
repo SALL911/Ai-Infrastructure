@@ -4,7 +4,9 @@
   "private": true,
   "description": "Symcio AI Visibility Intelligence — public landing page",
   "scripts": {
-    "dev": "next dev",
+    "dev": "node scripts/copy-docs.js && next dev",
+    "predev": "node scripts/copy-docs.js",
+    "prebuild": "node scripts/copy-docs.js",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
