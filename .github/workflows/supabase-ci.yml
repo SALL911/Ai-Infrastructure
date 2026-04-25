@@ -44,18 +44,23 @@ jobs:
         env:
           PGPASSWORD: postgres
         run: |
-          # Production Supabase pre-creates auth.users via Supabase Auth.
-          # CI runs vanilla Postgres 15 — we stub the minimum surface needed
-          # by migrations that REFERENCES auth.users(id) or sets up triggers
-          # on auth.users. Real Supabase deploys this for us.
+          # Production Supabase pre-creates the auth schema (auth.users table,
+          # auth.uid()/auth.role()/auth.jwt() helper functions) for every
+          # project. Vanilla Postgres 15 in CI has none of this, so migrations
+          # that reference auth.* fail. Stub the minimum surface our
+          # migrations touch so the schema can be applied; real Supabase
+          # provides the production implementation.
           psql -h localhost -U postgres -d brandos_ci -v ON_ERROR_STOP=1 -c "
             CREATE SCHEMA IF NOT EXISTS auth;
             CREATE TABLE IF NOT EXISTS auth.users (
-              id              UUID PRIMARY KEY,
-              email           VARCHAR(255),
-              raw_user_meta_data JSONB,
-              created_at      TIMESTAMPTZ DEFAULT NOW()
+              id                  UUID PRIMARY KEY,
+              email               VARCHAR(255),
+              raw_user_meta_data  JSONB,
+              created_at          TIMESTAMPTZ DEFAULT NOW()
             );
+            CREATE OR REPLACE FUNCTION auth.uid()  RETURNS UUID LANGUAGE SQL STABLE AS \$\$ SELECT NULL::UUID \$\$;
+            CREATE OR REPLACE FUNCTION auth.role() RETURNS TEXT LANGUAGE SQL STABLE AS \$\$ SELECT NULL::TEXT \$\$;
+            CREATE OR REPLACE FUNCTION auth.jwt()  RETURNS JSONB LANGUAGE SQL STABLE AS \$\$ SELECT NULL::JSONB \$\$;
           "
 
       - name: Apply migrations
