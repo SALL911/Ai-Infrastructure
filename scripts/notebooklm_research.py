@@ -29,10 +29,10 @@ USAGE
         youtube/                      # yt-dlp 產出（info.json + en.vtt）
         notebooklm/
             analysis.md               # NotebookLM chat 回答（結構化萃取）
-            mind-map.png
-            infographic.png
-            raw-response.json         # CLI 原始輸出便於 debug
-        report.md                     # pipeline 自產的 index，彙整上面所有
+            mind-map.json             # CLI 輸出節點關係 JSON（不是 PNG）
+            infographic.png           # --style sketch-note 手繪藍圖
+            raw-response.json         # CLI ask 的原始 JSON 便於 debug
+        report.md                     # pipeline 自產的 index
 """
 from __future__ import annotations
 
@@ -152,23 +152,45 @@ def ensure_notebook(notebook: str) -> None:
     run(["notebooklm", "create", notebook])
 
 
-def add_sources(notebook: str, videos: list[Video]) -> None:
+def add_sources(notebook: str, videos: list[Video]) -> list[str]:
+    """回傳成功加入的 source ID,供後續 `source wait` 用。"""
+    source_ids: list[str] = []
     for v in videos:
         try:
-            run([
+            proc = run([
                 "notebooklm", "source", "add",
                 "--notebook", notebook,
+                "--json",
                 v.url,
-            ], check=False)
+            ], check=False, capture=True)
+            try:
+                payload = json.loads(proc.stdout or "{}")
+                sid = payload.get("id") or payload.get("source_id")
+                if sid:
+                    source_ids.append(sid)
+            except json.JSONDecodeError:
+                pass
         except Exception as exc:
             print(f"  ✗ 加入 source 失敗，跳過 {v.url}: {exc}")
+    return source_ids
+
+
+def wait_for_sources(notebook: str, source_ids: list[str], timeout: int = 300) -> None:
+    """NotebookLM 要等 source 處理完才能 ask 到東西,否則回空。"""
+    for sid in source_ids:
+        run([
+            "notebooklm", "source", "wait",
+            "--notebook", notebook,
+            "--timeout", str(timeout),
+            sid,
+        ], check=False)
 
 
 def ask_and_save(notebook: str, question: str, out_md: Path, out_json: Path) -> None:
     proc = run([
         "notebooklm", "ask",
         "--notebook", notebook,
-        "--format", "json",
+        "--json",
         question,
     ], capture=True)
     out_json.write_text(proc.stdout or "", encoding="utf-8")
@@ -186,17 +208,56 @@ def ask_and_save(notebook: str, question: str, out_md: Path, out_json: Path) -> 
     out_md.write_text(content.strip() + "\n", encoding="utf-8")
 
 
-def generate_and_download(notebook: str, artifact: str, out_path: Path) -> None:
-    """artifact: 'mind_map' | 'infographic'."""
+def generate_and_download(
+    notebook: str,
+    artifact: str,
+    out_path: Path,
+    extra: list[str] | None = None,
+    supports_wait: bool = False,
+) -> None:
+    """artifact: CLI 名稱（'mind-map' | 'infographic' | ...),連字號拼法。
+
+    注意：`generate infographic` 有 `--wait`,但 `generate mind-map` 沒有。
+    對沒有 --wait 的 artifact,改用 `artifact poll` 輪詢直到完成。
+    """
     try:
-        run([
+        cmd = [
             "notebooklm", "generate", artifact,
             "--notebook", notebook,
-            "--wait",
-        ])
+            *(extra or []),
+        ]
+        if supports_wait:
+            cmd.append("--wait")
+        else:
+            # 沒 --wait 的 artifact（如 mind-map):先用 --json 拿 ID,再 `artifact wait`
+            cmd.append("--json")
+        proc = run(cmd, capture=not supports_wait)
+
+        if not supports_wait:
+            artifact_id: str | None = None
+            try:
+                payload = json.loads(proc.stdout or "{}")
+                artifact_id = (
+                    payload.get("artifact_id")
+                    or payload.get("id")
+                    or payload.get("task_id")
+                )
+            except json.JSONDecodeError:
+                pass
+            if artifact_id:
+                run([
+                    "notebooklm", "artifact", "wait",
+                    "--notebook", notebook,
+                    "--timeout", "600",
+                    artifact_id,
+                ], check=False)
+            else:
+                print(f"  ⚠ 沒拿到 {artifact} artifact ID,直接嘗試下載最新的。")
+
         run([
             "notebooklm", "download", artifact,
             "--notebook", notebook,
+            "--force",
             str(out_path),
         ])
     except subprocess.CalledProcessError as exc:
@@ -234,9 +295,11 @@ def write_report(
         "",
         "## 注意事項",
         "",
-        "- NotebookLM 的 infographic 樣式是固定的，無法透過參數強制「手繪藍圖」質感。",
-        "  若需要該風格，把本 pipeline 產出的 analysis.md 當成 prompt 餵給其他圖像生成工具。",
+        "- Infographic 用 `--style sketch-note`（手繪藍圖風）+ `--detail detailed` 產出。",
+        "  其他可選風格：professional / bento-grid / editorial / instructional / bricks / clay / anime / kawaii / scientific。",
+        "- Mind-map 的 CLI 輸出是 JSON（節點關係圖），不是 PNG；要視覺化請餵進 mind-map 渲染器。",
         "- yt-dlp 的 auto-captions 偶爾被 YouTube 擋，失敗的影片 NotebookLM 仍能從標題/描述擷取。",
+        "- 第一次跑會在 `source wait` 卡最久（NotebookLM 伺服器端處理影片字幕）。預設 timeout 300 秒。",
     ])
     (out_dir / "report.md").write_text("\n".join(lines), encoding="utf-8")
 
@@ -263,14 +326,17 @@ def main() -> int:
     nlm_dir = args.out / "notebooklm"
     nlm_dir.mkdir(parents=True, exist_ok=True)
 
-    print("\n[1/4] yt-dlp fetch metadata + subs")
+    print("\n[1/5] yt-dlp fetch metadata + subs")
     videos = fetch_youtube(videos, yt_dir)
 
-    print(f"\n[2/4] NotebookLM ensure notebook '{args.notebook}' + add sources")
+    print(f"\n[2/5] NotebookLM ensure notebook '{args.notebook}' + add sources")
     ensure_notebook(args.notebook)
-    add_sources(args.notebook, videos)
+    source_ids = add_sources(args.notebook, videos)
 
-    print("\n[3/4] NotebookLM ask for structured analysis")
+    print(f"\n[3/5] NotebookLM wait for {len(source_ids)} sources to finish processing")
+    wait_for_sources(args.notebook, source_ids)
+
+    print("\n[4/5] NotebookLM ask for structured analysis")
     ask_and_save(
         args.notebook,
         ANALYSIS_PROMPT,
@@ -278,11 +344,22 @@ def main() -> int:
         out_json=nlm_dir / "raw-response.json",
     )
 
-    print("\n[4/4] NotebookLM generate + download mind_map & infographic")
-    mind_map = nlm_dir / "mind-map.png"
+    print("\n[5/5] NotebookLM generate + download mind-map & infographic (sketch-note style)")
+    mind_map = nlm_dir / "mind-map.json"   # CLI 對 mind-map 輸出的是 JSON,不是 PNG
     infographic = nlm_dir / "infographic.png"
-    generate_and_download(args.notebook, "mind_map", mind_map)
-    generate_and_download(args.notebook, "infographic", infographic)
+    generate_and_download(args.notebook, "mind-map", mind_map, supports_wait=False)
+    generate_and_download(
+        args.notebook,
+        "infographic",
+        infographic,
+        extra=[
+            "--style", "sketch-note",        # 手繪藍圖風
+            "--detail", "detailed",
+            "--orientation", "landscape",
+            "--language", "zh-TW",
+        ],
+        supports_wait=True,
+    )
 
     write_report(
         args.out,
