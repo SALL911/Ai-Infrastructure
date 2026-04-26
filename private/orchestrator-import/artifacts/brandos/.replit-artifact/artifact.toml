@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "BrandOS Infrastructure"
+version = "1.0.0"
+id = "artifacts/brandos"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20691
+
+[services.development]
+run = "pnpm --filter @workspace/brandos run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/brandos", "run", "build" ]
+publicDir = "artifacts/brandos/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20691"
+BASE_PATH = "/"
