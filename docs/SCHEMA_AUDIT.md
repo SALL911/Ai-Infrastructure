@@ -1,5 +1,5 @@
 # Schema 一致性稽核 — symcio-brandos
-## SCHEMA_AUDIT.md v1.1 | 2026-04-27
+## SCHEMA_AUDIT.md v1.2 | 2026-04-27
 
 ---
 
@@ -184,16 +184,36 @@ SUPABASE_DB_URL=postgresql://... \
 
 ---
 
+## 部署事件紀錄（2026-04-27）
+
+### 階段一：補 secret + 修 partial schema（PR #33-#35）
+
+線上 `symcio-brandos` deploy 從 Apr 17 起 8 次 run 全紅。根因依序揭露：
+
+1. **三個 secret 缺漏**（PR #33 後發現）—— `SUPABASE_PROJECT_REF` / `SUPABASE_ACCESS_TOKEN` / `SUPABASE_DB_PASSWORD` 從未設定，`supabase link` 立刻失敗。
+2. **partial schema 撞 FK**（PR #34）—— 線上 `brands` 是 Studio 手動建的 6 欄位 partial schema。`CREATE TABLE IF NOT EXISTS` 偵測到表已存在直接跳過 → `esg_profile_id` 欄位從未建立 → 後面 ADD CONSTRAINT FK 找不到欄位。fix：在 brands / visibility_results 的 CREATE TABLE 後加 `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` 自我修復區塊；對 fresh install 為 no-op。
+3. **backfill 缺 runtime**（PR #35）—— 改用 `workflow_dispatch` workflow 跑 `backfill_brand_metadata.py`，不要求人本機裝 psycopg。
+
+完成後 deploy run #9 綠燈 23s，Table Editor 從 5 張表 → 25+ 張，`brands` 從 6 欄 → 22+ 欄。
+
+### 階段二：補 industry 分類
+
+`data/brand_industry_mapping.csv` 從 21 筆擴充到 67 筆（依公司名稱 + email domain 推論）。
+未補的剩 ~7 筆，多為命名隱晦（如「凱鍶 / 漢穎 / 群悅 / 羅賓斯」），需人工查詢確認。
+
+---
+
 ## 驗收標準
 
-| # | 動作 | 驗收 |
+| # | 動作 | 狀態 |
 |---|------|------|
-| 1 | secret ref 指向 `symcio-brandos` | `SUPABASE_PROJECT_REF` 等於 `friwpqphwumomernsouh` |
-| 2 | repo migration 已推上線 | Table Editor 顯示 25+ 張表 |
-| 3 | 線上獨有表進 repo | `supabase/snapshots/` 有 dump；`adopt_live_only_tables` migration 已加 |
-| 4 | 命名對齊 | `esg_metrics` 僅出現在本稽核文件（歷史紀錄），其他位置已改為 `esg_profiles` |
-| 5 | RLS 明確化 | `knowledge_nodes` / `geo_content` / `visibility_reports` 各有 anon read policy；其他 RLS-enabled 表有 `COMMENT` 標註 |
-| 6 | brand metadata 補齊 | `SELECT COUNT(*) FROM brands WHERE domain IS NULL` ≤ 5；`industry='default'` ≤ 10 |
+| 1 | secret ref 指向 `symcio-brandos` | ✅ 完成（`friwpqphwumomernsouh`）|
+| 2 | repo migration 已推上線 | ✅ 完成（deploy run #9 綠燈，Table Editor 25+ 張表）|
+| 3 | 線上獨有表進 repo | ⏳ 待跑 `dump-schema.sh` 把 `brand_rating_history` / `profiles` 收進 repo |
+| 4 | 命名對齊 | ✅ 完成（`esg_metrics` → `esg_profiles`）|
+| 5 | RLS 明確化 | ✅ 完成（migration 20260427000001 推上線）|
+| 6 | brand metadata 補齊 | ⏳ 待人工觸發 brand-backfill workflow |
+| 7 | Vercel env 同步新 DB 密碼 | ⏳ 由人工檢查（其他 GitHub workflow 都走 service_role_key 不受影響）|
 
 ---
 
@@ -203,3 +223,4 @@ SUPABASE_DB_URL=postgresql://... \
 |------|------|------|
 | v1.0 | 2026-04-27 | 初版 — 對照 Table Editor 截圖完成 gap 分析 |
 | v1.1 | 2026-04-27 | 新增 RLS 政策章節與 brand metadata 補齊 runbook（migration 20260427000001 + backfill_brand_metadata.py） |
+| v1.2 | 2026-04-27 | 部署事件紀錄；CSV 擴充至 67 筆；驗收狀態更新 |
