@@ -29,6 +29,22 @@ CREATE TABLE IF NOT EXISTS brands (
   updated_at      TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 自我修復：若 brands 表已存在但欄位不全（例：線上手動透過 Studio 建立），
+-- 補齊 schema.md 預期的欄位。對 fresh install 為 no-op。
+ALTER TABLE brands
+  ADD COLUMN IF NOT EXISTS name_en        VARCHAR(255),
+  ADD COLUMN IF NOT EXISTS domain         VARCHAR(500),
+  ADD COLUMN IF NOT EXISTS industry       VARCHAR(100),
+  ADD COLUMN IF NOT EXISTS country        VARCHAR(100),
+  ADD COLUMN IF NOT EXISTS market         VARCHAR(100),
+  ADD COLUMN IF NOT EXISTS company_size   VARCHAR(50),
+  ADD COLUMN IF NOT EXISTS website        VARCHAR(500),
+  ADD COLUMN IF NOT EXISTS bloomberg_id   VARCHAR(100),
+  ADD COLUMN IF NOT EXISTS esg_profile_id UUID,
+  ADD COLUMN IF NOT EXISTS status         VARCHAR(50) DEFAULT 'active',
+  ADD COLUMN IF NOT EXISTS onboarded_at   TIMESTAMPTZ DEFAULT NOW(),
+  ADD COLUMN IF NOT EXISTS updated_at     TIMESTAMPTZ DEFAULT NOW();
+
 CREATE TABLE IF NOT EXISTS brand_scores (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   brand_id        UUID REFERENCES brands(id) ON DELETE CASCADE,
@@ -77,6 +93,19 @@ CREATE TABLE IF NOT EXISTS visibility_results (
   score           DECIMAL(5,2),
   created_at      TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- 自我修復：visibility_results 在線上若以 partial schema 存在，補齊欄位
+-- 讓後面的 CREATE INDEX ON visibility_results(brand_id, mentioned) 能成功。
+-- FK 不在這裡硬補（CREATE TABLE 跳過時 FK 定義也帶過）；接受 brand_id 為純 UUID 欄位，
+-- 由應用層保證一致性，避免 retrofit FK 對既有資料 validation 失敗。
+ALTER TABLE visibility_results
+  ADD COLUMN IF NOT EXISTS brand_id      UUID,
+  ADD COLUMN IF NOT EXISTS response_id   UUID,
+  ADD COLUMN IF NOT EXISTS mentioned     BOOLEAN NOT NULL DEFAULT FALSE,
+  ADD COLUMN IF NOT EXISTS rank_position INTEGER,
+  ADD COLUMN IF NOT EXISTS sentiment     VARCHAR(20),
+  ADD COLUMN IF NOT EXISTS competitors   JSONB,
+  ADD COLUMN IF NOT EXISTS score         DECIMAL(5,2);
 
 CREATE TABLE IF NOT EXISTS visibility_reports (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
