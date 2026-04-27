@@ -1,0 +1,79 @@
+name: Lead Scorer
+
+# 每日跑 scripts/lead_scorer.py，把 leads.score / score_breakdown / scored_at 更新一輪。
+# 排在 composio-hubspot-sync 之前（cron 03:00 UTC = 11:00 Asia/Taipei，sync 00 跑），
+# 讓 sync 帶到最新 score。
+#
+# CLAUDE.md §9.3 P2 roadmap。
+
+on:
+  schedule:
+    # 每日 UTC 03:00 = Asia/Taipei 11:00
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry-run（不寫 DB，只印分數分布 + preview）'
+        required: true
+        default: 'false'
+        type: boolean
+      limit:
+        description: '只處理前 N 筆（0 = 全部）'
+        required: false
+        default: '0'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lead-scorer
+  cancel-in-progress: false
+
+jobs:
+  score:
+    name: Compute lead.score from rules
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install psycopg
+        run: pip install 'psycopg[binary]==3.2.*'
+
+      - name: Run scorer
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+          LIMIT: ${{ github.event.inputs.limit }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${SUPABASE_DB_URL:-}" ]]; then
+            echo "::error::SUPABASE_DB_URL secret is not set."
+            echo "::error::Same secret as brand-backfill / notion-to-supabase — pooler URL（IPv4，port 6543）."
+            exit 1
+          fi
+          ARGS=()
+          if [[ "${DRY_RUN:-false}" == "true" ]]; then
+            ARGS+=(--dry-run)
+          fi
+          if [[ -n "${LIMIT:-}" && "$LIMIT" != "0" ]]; then
+            ARGS+=(--limit "$LIMIT")
+          fi
+          python scripts/lead_scorer.py "${ARGS[@]}"
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## Lead Scorer"
+            echo "- Trigger: \`${{ github.event_name }}\`"
+            echo "- Dry-run: \`${{ github.event.inputs.dry_run || 'false (cron)' }}\`"
+            echo "- Limit: \`${{ github.event.inputs.limit || '0 (all)' }}\`"
+            echo "- Status: ${{ job.status }}"
+          } >> "$GITHUB_STEP_SUMMARY"
