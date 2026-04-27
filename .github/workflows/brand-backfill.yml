@@ -55,13 +55,17 @@ jobs:
 
       - name: Run backfill
         env:
-          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
           STAGE: ${{ github.event.inputs.stage }}
           DRY_RUN: ${{ github.event.inputs.dry_run }}
         run: |
           set -euo pipefail
-          export SUPABASE_DB_URL="postgresql://postgres:${SUPABASE_DB_PASSWORD}@db.${SUPABASE_PROJECT_REF}.supabase.co:5432/postgres"
+          if [[ -z "${SUPABASE_DB_URL:-}" ]]; then
+            echo "::error::SUPABASE_DB_URL secret is not set."
+            echo "::error::Get it from Supabase Dashboard → Project Settings → Database → Connection string → Transaction pooler (port 6543) or Session pooler (port 5432)."
+            echo "::error::Direct DB host (db.<ref>.supabase.co) is IPv6-only on Free tier and unreachable from GitHub Actions."
+            exit 1
+          fi
           ARGS=(--stage "$STAGE")
           if [[ "$DRY_RUN" == "true" ]]; then
             ARGS+=(--dry-run)
