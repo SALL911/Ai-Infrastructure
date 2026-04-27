@@ -1,0 +1,79 @@
+name: Brand Metadata Backfill
+
+# 用 brands.primary_email 推 domain，並依 data/brand_industry_mapping.csv 補 industry。
+# 為避免誤觸線上資料，僅以 workflow_dispatch 手動觸發，且需打 'run' 字串確認。
+#
+# 觸發方式：
+#   Actions → Brand Metadata Backfill → Run workflow
+#     stage: domain | industry | all（預設 all）
+#     dry_run: true | false（預設 true，會印 preview 不寫入）
+#     confirm: 必須打 'run'
+
+on:
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: 'domain / industry / all'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - domain
+          - industry
+          - all
+      dry_run:
+        description: 'Dry-run（不寫入 DB，只印 preview）'
+        required: true
+        default: true
+        type: boolean
+      confirm:
+        description: "Type 'run' to confirm"
+        required: true
+        default: 'no'
+
+concurrency:
+  group: brand-backfill
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    name: Run backfill_brand_metadata.py
+    runs-on: ubuntu-latest
+    environment: production
+    if: github.event.inputs.confirm == 'run'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install psycopg
+        run: pip install 'psycopg[binary]==3.2.*'
+
+      - name: Run backfill
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          STAGE: ${{ github.event.inputs.stage }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          export SUPABASE_DB_URL="postgresql://postgres:${SUPABASE_DB_PASSWORD}@db.${SUPABASE_PROJECT_REF}.supabase.co:5432/postgres"
+          ARGS=(--stage "$STAGE")
+          if [[ "$DRY_RUN" == "true" ]]; then
+            ARGS+=(--dry-run)
+          fi
+          python scripts/db/backfill_brand_metadata.py "${ARGS[@]}"
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## Brand Metadata Backfill"
+            echo "- Stage: \`${{ github.event.inputs.stage }}\`"
+            echo "- Dry-run: \`${{ github.event.inputs.dry_run }}\`"
+            echo "- Status: ${{ job.status }}"
+          } >> "$GITHUB_STEP_SUMMARY"
