@@ -11,6 +11,7 @@ import { createClient } from "@/lib/supabase/server";
  *   - All FAQ categories (5)
  *   - All public docs (DOCS_REGISTRY)
  *   - All published news items (last 200)
+ *   - All published GEO content (last 200)
  *
  * Skipped:
  *   - Auth + dashboard pages (logged-in only)
@@ -29,6 +30,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE}/`, changeFrequency: "weekly", priority: 1.0, lastModified: now },
     { url: `${SITE}/audit`, changeFrequency: "weekly", priority: 0.9, lastModified: now },
     { url: `${SITE}/news`, changeFrequency: "daily", priority: 0.9, lastModified: now },
+    { url: `${SITE}/geo`, changeFrequency: "daily", priority: 0.9, lastModified: now },
     { url: `${SITE}/pricing`, changeFrequency: "monthly", priority: 0.9, lastModified: now },
     { url: `${SITE}/docs`, changeFrequency: "weekly", priority: 0.9, lastModified: now },
     { url: `${SITE}/tools`, changeFrequency: "monthly", priority: 0.7, lastModified: now },
@@ -81,5 +83,34 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // still ships.
   }
 
-  return [...staticRoutes, ...faqRoutes, ...docRoutes, ...newsRoutes];
+  // GEO content routes — same graceful-degrade pattern as news.
+  let geoRoutes: MetadataRoute.Sitemap = [];
+  try {
+    const sb = createClient();
+    const { data } = await sb
+      .from("geo_content")
+      .select("slug, published_at, updated_at")
+      .eq("status", "published")
+      .not("slug", "is", null)
+      .order("published_at", { ascending: false, nullsFirst: false })
+      .limit(200);
+
+    if (Array.isArray(data)) {
+      geoRoutes = data.map((g) => ({
+        url: `${SITE}/geo/${g.slug}`,
+        changeFrequency: "weekly" as const,
+        priority: 0.7,
+        lastModified: new Date(
+          (g.updated_at as string | null) ??
+            (g.published_at as string | null) ??
+            now,
+        ),
+      }));
+    }
+  } catch {
+    // geo_content table may not exist yet (pre-migration 20260427000004) —
+    // skip silently.
+  }
+
+  return [...staticRoutes, ...faqRoutes, ...docRoutes, ...newsRoutes, ...geoRoutes];
 }
