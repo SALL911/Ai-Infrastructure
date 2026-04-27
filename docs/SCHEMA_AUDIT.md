@@ -1,5 +1,5 @@
 # Schema 一致性稽核 — symcio-brandos
-## SCHEMA_AUDIT.md v1.2 | 2026-04-27
+## SCHEMA_AUDIT.md v1.3 | 2026-04-27
 
 ---
 
@@ -201,6 +201,27 @@ SUPABASE_DB_URL=postgresql://... \
 `data/brand_industry_mapping.csv` 從 21 筆擴充到 67 筆（依公司名稱 + email domain 推論）。
 未補的剩 ~7 筆，多為命名隱晦（如「凱鍶 / 漢穎 / 群悅 / 羅賓斯」），需人工查詢確認。
 
+### 階段三：DB 密碼 reset 後的下游影響盤點
+
+`supabase-deploy` run #9 在 DB 密碼 reset 之前以舊密碼成功推完 migration（已成歷史，不需重跑）。reset 之後盤點所有靠 DB 密碼連線的下游服務：
+
+| 服務 | 連線方式 | 是否受影響 | 動作 |
+|------|---------|-----------|------|
+| GitHub workflow `supabase-deploy.yml` | `SUPABASE_DB_PASSWORD` secret | ✅ 已用新密碼覆蓋（必要）| 下次 run 才會驗證 |
+| GitHub workflow `brand-backfill.yml`（PR #37）| `SUPABASE_DB_URL` secret（pooler）| ✅ 由 PR #37 改成讀整段 pooler URL；只要 secret 是新密碼版就過 | 同上 |
+| 其他 GitHub workflows | `SUPABASE_SERVICE_ROLE_KEY`（JWT）| ❌ 不受影響 | 不動 |
+| Vercel `web/landing` production | 僅 `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` + `NEXT_PUBLIC_SUPABASE_*`（全為 JWT）| ❌ 不受影響 | 不動 |
+
+**Vercel 端結論**：grep `web/landing/{lib,app,vercel.json}` 全域只用 4 個 Supabase env，皆為 JWT key，與 `postgres` user 密碼完全解耦（JWT 由獨立的 `JWT_SECRET` 簽署）。DB 密碼 reset 對 Vercel 部署零影響，**無動作必要**。
+
+**驗證指令**（若仍想 double-check Vercel 端有沒有藏著手動加的 DB 連線變數）：
+
+```bash
+cd web/landing && vercel env ls production | grep -iE 'DB_URL|POSTGRES|DB_PASSWORD'
+```
+
+預期輸出為空。若真撈到值，再用 `scripts/vercel_env_push.sh` 用 pooler URL（IPv4，port 6543）覆蓋——這是 PR #37 踩過的同一個雷，不要用 `db.<ref>.supabase.co`（IPv6 only）。
+
 ---
 
 ## 驗收標準
@@ -213,7 +234,7 @@ SUPABASE_DB_URL=postgresql://... \
 | 4 | 命名對齊 | ✅ 完成（`esg_metrics` → `esg_profiles`）|
 | 5 | RLS 明確化 | ✅ 完成（migration 20260427000001 推上線）|
 | 6 | brand metadata 補齊 | ⏳ 待人工觸發 brand-backfill workflow |
-| 7 | Vercel env 同步新 DB 密碼 | ⏳ 由人工檢查（其他 GitHub workflow 都走 service_role_key 不受影響）|
+| 7 | Vercel env 同步新 DB 密碼 | ✅ 不適用 — `web/landing` 只用 JWT key（service_role / anon），DB 密碼 reset 對 Vercel 端零影響 |
 
 ---
 
@@ -224,3 +245,4 @@ SUPABASE_DB_URL=postgresql://... \
 | v1.0 | 2026-04-27 | 初版 — 對照 Table Editor 截圖完成 gap 分析 |
 | v1.1 | 2026-04-27 | 新增 RLS 政策章節與 brand metadata 補齊 runbook（migration 20260427000001 + backfill_brand_metadata.py） |
 | v1.2 | 2026-04-27 | 部署事件紀錄；CSV 擴充至 67 筆；驗收狀態更新 |
+| v1.3 | 2026-04-27 | 階段三：DB 密碼 reset 下游影響盤點；Vercel 端 grep 後確認無 DB 密碼依賴，驗收 #7 ✅ 結案 |
