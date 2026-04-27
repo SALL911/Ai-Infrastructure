@@ -1,0 +1,1034 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: BrandOS Infrastructure API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: brand
+    description: Brand data layer
+  - name: personas
+    description: Customer personas
+  - name: events
+    description: User behavior events
+  - name: decisions
+    description: AI decision engine
+  - name: content
+    description: Content generation
+  - name: campaigns
+    description: Campaign management
+  - name: integrations
+    description: Integration connections
+  - name: analytics
+    description: Analytics and feedback
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /brand:
+    get:
+      operationId: getBrand
+      tags: [brand]
+      summary: Get brand data
+      responses:
+        "200":
+          description: Brand data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Brand"
+    put:
+      operationId: updateBrand
+      tags: [brand]
+      summary: Update brand data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BrandUpdate"
+      responses:
+        "200":
+          description: Updated brand
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Brand"
+
+  /personas:
+    get:
+      operationId: listPersonas
+      tags: [personas]
+      summary: List customer personas
+      responses:
+        "200":
+          description: List of personas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Persona"
+    post:
+      operationId: createPersona
+      tags: [personas]
+      summary: Create a persona
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PersonaCreate"
+      responses:
+        "201":
+          description: Created persona
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Persona"
+
+  /personas/{id}:
+    put:
+      operationId: updatePersona
+      tags: [personas]
+      summary: Update a persona
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PersonaCreate"
+      responses:
+        "200":
+          description: Updated persona
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Persona"
+    delete:
+      operationId: deletePersona
+      tags: [personas]
+      summary: Delete a persona
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /events:
+    get:
+      operationId: listEvents
+      tags: [events]
+      summary: List recent events
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: List of events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BrandEvent"
+    post:
+      operationId: createEvent
+      tags: [events]
+      summary: Record a user event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventCreate"
+      responses:
+        "201":
+          description: Created event
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BrandEvent"
+
+  /events/simulate:
+    post:
+      operationId: simulateEvent
+      tags: [events]
+      summary: Simulate a workflow trigger event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventSimulate"
+      responses:
+        "200":
+          description: Simulation result with triggered actions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimulationResult"
+
+  /events/summary:
+    get:
+      operationId: getEventsSummary
+      tags: [events]
+      summary: Get events summary by type
+      responses:
+        "200":
+          description: Events summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventsSummary"
+
+  /decisions:
+    get:
+      operationId: listDecisions
+      tags: [decisions]
+      summary: List AI decisions
+      responses:
+        "200":
+          description: List of decisions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AiDecision"
+    post:
+      operationId: createDecision
+      tags: [decisions]
+      summary: Trigger AI decision
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DecisionRequest"
+      responses:
+        "201":
+          description: AI decision result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiDecision"
+
+  /content:
+    get:
+      operationId: listContent
+      tags: [content]
+      summary: List generated content
+      responses:
+        "200":
+          description: List of content
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GeneratedContent"
+    post:
+      operationId: generateContent
+      tags: [content]
+      summary: Generate content
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContentRequest"
+      responses:
+        "201":
+          description: Generated content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeneratedContent"
+
+  /campaigns:
+    get:
+      operationId: listCampaigns
+      tags: [campaigns]
+      summary: List campaigns
+      responses:
+        "200":
+          description: List of campaigns
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Campaign"
+    post:
+      operationId: createCampaign
+      tags: [campaigns]
+      summary: Create a campaign
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CampaignCreate"
+      responses:
+        "201":
+          description: Created campaign
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+
+  /campaigns/{id}:
+    put:
+      operationId: updateCampaign
+      tags: [campaigns]
+      summary: Update campaign
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CampaignUpdate"
+      responses:
+        "200":
+          description: Updated campaign
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+
+  /integrations:
+    get:
+      operationId: listIntegrations
+      tags: [integrations]
+      summary: List integrations
+      responses:
+        "200":
+          description: List of integrations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Integration"
+
+  /integrations/{id}/toggle:
+    post:
+      operationId: toggleIntegration
+      tags: [integrations]
+      summary: Toggle integration active state
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Updated integration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Integration"
+
+  /integrations/{id}/sync:
+    post:
+      operationId: syncIntegration
+      tags: [integrations]
+      summary: Simulate sync for an integration
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Sync result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SyncResult"
+
+  /analytics/overview:
+    get:
+      operationId: getAnalyticsOverview
+      tags: [analytics]
+      summary: Get analytics overview (CTR, CVR, etc.)
+      responses:
+        "200":
+          description: Analytics overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyticsOverview"
+
+  /analytics/campaign-performance:
+    get:
+      operationId: getCampaignPerformance
+      tags: [analytics]
+      summary: Get per-campaign performance metrics
+      responses:
+        "200":
+          description: Campaign performance data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CampaignPerformance"
+
+  /analytics/feedback-loop:
+    post:
+      operationId: submitFeedbackLoop
+      tags: [analytics]
+      summary: Submit feedback loop data to update BrandOS
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FeedbackLoopInput"
+      responses:
+        "200":
+          description: Feedback processed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedbackLoopResult"
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [analytics]
+      summary: Get dashboard summary stats
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    Brand:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        tagline:
+          type: string
+        voice:
+          type: string
+        tone:
+          type: string
+        primaryColor:
+          type: string
+        messagingFramework:
+          type: string
+        valuePropositions:
+          type: array
+          items:
+            type: string
+        targetMarket:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - name
+        - tagline
+        - voice
+        - tone
+        - primaryColor
+        - messagingFramework
+        - valuePropositions
+        - targetMarket
+        - updatedAt
+
+    BrandUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        tagline:
+          type: string
+        voice:
+          type: string
+        tone:
+          type: string
+        primaryColor:
+          type: string
+        messagingFramework:
+          type: string
+        valuePropositions:
+          type: array
+          items:
+            type: string
+        targetMarket:
+          type: string
+
+    Persona:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        role:
+          type: string
+        age:
+          type: string
+        painPoints:
+          type: array
+          items:
+            type: string
+        goals:
+          type: array
+          items:
+            type: string
+        channels:
+          type: array
+          items:
+            type: string
+        segment:
+          type: string
+        engagementScore:
+          type: number
+        createdAt:
+          type: string
+      required:
+        - id
+        - name
+        - role
+        - age
+        - painPoints
+        - goals
+        - channels
+        - segment
+        - engagementScore
+        - createdAt
+
+    PersonaCreate:
+      type: object
+      properties:
+        name:
+          type: string
+        role:
+          type: string
+        age:
+          type: string
+        painPoints:
+          type: array
+          items:
+            type: string
+        goals:
+          type: array
+          items:
+            type: string
+        channels:
+          type: array
+          items:
+            type: string
+        segment:
+          type: string
+        engagementScore:
+          type: number
+      required:
+        - name
+        - role
+        - age
+        - segment
+
+    BrandEvent:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+        userId:
+          type: string
+        page:
+          type: string
+        metadata:
+          type: object
+          additionalProperties: true
+        triggeredAction:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - type
+        - userId
+        - page
+        - createdAt
+
+    EventCreate:
+      type: object
+      properties:
+        type:
+          type: string
+        userId:
+          type: string
+        page:
+          type: string
+        metadata:
+          type: object
+          additionalProperties: true
+      required:
+        - type
+        - userId
+        - page
+
+    EventSimulate:
+      type: object
+      properties:
+        eventType:
+          type: string
+          enum: [page_visit, download, signup, purchase, engagement, cart_abandon]
+        personaId:
+          type: integer
+      required:
+        - eventType
+
+    SimulationResult:
+      type: object
+      properties:
+        event:
+          $ref: "#/components/schemas/BrandEvent"
+        decision:
+          $ref: "#/components/schemas/AiDecision"
+        content:
+          $ref: "#/components/schemas/GeneratedContent"
+        campaign:
+          $ref: "#/components/schemas/Campaign"
+        message:
+          type: string
+      required:
+        - event
+        - message
+
+    EventsSummary:
+      type: object
+      properties:
+        total:
+          type: integer
+        byType:
+          type: object
+          additionalProperties:
+            type: integer
+        recentActivity:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+      required:
+        - total
+        - byType
+        - recentActivity
+
+    AiDecision:
+      type: object
+      properties:
+        id:
+          type: integer
+        trigger:
+          type: string
+        strategy:
+          type: string
+        messagingAngle:
+          type: string
+        channels:
+          type: array
+          items:
+            type: string
+        confidence:
+          type: number
+        reasoning:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - trigger
+        - strategy
+        - messagingAngle
+        - channels
+        - confidence
+        - reasoning
+        - status
+        - createdAt
+
+    DecisionRequest:
+      type: object
+      properties:
+        trigger:
+          type: string
+        context:
+          type: string
+        personaId:
+          type: integer
+      required:
+        - trigger
+
+    GeneratedContent:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum: [ad_copy, email, landing_page, script, social_post]
+        title:
+          type: string
+        body:
+          type: string
+        subject:
+          type: string
+        cta:
+          type: string
+        channel:
+          type: string
+        personaId:
+          type: integer
+        decisionId:
+          type: integer
+        status:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - type
+        - title
+        - body
+        - channel
+        - status
+        - createdAt
+
+    ContentRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [ad_copy, email, landing_page, script, social_post]
+        personaId:
+          type: integer
+        decisionId:
+          type: integer
+        channel:
+          type: string
+      required:
+        - type
+        - channel
+
+    Campaign:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        status:
+          type: string
+          enum: [draft, active, paused, completed]
+        channel:
+          type: string
+        budget:
+          type: number
+        spent:
+          type: number
+        impressions:
+          type: integer
+        clicks:
+          type: integer
+        conversions:
+          type: integer
+        ctr:
+          type: number
+        cvr:
+          type: number
+        startDate:
+          type: string
+        endDate:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - name
+        - status
+        - channel
+        - budget
+        - spent
+        - impressions
+        - clicks
+        - conversions
+        - ctr
+        - cvr
+        - createdAt
+
+    CampaignCreate:
+      type: object
+      properties:
+        name:
+          type: string
+        channel:
+          type: string
+        budget:
+          type: number
+        startDate:
+          type: string
+        endDate:
+          type: string
+      required:
+        - name
+        - channel
+        - budget
+
+    CampaignUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        status:
+          type: string
+        budget:
+          type: number
+
+    Integration:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+          enum: [crm, cdp, ad_platform, email, analytics]
+        provider:
+          type: string
+        active:
+          type: boolean
+        lastSync:
+          type: string
+        recordCount:
+          type: integer
+        status:
+          type: string
+      required:
+        - id
+        - name
+        - type
+        - provider
+        - active
+        - status
+
+    SyncResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        recordsSynced:
+          type: integer
+        message:
+          type: string
+        syncedAt:
+          type: string
+      required:
+        - success
+        - recordsSynced
+        - message
+        - syncedAt
+
+    AnalyticsOverview:
+      type: object
+      properties:
+        totalImpressions:
+          type: integer
+        totalClicks:
+          type: integer
+        totalConversions:
+          type: integer
+        avgCtr:
+          type: number
+        avgCvr:
+          type: number
+        totalSpend:
+          type: number
+        roas:
+          type: number
+        timeSeriesData:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+      required:
+        - totalImpressions
+        - totalClicks
+        - totalConversions
+        - avgCtr
+        - avgCvr
+        - totalSpend
+        - roas
+        - timeSeriesData
+
+    CampaignPerformance:
+      type: object
+      properties:
+        campaignId:
+          type: integer
+        name:
+          type: string
+        channel:
+          type: string
+        ctr:
+          type: number
+        cvr:
+          type: number
+        roas:
+          type: number
+        trend:
+          type: string
+          enum: [up, down, stable]
+      required:
+        - campaignId
+        - name
+        - channel
+        - ctr
+        - cvr
+        - roas
+        - trend
+
+    FeedbackLoopInput:
+      type: object
+      properties:
+        campaignId:
+          type: integer
+        ctr:
+          type: number
+        cvr:
+          type: number
+        sentiment:
+          type: string
+          enum: [positive, neutral, negative]
+        notes:
+          type: string
+      required:
+        - campaignId
+        - ctr
+        - cvr
+        - sentiment
+
+    FeedbackLoopResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        updatedBrandData:
+          type: array
+          items:
+            type: string
+        recommendations:
+          type: array
+          items:
+            type: string
+        message:
+          type: string
+      required:
+        - success
+        - updatedBrandData
+        - recommendations
+        - message
+
+    DashboardSummary:
+      type: object
+      properties:
+        activeCampaigns:
+          type: integer
+        totalPersonas:
+          type: integer
+        contentGenerated:
+          type: integer
+        aiDecisions:
+          type: integer
+        eventsToday:
+          type: integer
+        activeIntegrations:
+          type: integer
+        avgCtr:
+          type: number
+        avgCvr:
+          type: number
+        topPerformingChannel:
+          type: string
+        recentDecisions:
+          type: array
+          items:
+            $ref: "#/components/schemas/AiDecision"
+        recentContent:
+          type: array
+          items:
+            $ref: "#/components/schemas/GeneratedContent"
+      required:
+        - activeCampaigns
+        - totalPersonas
+        - contentGenerated
+        - aiDecisions
+        - eventsToday
+        - activeIntegrations
+        - avgCtr
+        - avgCvr
+        - topPerformingChannel
+        - recentDecisions
+        - recentContent
