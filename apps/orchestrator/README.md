@@ -58,8 +58,8 @@ score / week_change / industry segments). Seed via `pnpm --filter
 2. **Next**: stand up local dev — `pnpm install` at this directory, point
    `lib/db/` at a fresh PostgreSQL (Supabase project or Vercel Postgres),
    run `pnpm --filter @workspace/db push` to materialize schema.
-3. **Deploy**: Vercel — `artifacts/brandos` as the web app, `artifacts/api-server`
-   as a separate Vercel project (or split route handlers later).
+3. **Deploy**: single Vercel project — SPA from `artifacts/brandos/dist/public`,
+   API consolidated under `api/[...path].ts`. See `DEPLOY.md`.
 4. **Domain**: target `orchestrator.symcio.tw` subdomain, not the main site.
 5. **Later (deferred)**: evaluate merging `lib/api-zod` + `lib/api-client-react`
    into `web/landing`, and unifying the DB with Supabase tables in
@@ -68,17 +68,23 @@ score / week_change / industry segments). Seed via `pnpm --filter
 ## Replit-specific bits removed
 
 - `.replit`, `.replitignore`, `.agents/`, `attached_assets/`, `.config/`,
-  `replit.md`, `*/.replit-artifact/` — all gone in this commit.
-- **Still present** (need decision before clean dev): `@replit/vite-plugin-*`
-  in `artifacts/brandos/package.json` devDeps, and the corresponding
-  Vite config entries. They no-op outside Replit but pollute the install.
+  `replit.md`, `*/.replit-artifact/` — gone.
+- `@replit/vite-plugin-*` (cartographer / dev-banner / runtime-error-modal)
+  — removed from `artifacts/brandos/package.json` devDeps and the corresponding
+  Vite config entries. `pnpm install` is now Replit-free.
 
-## Open decisions
+## Deploy target — single Vercel project
+
+Confirmed via `vercel.json` at `apps/orchestrator/vercel.json`:
+- Static React SPA from `artifacts/brandos/dist/public`
+- Serverless API at `api/[...path].ts` (consolidates the Express 5 routes)
+- Custom domain: `orchestrator.symcio.tw`
+
+See `DEPLOY.md` for the first-deploy runbook (DB provisioning, seed,
+Vercel project link, domain).
+
+## Open decisions（仍未定，但不阻塞首次部署）
 
 - Drizzle schema vs Supabase `brands` / `brand_scores` etc. — duplicate
-  fields exist; merge or keep parallel.
-- Express 5 server lifetime — keep as standalone Vercel project, or migrate
-  routes into `web/landing/app/api/`.
+  fields exist; merge or keep parallel after first deploy is healthy.
 - `lib/api-spec` vs existing OpenAPI surfaces — single source of truth.
-
-Decide before promoting to production deployment.
