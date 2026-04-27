@@ -1,8 +1,8 @@
 # BrandOS AI Orchestrator — 本機開發環境設定
 
-對應 repo 路徑：`apps/orchestrator/`
-對應分支：`claude/import-orchestrator`（程式碼來源）/ `claude/setup-orchestrator-env-ZdRJK`（本文件）
-相關文件：`apps/orchestrator/README.md`（架構）/ `apps/orchestrator/DEPLOY.md`（Vercel 部署）
+- 對應 repo 路徑：`apps/orchestrator/`
+- 對應分支：`claude/import-orchestrator`（程式碼來源）/ `claude/setup-orchestrator-env-ZdRJK`（本文件）
+- 相關文件：`apps/orchestrator/README.md`（架構）/ `apps/orchestrator/DEPLOY.md`（Vercel 部署）
 
 ---
 
