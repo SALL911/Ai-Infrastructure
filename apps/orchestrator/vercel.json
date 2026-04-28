@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "framework": null,
+  "installCommand": "pnpm install --frozen-lockfile --prefer-offline",
+  "buildCommand": "pnpm --filter @workspace/brandos run build",
+  "outputDirectory": "artifacts/brandos/dist/public",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "functions": {
+    "api/[...path].ts": {
+      "memory": 1024,
+      "maxDuration": 30
+    }
+  }
+}
