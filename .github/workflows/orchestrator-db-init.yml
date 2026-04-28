@@ -1,0 +1,49 @@
+name: Orchestrator DB Init
+
+# 一次性把 apps/orchestrator 的 8 張 Drizzle table + 30 筆 Taiwan
+# brand seed 灌進既有 Supabase project（與 Symcio 主資料庫共存）。
+# 表名與既有 19 張 table 不撞，drizzle-kit push 是 additive。
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type 'init' to confirm running drizzle push + seed against production Supabase"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  init:
+    if: ${{ github.event.inputs.confirm == 'init' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: apps/orchestrator
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.33.0 --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Push Drizzle schema (additive — adds 8 tables, leaves existing 19 untouched)
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: pnpm --filter @workspace/db run push-force
+
+      - name: Seed Taiwan brands (idempotent — skips if rows exist)
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: pnpm --filter @workspace/api-server run db:seed
