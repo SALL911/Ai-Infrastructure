@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1777413932020,
+      "tag": "0000_lively_stingray",
+      "breakpoints": true
+    }
+  ]
+}

@@ -6,25 +6,63 @@ behind one custom domain `orchestrator.symcio.tw`.
 
 ## Prereqs
 
-- Vercel account with `symcio-os` team
+- Vercel account with `symcio` team
 - Cloudflare access for `symcio.tw` zone
-- A PostgreSQL connection string (Supabase project recommended; pick a
-  separate schema or a separate project from the main Symcio one to
-  avoid table-name conflicts with `brands`, `personas`, etc.)
-- `claude/import-orchestrator` branch merged or live as a deploy preview
-  source
+- A PostgreSQL connection string. **Two options**:
+  - **Shared with Symcio** (decided 2026-04-28): reuse the existing
+    `brandos-infrastructure` Supabase project. The 8 orchestrator tables
+    don't name-collide with the 19 Symcio tables; drizzle-kit is scoped
+    to its own tables via `tablesFilter` so it ignores Symcio schema.
+    See "Connection mode" below for which pooler URL to use when.
+  - **Separate project**: open a new Supabase project. More isolation,
+    extra account/billing surface.
+
+### Connection mode — which Supabase URL to use
+
+Supabase exposes the same database via three URLs. The orchestrator
+needs **two of them** for different purposes:
+
+| Use | Pooler | Port | URL |
+|-----|--------|------|-----|
+| Runtime queries (Drizzle ORM, Vercel) | Transaction | 6543 | `postgresql://postgres.<ref>:<pwd>@<region>.pooler.supabase.com:6543/postgres` |
+| **Migrations** (`drizzle-kit push`) | Session | 5432 | Same host, **port 5432** |
+| Avoid (IPv6-only without add-on) | Direct | 5432 | `postgresql://postgres:<pwd>@db.<ref>.supabase.co:5432/postgres` |
+
+**Why two URLs**: Supabase Transaction pooler is pgBouncer in
+transaction mode and disables prepared statements. Drizzle ORM at
+runtime works fine through it (small queries, no introspection), but
+`drizzle-kit push` introspects `pg_catalog` with prepared statements
+and hangs on Transaction pooler. Session pooler (port 5432) supports
+the full Postgres protocol — use it for migrations only.
+
+GitHub Secrets:
+- `SUPABASE_DB_URL` — Transaction pooler (existing, used by 4 other
+  workflows + orchestrator runtime)
+- `SUPABASE_DB_URL_SESSION` — Session pooler, **same URL but with port
+  6543 → 5432** (used only by `orchestrator-db-init.yml`)
 
 ## 1. Provision the database
 
 The `lib/db/` package owns 8 tables (`brand`, `personas`, `brand_events`,
 `ai_decisions`, `generated_content`, `campaigns`, `integrations`,
 `taiwan_brands`). Materialize them and seed the dashboard data once
-before the first deploy:
+before the first deploy.
+
+### Option A — via GitHub Actions (recommended)
+
+Use the one-shot `Orchestrator DB Init` workflow:
+https://github.com/SALL911/BrandOS-Infrastructure/actions/workflows/orchestrator-db-init.yml
+→ Run workflow → main → confirm: `init` → Run.
+
+It runs `drizzle-kit push --force` against `SUPABASE_DB_URL_SESSION`,
+then `db:seed` against the same URL. Idempotent — re-running is safe.
+
+### Option B — locally
 
 ```bash
 cd apps/orchestrator
 cp .env.example .env
-# edit .env, set DATABASE_URL=postgres://...
+# edit .env, set DATABASE_URL=<Session pooler URL, port 5432>
 pnpm install
 
 # 1a. Push schema to the empty DB
@@ -58,9 +96,13 @@ environments (Production, Preview, Development):
 
 | Key | Value | Notes |
 |-----|-------|-------|
-| `DATABASE_URL` | `postgres://...` | from step 1 |
+| `DATABASE_URL` | Transaction pooler URL (port 6543) | runtime; Drizzle ORM handles pgbouncer fine |
 | `LOG_LEVEL` | `info` | `debug` for first deploy, switch back later |
 | `NODE_ENV` | (leave Vercel default) | auto-set per env |
+
+⚠️ **Don't confuse with `SUPABASE_DB_URL_SESSION`** — that's a GitHub
+secret used only by the migration workflow. Vercel runtime uses the
+Transaction pooler via plain `DATABASE_URL`.
 
 The frontend doesn't need `VITE_API_BASE_URL` because the SPA and API
 share the same Vercel deployment — relative `/api/*` calls just work.

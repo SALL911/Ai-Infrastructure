@@ -26,7 +26,8 @@ failed SASL auth (FATAL: password authentication failed for user "postgres")
 
 | Secret 名 | 型別 | 哪些 workflow 用 | reset 密碼時要動？ |
 |----------|------|----------------|-----------------|
-| **`SUPABASE_DB_URL`** | 完整 pooler URL | `brand-backfill` / `notion-to-supabase` / `lead-scorer` / `geo-publisher` / `supabase-deploy`（從這抽密碼）| ✅ **必動** |
+| **`SUPABASE_DB_URL`** | Transaction pooler URL（port 6543）| `brand-backfill` / `notion-to-supabase` / `lead-scorer` / `geo-publisher` / `supabase-deploy`（從這抽密碼）| ✅ **必動** |
+| **`SUPABASE_DB_URL_SESSION`** | Session pooler URL（port 5432，相同 host 與密碼，只換埠號）| `orchestrator-db-init`（drizzle-kit migration 工具不能走 Transaction pooler，pgBouncer 不支援 prepared statements）| ✅ **必動**（v1.1 新增，2026-04-28）|
 | `SUPABASE_DB_PASSWORD` | 純密碼字串 | `supabase-deploy`（legacy fallback，可留可刪）| ⚠️ 若 `SUPABASE_DB_URL` 已設則不必動；建議直接刪除 secret 避免雙來源混淆 |
 | `SUPABASE_PROJECT_REF` | `friwpqphwumomernsouh` | `supabase-deploy` / `schema-snapshot` | ❌ 不變（不是密碼）|
 | `SUPABASE_ACCESS_TOKEN` | personal access token | `supabase-deploy` / `schema-snapshot` | ❌ 不變（與 DB 密碼解耦，由 dashboard 另外管理）|
@@ -53,10 +54,21 @@ Supabase Dashboard → Project Settings → Database → **Reset database passwo
 postgresql://postgres.friwpqphwumomernsouh:<NEW_PWD>@aws-0-<region>.pooler.supabase.com:6543/postgres
 ```
 
-### 3. 更新一個 GitHub secret
+### 3. 更新兩個 GitHub secret
+
+#### 3a. `SUPABASE_DB_URL`（Transaction pooler，port 6543）
 
 https://github.com/SALL911/BrandOS-Infrastructure/settings/secrets/actions/SUPABASE_DB_URL
 → Update secret → 貼整段 URL → Save
+
+#### 3b. `SUPABASE_DB_URL_SESSION`（Session pooler，port 5432）
+
+把上面的 URL 複製一份，**手動把 `:6543/postgres` 改成 `:5432/postgres`**（其餘完全相同——同 host、同 user、同密碼，只換埠號）。
+
+https://github.com/SALL911/BrandOS-Infrastructure/settings/secrets/actions/SUPABASE_DB_URL_SESSION
+→ Update secret → 貼修改後的 URL → Save
+
+> 為什麼要兩個？Supabase 同一個 DB 有兩種連線模式：Transaction pooler 走 pgBouncer transaction mode（runtime 友善但不支援 prepared statements），Session pooler 走完整 Postgres protocol（migration 工具需要）。`drizzle-kit push` 會卡在 Transaction pooler 的 prepared statement 限制，必須走 Session。Runtime 用 Transaction，migration 用 Session。
 
 ### 4.（選配）刪掉 legacy secret
 

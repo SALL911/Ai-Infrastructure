@@ -1,19 +1,19 @@
 name: Orchestrator DB Init
 
-# 一次性把 apps/orchestrator 的 8 張 Drizzle table + 30 筆 Taiwan
-# brand seed 灌進既有 Supabase project（與 Symcio 主資料庫共存）。
-# 表名與既有 19 張 table 不撞，drizzle-kit push 是 additive。
+# 一次性把 apps/orchestrator 的 8 張 table + 30 筆 Taiwan brand seed
+# 灌進既有 Supabase project（與 Symcio 主資料庫共存，表名不撞）。
 #
-# 連線：用 SUPABASE_DB_URL_SESSION（Session pooler, port 5432）。
-# Transaction pooler（port 6543）不支援 prepared statements，
-# drizzle-kit push 內省 schema 時會卡住。Runtime 用 Transaction
-# pooler 沒事，但 migration 必須走 Session。
+# 連線：用既有 SUPABASE_DB_URL（Transaction pooler，port 6543）。
+# 跑的不是 drizzle-kit push（會被 pgBouncer transaction mode 的
+# prepared statement 限制 + Symcio 19 張表的 RLS / custom type 卡住），
+# 而是 Drizzle ORM migrator 套用本機產的 SQL 檔（drizzle/）。
+# 同 pg.Pool 機制 = 跟 runtime 一樣，已知與 Transaction pooler 相容。
 
 on:
   workflow_dispatch:
     inputs:
       confirm:
-        description: "Type 'init' to confirm running drizzle push + seed against production Supabase"
+        description: "Type 'init' to confirm running migrate + seed against production Supabase"
         required: true
         type: string
 
@@ -43,12 +43,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --prefer-offline
 
-      - name: Push Drizzle schema (additive — adds 8 tables, leaves existing 19 untouched)
+      - name: Apply Drizzle migrations (creates 8 tables, leaves existing 19 untouched)
         env:
-          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL_SESSION }}
-        run: pnpm --filter @workspace/db run push-force
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: pnpm --filter @workspace/db run migrate
 
       - name: Seed Taiwan brands (idempotent — skips if rows exist)
         env:
-          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL_SESSION }}
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: pnpm --filter @workspace/api-server run db:seed
