@@ -34,10 +34,49 @@ jobs:
         with:
           version: latest
 
+      # Resolve SUPABASE_DB_PASSWORD with priority:
+      #   1. SUPABASE_DB_URL secret  → extract + URL-decode password from it
+      #   2. SUPABASE_DB_PASSWORD secret → use as-is（legacy backward-compat）
+      # Net effect: future password rotations only require updating ONE secret
+      # (SUPABASE_DB_URL), shared with brand-backfill / notion-to-supabase /
+      # lead-scorer / geo-publisher. SUPABASE_DB_PASSWORD secret can be deleted
+      # after this workflow has run green at least once.
+      - name: Resolve DB password
+        id: resolve_pwd
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          SUPABASE_DB_PASSWORD_LEGACY: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -n "${SUPABASE_DB_URL:-}" ]; then
+            # Extract password between first ':' (after user) and '@' in URL.
+            # postgresql://postgres.<ref>:<pwd>@host:port/db
+            URL_PWD=$(printf '%s' "$SUPABASE_DB_URL" | sed -nE 's|^postgresql://[^:]+:([^@]+)@.*|\1|p')
+            if [ -z "$URL_PWD" ]; then
+              echo "::error::SUPABASE_DB_URL set but password could not be extracted. Expected format: postgresql://user:password@host:port/db"
+              exit 1
+            fi
+            # URL-decode（%40 → @, %25 → %, etc.）
+            DECODED_PWD=$(printf '%b' "${URL_PWD//%/\\x}")
+            echo "source=SUPABASE_DB_URL" >> "$GITHUB_OUTPUT"
+            # Mask + export for downstream steps
+            echo "::add-mask::$DECODED_PWD"
+            echo "DB_PASSWORD=$DECODED_PWD" >> "$GITHUB_ENV"
+          elif [ -n "${SUPABASE_DB_PASSWORD_LEGACY:-}" ]; then
+            echo "source=SUPABASE_DB_PASSWORD (legacy)" >> "$GITHUB_OUTPUT"
+            echo "::add-mask::$SUPABASE_DB_PASSWORD_LEGACY"
+            echo "DB_PASSWORD=$SUPABASE_DB_PASSWORD_LEGACY" >> "$GITHUB_ENV"
+          else
+            echo "::error::Neither SUPABASE_DB_URL nor SUPABASE_DB_PASSWORD secret is set."
+            echo "::error::Set SUPABASE_DB_URL (Supabase Dashboard → Database → Connection string → Transaction pooler)."
+            exit 1
+          fi
+          echo "Resolved password from: $(grep source $GITHUB_OUTPUT | cut -d= -f2)"
+
       - name: Link project
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_DB_PASSWORD:  ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_PASSWORD:  ${{ env.DB_PASSWORD }}
           SUPABASE_PROJECT_REF:  ${{ secrets.SUPABASE_PROJECT_REF }}
         run: |
           supabase link --project-ref "$SUPABASE_PROJECT_REF"
@@ -45,14 +84,17 @@ jobs:
       - name: Push migrations (db push)
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_DB_PASSWORD:  ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_PASSWORD:  ${{ env.DB_PASSWORD }}
         run: |
           supabase db push --include-all
 
       - name: Summary
         if: always()
         run: |
-          echo "## Supabase Deploy" >> $GITHUB_STEP_SUMMARY
-          echo "- Project: ${{ secrets.SUPABASE_PROJECT_REF }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Ref: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- Status: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## Supabase Deploy"
+            echo "- Project: ${{ secrets.SUPABASE_PROJECT_REF }}"
+            echo "- Ref: \`${{ github.sha }}\`"
+            echo "- Password source: \`${{ steps.resolve_pwd.outputs.source }}\`"
+            echo "- Status: ${{ job.status }}"
+          } >> "$GITHUB_STEP_SUMMARY"
