@@ -15,7 +15,17 @@ async function buildAll() {
   await rm(distDir, { recursive: true, force: true });
 
   await esbuild({
-    entryPoints: [path.resolve(artifactDir, "src/index.ts")],
+    // Two entries:
+    //   - index.ts: standalone Node server (used by `pnpm start`)
+    //   - app.ts:   Express handler-only export (used by Vercel serverless
+    //                function in apps/orchestrator/api/[...path].mjs).
+    //                Pre-compiling to JS lets the Vercel function import
+    //                already-bundled JS, sidestepping @vercel/node's TS
+    //                validation against workspace packages.
+    entryPoints: [
+      path.resolve(artifactDir, "src/index.ts"),
+      path.resolve(artifactDir, "src/app.ts"),
+    ],
     platform: "node",
     bundle: true,
     format: "esm",

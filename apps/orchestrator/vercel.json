@@ -3,13 +3,13 @@
   "version": 2,
   "framework": null,
   "installCommand": "pnpm install --frozen-lockfile --prefer-offline",
-  "buildCommand": "pnpm --filter @workspace/brandos run build",
+  "buildCommand": "pnpm --filter @workspace/api-server run build && pnpm --filter @workspace/brandos run build",
   "outputDirectory": "artifacts/brandos/dist/public",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "functions": {
-    "api/[...path].ts": {
+    "api/[...path].mjs": {
       "memory": 1024,
       "maxDuration": 30
     }
