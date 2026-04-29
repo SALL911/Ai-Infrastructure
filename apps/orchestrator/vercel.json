@@ -6,7 +6,7 @@
   "buildCommand": "pnpm --filter @workspace/api-server run build && pnpm --filter @workspace/brandos run build",
   "outputDirectory": "artifacts/brandos/dist/public",
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "functions": {
     "api/[...path].mjs": {
