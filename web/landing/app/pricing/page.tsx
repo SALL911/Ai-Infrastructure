@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
+import { contactCtaUrl } from "@/lib/contact";
 
 export const metadata: Metadata = {
   title: "定價方案 — Symcio BrandOS",
@@ -78,7 +79,7 @@ const PLANS = [
     ],
     missing: [],
     cta: "預約 Demo",
-    ctaHref: "mailto:sall@symcio.tw?subject=%E4%BC%81%E6%A5%AD%E7%89%88Demo%E9%A0%90%E7%B4%84",
+    ctaHref: contactCtaUrl("enterprise_demo"),
     featured: false,
   },
 ];

@@ -1,3 +1,5 @@
+import { contactCtaUrl } from "@/lib/contact";
+
 /**
  * FAQ knowledge base — 5 audience categories × 10 Q&A each.
  *
@@ -166,7 +168,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: "投資人怎麼聯絡？",
-        a: "sall@symcio.tw，標題「Investment Inquiry」。24 小時內回覆。我們不收 pitch deck 當附件；信裡講完市場、差異、traction 即可。",
+        a: `請填 ${contactCtaUrl("investor")} 留下聯絡方式，我們 24 小時內回覆。市場、差異、traction 在表單裡簡述即可，pitch deck 等首次對談後再交換。`,
       },
     ],
   },

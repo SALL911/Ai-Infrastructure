@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
+import { contactCtaUrl } from "@/lib/contact";
 
 export const metadata: Metadata = {
   title: "Symcio BrandOS — 量化品牌 AI 基礎設施系統",
@@ -104,7 +105,7 @@ const PLANS = [
       "季度策略會議",
     ],
     cta: "聯繫我們",
-    href: "mailto:sall@symcio.tw?subject=%E5%B0%88%E6%A5%AD%E7%89%88%E6%96%B9%E6%A1%88",
+    href: contactCtaUrl("professional_plan"),
     featured: true,
   },
   {
@@ -118,7 +119,7 @@ const PLANS = [
       "專屬治理顧問",
     ],
     cta: "預約 Demo",
-    href: "mailto:sall@symcio.tw?subject=%E4%BC%81%E6%A5%AD%E7%89%88Demo",
+    href: contactCtaUrl("enterprise_demo"),
   },
 ];
 
