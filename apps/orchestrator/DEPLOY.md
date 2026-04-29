@@ -109,20 +109,34 @@ share the same Vercel deployment — relative `/api/*` calls just work.
 
 ## 4. First deploy
 
-Push any commit to `main` (or trigger manual deploy on
-`claude/import-orchestrator`). Vercel runs:
+Push any commit to `main` (or trigger manual deploy on a feature branch).
+Vercel runs (per `vercel.json`):
 
 ```
-pnpm install --frozen-lockfile --prefer-offline    # uses pnpm-lock.yaml
-pnpm --filter @workspace/brandos run build          # vite build → dist/public/
-# api/[...path].ts auto-detected, bundled with @vercel/node
+pnpm install --frozen-lockfile --prefer-offline                   # uses pnpm-lock.yaml
+pnpm --filter @workspace/api-server run build                      # esbuild → artifacts/api-server/dist/{index,app}.mjs
+pnpm --filter @workspace/brandos      run build                    # vite build → artifacts/brandos/dist/public
+# api/[...path].mjs auto-detected as a serverless function and
+# bundled with @vercel/node. The .mjs entry imports the pre-built
+# dist/app.mjs above, so @vercel/node never has to invoke tsc on
+# any workspace TS (which fails with `Emit skipped` because workspace
+# packages export .ts via `customConditions: ["workspace"]` that tsc
+# under @vercel/node can't resolve).
 ```
+
+`vercel.json` also rewrites every non-`/api/` path to `/index.html` for
+the SPA fallback. The negative lookahead `^/((?!api/).*)$` is critical
+— Vercel applies rewrites *before* function dispatch, so a plain
+`/(.*)` would swallow `/api/*` and the function would never be hit.
 
 The deploy URL will be `<project-name>-<hash>.vercel.app`. Smoke test:
 
 ```bash
 curl https://<preview>.vercel.app/api/healthz
 # returns: {"status":"ok"}
+
+curl https://<preview>.vercel.app/api/rankings | head -c 200
+# returns a JSON array of seeded Taiwan brands
 ```
 
 ## 5. Custom domain
