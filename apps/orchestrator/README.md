@@ -1,7 +1,7 @@
 # BrandOS AI Orchestrator
 
 Imported from Replit (`brand-os-ai-orchestrator--sallhuang.replit.app`) on 2026-04-26.
-**Status: not wired up yet** — see "Migration plan" below.
+**Status: deployed on Vercel** — see `DEPLOY.md` and `vercel.json`.
 
 ## What this is
 
@@ -59,7 +59,7 @@ score / week_change / industry segments). Seed via `pnpm --filter
    `lib/db/` at a fresh PostgreSQL (Supabase project or Vercel Postgres),
    run `pnpm --filter @workspace/db push` to materialize schema.
 3. **Deploy**: single Vercel project — SPA from `artifacts/brandos/dist/public`,
-   API consolidated under `api/[...path].ts`. See `DEPLOY.md`.
+   API consolidated under `api/[...path].mjs`. See `DEPLOY.md`.
 4. **Domain**: target `orchestrator.symcio.tw` subdomain, not the main site.
 5. **Later (deferred)**: evaluate merging `lib/api-zod` + `lib/api-client-react`
    into `web/landing`, and unifying the DB with Supabase tables in
@@ -77,7 +77,7 @@ score / week_change / industry segments). Seed via `pnpm --filter
 
 Confirmed via `vercel.json` at `apps/orchestrator/vercel.json`:
 - Static React SPA from `artifacts/brandos/dist/public`
-- Serverless API at `api/[...path].ts` (consolidates the Express 5 routes)
+- Serverless API at `api/[...path].mjs` (consolidates the Express 5 routes)
 - Custom domain: `orchestrator.symcio.tw`
 
 See `DEPLOY.md` for the first-deploy runbook (DB provisioning, seed,
