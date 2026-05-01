@@ -51,16 +51,10 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="mailto:sall@symcio.tw" className="no-underline hover:text-accent">
-                  sall@symcio.tw
-                </a>
-              </li>
-              <li>
                 <a href="mailto:info@symcio.tw" className="no-underline hover:text-accent">
                   info@symcio.tw
                 </a>
               </li>
-              <li className="font-mono text-xs text-muted-dim">0980-326-901</li>
             </ul>
           </div>
         </div>
