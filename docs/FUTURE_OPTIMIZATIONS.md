@@ -150,35 +150,40 @@ microservice。屬「研究專案」性質，不阻擋 production roadmap。
 
 ---
 
-## 6. `gpu-ai-workflow/` 去留 — **未決定**
+## 6. `gpu-ai-workflow/` — **已 archive（2026-05-03）**
 
-**背景**
+**結論**：archive 進 `private/archived/gpu-ai-workflow/`。
 
-`gpu-ai-workflow/` 有完整 README + Dockerfile + Python 後端骨架，但
-**0 部署、0 GitHub Actions、0 流量**。是 inactive 的 model inference
-scaffold。
+確認原因：
 
-**結論：未決定，看 6 個月內是否接客戶用。**
+- 0 部署、0 GitHub Actions、0 從 live code 的 import
+- 三個互相競爭的子實作（`src/` Python + `backend/` Node + `brandos-backend/` Node），沒有任何一個被選為 canonical
+- 真正在 production 跑的 scoring 邏輯在 `web/landing/lib/scoring.ts` 與 `scripts/bci_engine.py`，跟這份 scaffold 無關
 
-- 若 6 個月內**不會**用 → 跟著 `private/archived/` 的 pattern 移過去
-- 若**會**用 → 列入 backlog 補 CI/CD + DEPLOY 文件
+未來真要做 GPU 推論：**不要復活這份**，而是選一個 runtime（Python OR Node，不要兩種）、一個 host（RunPod / Lambda Labs / Fly machines GPU tier），寫新的 microservice 對接 live `apps/orchestrator/` API。本資料夾可保留當 brand-scoring 數學的參考（見 `examples/brand_scoring_example.py`）。
 
-擇日決定即可。
+詳見 `private/archived/README.md`。
 
 ---
 
-## 7. `apps/symcio-brand-audit/` Netlify URL 待釐清
+## 7. `apps/symcio-brand-audit/` — **保留為 Netlify MVP 備援**
 
-**背景**
+**結論**：不 archive、不 fold-in。它是有意的雙軌部署：
 
-靜態 HTML 站（index/pricing/report）+ `netlify.toml`，**部署 URL 不明**
-（需要看 Netlify dashboard）。功能可能與 orchestrator dashboard 重疊。
+- **主**：`web/landing/`（Vercel 部署 → `symcio.tw`）— Next.js + Stripe + Supabase
+- **備援**：`apps/symcio-brand-audit/`（Netlify 部署）— 純靜態 HTML + 客戶端 JS 計算 BCI，無 backend 依賴
 
-**待辦**：
+證據：
 
-- [ ] 查 Netlify dashboard 拿到實際 URL
-- [ ] 評估是否仍在用 / 流量多少
-- [ ] 決定保留獨立 OR 併進 orchestrator OR archive
+- `docs/PRODUCT_OVERVIEW.md` 明文寫「🚀 Netlify 備援靜態版」「兩套 MVP 並存」
+- `web/landing/lib/scoring.ts` 是 `apps/symcio-brand-audit/js/scoring-v2.js` 的 TypeScript port，所以**演算法 SSoT 在靜態版**，Vercel 主版是 port
+
+設計意圖：當 Vercel / Supabase 任一掛掉，純靜態版仍能讓客戶完成基礎 BCI 自評。
+
+**剩下的待辦（非阻塞）**：
+
+- [ ] 查 Netlify dashboard 拿到實際 URL，記到 README 或 DEPLOY.md
+- [ ] 確認兩版 BCI scoring 演算法版本對齊（避免 port 後 drift）
 
 ---
 
