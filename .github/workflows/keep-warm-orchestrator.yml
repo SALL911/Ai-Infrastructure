@@ -1,0 +1,65 @@
+name: Keep Warm — Orchestrator
+
+# Pings orchestrator.symcio.tw/api/healthz every 5 minutes during peak
+# hours so the Vercel serverless function stays warm and the first
+# customer request of each session doesn't pay the ~600ms cold-start
+# penalty.
+#
+# Why this exists (vs paying for Vercel Pro Fluid Compute or moving to
+# Railway/Fly): see docs/FUTURE_OPTIMIZATIONS.md §3 — this is the
+# zero-cost mitigation, taken pending real customer load data.
+#
+# Window: 22:00–14:59 UTC (06:00–22:59 Taipei) — covers the realistic
+# active window for a Taiwan-based B2B audience. Outside this window
+# we let the function sleep to save (free-tier) execution minutes.
+#
+# Idempotent: a single GET to /api/healthz is harmless even if no cold
+# start needed. Server returns the same {"status":"ok"} payload.
+#
+# Side effect: also functions as a lightweight uptime monitor — if the
+# endpoint returns non-200 the workflow run is red, and PR #53's
+# Cron Failure Alert workflow will open / comment on a `cron-failure`
+# GitHub Issue automatically.
+
+on:
+  schedule:
+    # Every 5 minutes, during 22:00–14:59 UTC (= 06:00–22:59 Taipei).
+    # Using minute granularity 0,5,10,...,55 to keep intervals even.
+    - cron: "0,5,10,15,20,25,30,35,40,45,50,55 22-23,0-14 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # If a previous keep-warm is still running (network blip), drop this
+  # one — no point queuing pings.
+  group: keep-warm-orchestrator
+  cancel-in-progress: true
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Ping /api/healthz
+        run: |
+          set -euo pipefail
+          response=$(curl -sS \
+            --max-time 30 \
+            --retry 2 \
+            --retry-delay 3 \
+            -w '\n%{http_code}' \
+            "https://orchestrator.symcio.tw/api/healthz")
+          body=$(echo "$response" | head -n -1)
+          code=$(echo "$response" | tail -n 1)
+          echo "status=$code"
+          echo "body=$body"
+          if [ "$code" != "200" ]; then
+            echo "::error::Orchestrator healthz returned HTTP $code"
+            exit 1
+          fi
+          # Sanity-check payload shape (don't fail on minor changes)
+          if ! echo "$body" | grep -q '"status"'; then
+            echo "::warning::Response body missing \"status\" key — payload shape may have drifted: $body"
+          fi
