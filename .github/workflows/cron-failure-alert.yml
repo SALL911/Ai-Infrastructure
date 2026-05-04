@@ -1,0 +1,91 @@
+name: Cron Failure Alert
+
+# 集中監聽 9 條 daily cron workflow，任一失敗時自動：
+#   - 若 repo 已有同名 open issue → 在底下加新 comment（去重）
+#   - 否則 → 開一個帶 `cron-failure` label 的 issue
+#
+# 為什麼用 workflow_run 集中監聽，而不是在每條 cron 加 if: failure() step？
+#   - 9 條 workflow 各加 5 行 = 45 行重複，未來新增 cron 容易漏
+#   - 集中一處 = 邏輯一致、好維護
+#   - 不需動 9 個 permissions: block
+#
+# Caveat: workflow_run 只在 default branch (main) 上的 workflow 才會觸發。
+# 對 cron 而言這是 OK 的（cron 一律在 main 跑），對 PR 預覽 build 失敗
+# 不適用 — 那種 case 走 PR Checks UI 即可。
+
+on:
+  workflow_run:
+    workflows:
+      - "BCI Daily Snapshot"
+      - "Composio — Lead → HubSpot sync"
+      - "Figma Sync"
+      - "GEO Audit Queue (prospects)"
+      - "GEO Audit"
+      - "GEO Content Publisher"
+      - "Lead Scorer"
+      - "Notion Sync"
+      - "Quota Reset"
+    types: [completed]
+
+permissions:
+  issues: write
+
+jobs:
+  alert:
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const run = context.payload.workflow_run;
+            const shortSha = run.head_sha.substring(0, 7);
+            const title = `🚨 [cron-failure] ${run.name}`;
+
+            const body = [
+              `Workflow [\`${run.name}\`](${run.html_url}) failed.`,
+              ``,
+              `- **Started**: \`${run.run_started_at}\``,
+              `- **Branch**: \`${run.head_branch}\``,
+              `- **Commit**: \`${shortSha}\``,
+              `- **Run**: ${run.html_url}`,
+              ``,
+              `### Triage`,
+              `1. Open the run URL, find the red step.`,
+              `2. If **transient** (rate limit / network / Supabase blip)`,
+              `   → re-run from Actions UI, close this issue once the next`,
+              `   scheduled run is green.`,
+              `3. If **real bug** → fix in a PR, close this issue after the`,
+              `   next scheduled run is green.`,
+              ``,
+              `Auto-created by \`.github/workflows/cron-failure-alert.yml\`.`,
+              `Repeated failures will be appended as comments on this same`,
+              `issue (no duplicates).`,
+            ].join("\n");
+
+            // De-dup: if there's already an OPEN issue with this title +
+            // the cron-failure label, comment on it instead of opening a
+            // new one. Prevents alert noise during a multi-day outage.
+            const search = await github.rest.search.issuesAndPullRequests({
+              q: `"${title}" in:title repo:${context.repo.owner}/${context.repo.repo} state:open label:cron-failure`,
+            });
+
+            if (search.data.items.length > 0) {
+              const issueNumber = search.data.items[0].number;
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                body: `Failed again — \`${shortSha}\` on \`${run.head_branch}\`. Run: ${run.html_url}`,
+              });
+              core.notice(`Appended comment to existing issue #${issueNumber}`);
+            } else {
+              const created = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ["cron-failure", "auto-generated"],
+              });
+              core.notice(`Created new issue #${created.data.number}`);
+            }
