@@ -7,16 +7,21 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * Typeform webhook handler — Free Scan entry point.
+ * Typeform webhook handler — Free Scan + high-touch contact entry point.
  *
  * Pipeline:
  *   User submits Typeform (form ZZYlfK7A)
  *     → Typeform POSTs here with form_response payload
  *     → verify HMAC-SHA256 signature (Typeform-Signature header)
  *     → extract brand_name / email / industry from answers
+ *     → read hidden field `topic` (set by lib/contact.ts CTAs):
+ *         "free_scan" / undefined → ordinary brand AI audit flow
+ *         "professional_plan" / "enterprise_demo" / "consulting" /
+ *         "investor"            → high-touch sales/investor inquiry, do
+ *                                  NOT trigger the AI audit cron
  *     → INSERT into Supabase `leads` (= the queue)
- *     → fire GitHub repository_dispatch 'free-scan-request'
- *         (geo-audit.yml picks it up and runs the four-engine audit)
+ *     → for free_scan only, fire GitHub repository_dispatch
+ *       'free-scan-request' (geo-audit.yml runs the four-engine audit)
  *     → Notion sync happens via the existing Composio hubspot-sync.yml
  *       cron (or the /api/agent path for instant sync)
  *
@@ -28,7 +33,16 @@ export const dynamic = "force-dynamic";
  *   2. Endpoint URL: https://symcio.tw/api/webhooks/typeform
  *   3. Secret: generate random 32-char string, set as TYPEFORM_WEBHOOK_SECRET
  *   4. Save — Typeform sends test payload immediately
+ *   5. Typeform admin → 表單 → 加 Hidden Field：`topic` (used to
+ *      distinguish free-scan vs high-touch routing)
  */
+
+const HIGH_TOUCH_TOPICS = new Set([
+  "professional_plan",
+  "enterprise_demo",
+  "consulting",
+  "investor",
+]);
 
 interface TypeformAnswer {
   field: { id: string; ref?: string; type: string; title?: string };
@@ -164,6 +178,9 @@ export async function POST(req: Request): Promise<Response> {
 
   const fields = extractFields(payload.form_response.answers || []);
   const warnings: string[] = [];
+  const topic = payload.form_response.hidden?.["topic"]?.toLowerCase() ?? "";
+  const isHighTouch = HIGH_TOUCH_TOPICS.has(topic);
+  const formId = payload.form_response.form_id || "ZZYlfK7A";
 
   if (!fields.email) {
     return NextResponse.json(
@@ -183,10 +200,11 @@ export async function POST(req: Request): Promise<Response> {
         name: fields.company || fields.brand_name || fields.email,
         company: fields.company || fields.brand_name || null,
         email: fields.email,
-        source: "typeform-ZZYlfK7A",
+        source: `typeform-${formId}${topic ? `-${topic}` : ""}`,
         status: "new",
         notes: [
           `typeform_token=${payload.form_response.token}`,
+          `topic=${topic || "free_scan"}`,
           `brand_name=${fields.brand_name || ""}`,
           `brand_domain=${fields.brand_domain || ""}`,
           `industry=${fields.industry || "technology"}`,
@@ -206,20 +224,24 @@ export async function POST(req: Request): Promise<Response> {
     warnings.push("supabase-not-configured");
   }
 
-  // 2. GitHub dispatch → triggers geo-audit.yml to run AI audit for this lead.
-  const dispatchResp = await fireRepositoryDispatch({
-    eventType: "free-scan-request",
-    clientPayload: {
-      brand_name: fields.brand_name || "Unknown",
-      brand_domain: fields.brand_domain || "",
-      brand_industry: fields.industry || "technology",
-      customer_email: fields.email,
-      lead_id: leadId,
-      typeform_token: payload.form_response.token,
-      source: "typeform",
-    },
-  });
-  if (!dispatchResp.ok) warnings.push(`dispatch: ${dispatchResp.error}`);
+  // 2. GitHub dispatch → triggers geo-audit.yml to run AI audit.
+  //    Skipped for high-touch topics (sales, demo, investor, consulting):
+  //    those are human-handled, no automated audit.
+  if (!isHighTouch) {
+    const dispatchResp = await fireRepositoryDispatch({
+      eventType: "free-scan-request",
+      clientPayload: {
+        brand_name: fields.brand_name || "Unknown",
+        brand_domain: fields.brand_domain || "",
+        brand_industry: fields.industry || "technology",
+        customer_email: fields.email,
+        lead_id: leadId,
+        typeform_token: payload.form_response.token,
+        source: "typeform",
+      },
+    });
+    if (!dispatchResp.ok) warnings.push(`dispatch: ${dispatchResp.error}`);
+  }
 
   // Note: Email sending + Notion sync happen downstream:
   //   - geo-audit.yml produces the report → commits to repo OR uploads to Supabase
