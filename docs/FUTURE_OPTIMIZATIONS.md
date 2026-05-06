@@ -74,29 +74,30 @@ microservice。屬「研究專案」性質，不阻擋 production roadmap。
 
 ---
 
-## 3. Vercel Cold Start ~600ms — **接受，先不處理**
+## 3. Vercel Cold Start ~600ms — **#1 mitigation 已上線（2026-05-03）**
 
 **背景**
 
 `apps/orchestrator/` 部署在 Vercel Serverless Functions，cold start
 約 600ms。對首次請求或低流量時段體感明顯。
 
-**結論：先接受，等真有客戶反饋再處理。**
+**進度**：
 
-可選方案（按成本由低到高）：
+- ✅ **Keep-warm cron**（已實裝）— `.github/workflows/keep-warm-orchestrator.yml`
+  每 5 分鐘 ping 一次 `/api/healthz`，台灣活躍時段（06:00–22:59
+  GMT+8）保溫，免費 tier 內運作。順帶當 uptime monitor — 若 endpoint
+  5xx / 4xx，PR #53 的 Cron Failure Alert 會自動開 issue。
+- ⬜ **Vercel Pro plan**（$20/月起）— Fluid Compute 能大幅降低 cold
+  start，等月活上來再評估。
+- ⬜ **搬 Railway / Fly.io**（$5/月起）— 常駐 instance，cold start
+  消失，但要重寫部署 + DEPLOY.md。
 
-1. **Keep-warm cron**（免費）— 每 5 分鐘 ping `/api/healthz`，把
-   instance 保溫。GitHub Actions 加一條 cron 即可。
-2. **Vercel Pro plan**（$20/月起）— 有 "Fluid Compute"，能大幅降低
-   cold start，且其他功能都升級。
-3. **搬 Railway / Fly.io**（$5/月起）— 常駐 instance，cold start
-   消失，但要重寫部署 + DEPLOY.md 大改，cron 也要重新規劃。
-
-**觸發訊號**：
+**升級到付費方案的觸發訊號**：
 
 - [ ] 客戶反映 dashboard 第一次開很慢（已聽到 ≥ 3 次）
 - [ ] 日活 > 1K（cold start 機率變高）
 - [ ] 上付費客戶（SLA 敏感度上升）
+- [ ] Keep-warm cron 月用量逼近 GitHub Actions free tier 上限
 
 ---
 
