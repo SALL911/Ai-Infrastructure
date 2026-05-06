@@ -39,3 +39,30 @@ production stack:
 
 Nothing in the wider repo imports from `symcio-growth-system/`, so the
 move has no runtime effect.
+
+### `gpu-ai-workflow/`
+
+Inactive AI/ML inference workflow scaffold — **Python `src/`** + **Node
+`backend/`** + **second Node `brandos-backend/`** + Dockerfile +
+docker-compose + OpenAPI spec. Mixed-language project that proposes a
+GPU-backed brand scoring engine.
+
+**Why archived (2026-05-03):**
+
+- **0 deployments** — no GitHub Action, no Vercel/Netlify config, no
+  Dockerfile in any CI pipeline.
+- **0 references** anywhere else in the repo (verified via grep).
+- **Three competing implementations** in one folder (`src/`,
+  `backend/`, `brandos-backend/`) — none was ever picked as canonical.
+- The actual brand-scoring logic that ships in production lives in
+  `web/landing/lib/scoring.ts` (TypeScript port of
+  `apps/symcio-brand-audit/js/scoring-v2.js`) and in
+  `scripts/bci_engine.py` (cron-driven).
+
+If a future GPU-inference need emerges, the right path is **not** to
+revive this. Pick one runtime (Python or Node, not both), one host
+(RunPod / Lambda Labs / Fly machines GPU tier), and write a fresh
+microservice that talks to the live `apps/orchestrator/` API. This
+folder may still be useful as a reference for the Brand-Scoring math
+(see `examples/brand_scoring_example.py`).
+
