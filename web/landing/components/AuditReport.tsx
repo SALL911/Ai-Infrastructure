@@ -16,6 +16,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Bar, Radar } from "react-chartjs-2";
 import { bciTier, type ScoringResult } from "@/lib/scoring";
+import { contactCtaUrl } from "@/lib/contact";
 import { createClient } from "@/lib/supabase/client";
 
 ChartJS.register(
@@ -502,7 +503,9 @@ export default function AuditReport({
               💬 加入 Discord
             </a>
             <a
-              href="mailto:sall@symcio.tw?subject=品牌AI可見度諮詢"
+              href={contactCtaUrl("consulting")}
+              target="_blank"
+              rel="noopener noreferrer"
               className="rounded-card border border-line-soft px-6 py-3 text-center text-sm font-semibold text-white no-underline hover:border-accent hover:text-accent"
             >
               📞 預約顧問諮詢
