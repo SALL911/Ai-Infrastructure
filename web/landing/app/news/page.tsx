@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
+import { NewsletterSubscribe } from "@/components/NewsletterSubscribe";
 import { createClient } from "@/lib/supabase/server";
 import { getSeedItems, type SeedNewsItem } from "@/lib/news/seed";
 
@@ -166,6 +167,8 @@ export default async function NewsIndexPage({
               label="品牌估值"
             />
           </div>
+
+          <NewsletterSubscribe />
         </div>
       </section>
 
