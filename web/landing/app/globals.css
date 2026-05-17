@@ -1,16 +1,16 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 html, body {
-  background: #0a0a0a;
-  color: #e5e5e5;
+  background: #F7F6F3;
+  color: #1A2E22;
 }
 
 body {
@@ -23,17 +23,22 @@ a {
   @apply underline-offset-4 hover:underline;
 }
 
-/* ============ /docs markdown typography ============ */
+::selection {
+  background: #2A4D3A;
+  color: #F7F6F3;
+}
+
+/* ============ /docs markdown typography (light theme) ============ */
 
 .docs-content {
-  @apply text-base leading-[1.8] text-white/90;
+  @apply text-base leading-[1.8] text-ink/90;
 }
 
 .docs-content h1,
 .docs-content h2,
 .docs-content h3,
 .docs-content h4 {
-  @apply font-bold text-white scroll-mt-20;
+  @apply font-bold text-ink scroll-mt-20;
 }
 
 .docs-content h1 { @apply mt-10 mb-4 text-3xl; }
@@ -46,22 +51,22 @@ a {
 .docs-content ol { @apply my-4 list-decimal pl-6 space-y-2; }
 .docs-content li { @apply marker:text-accent; }
 
-.docs-content strong { @apply font-bold text-white; }
-.docs-content em     { @apply italic text-white/95; }
+.docs-content strong { @apply font-bold text-ink; }
+.docs-content em     { @apply italic text-ink/95; }
 
 .docs-content a {
   @apply text-accent underline decoration-accent/40 hover:decoration-accent;
 }
 
 .docs-content code {
-  @apply font-mono text-[0.9em] bg-surface-2 text-accent px-1.5 py-0.5 rounded border border-line-soft;
+  @apply font-mono text-[0.9em] bg-accent-soft text-accent px-1.5 py-0.5 rounded border border-line;
 }
 
 .docs-content pre {
-  @apply my-6 overflow-x-auto rounded-card border border-line-soft bg-surface-2 p-4 text-sm;
+  @apply my-6 overflow-x-auto rounded-card border border-line bg-surface-2 p-4 text-sm;
 }
 .docs-content pre code {
-  @apply bg-transparent border-0 p-0 text-white;
+  @apply bg-transparent border-0 p-0 text-ink;
 }
 
 .docs-content blockquote {
@@ -72,17 +77,17 @@ a {
   @apply my-6 w-full border-collapse text-sm;
 }
 .docs-content thead {
-  @apply border-b border-line bg-surface;
+  @apply border-b border-line bg-surface-2;
 }
 .docs-content th,
 .docs-content td {
   @apply border border-line px-4 py-2.5 text-left align-top;
 }
 .docs-content th {
-  @apply font-semibold text-white font-mono text-[11px] uppercase tracking-wider;
+  @apply font-semibold text-ink font-mono text-[11px] uppercase tracking-wider;
 }
 .docs-content tbody tr:nth-child(even) {
-  @apply bg-surface/50;
+  @apply bg-surface-2;
 }
 
 .docs-content hr {

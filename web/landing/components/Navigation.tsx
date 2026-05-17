@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 const LINKS: { href: string; label: string }[] = [
+  { href: "/rankings", label: "排行榜" },
   { href: "/audit", label: "診斷" },
   { href: "/news", label: "新聞" },
   { href: "/pricing", label: "方案" },
@@ -32,7 +33,6 @@ export function Navigation() {
           if (!cancelled) setAuthed(!!session?.user);
         });
       } catch {
-        // Supabase not configured — treat as unauthed, CTA is Discord
         if (!cancelled) setAuthed(false);
       }
     })();
@@ -42,22 +42,20 @@ export function Navigation() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-ink/85 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-line bg-bg/85 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <Link
           href="/"
-          className="flex items-center gap-3 no-underline"
+          aria-label="Symcio — 首頁"
+          className="flex items-center no-underline"
           onClick={() => setOpen(false)}
         >
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent font-mono text-xl font-extrabold text-ink">
-            S
-          </span>
-          <span className="flex flex-col leading-none">
-            <span className="text-base font-bold text-white">Symcio</span>
-            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
-              BrandOS
-            </span>
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/symcio-logo.svg"
+            alt="Symcio"
+            className="h-7 w-auto md:h-8"
+          />
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex">
@@ -75,14 +73,14 @@ export function Navigation() {
             <>
               <Link
                 href="/dashboard"
-                className="text-sm font-semibold text-white hover:text-accent no-underline"
+                className="text-sm font-semibold text-ink hover:text-accent no-underline"
               >
                 Dashboard
               </Link>
               <form action="/auth/logout" method="post">
                 <button
                   type="submit"
-                  className="rounded-card border border-line-soft px-4 py-2 text-sm font-semibold text-white hover:border-accent hover:text-accent"
+                  className="rounded-card border border-line px-4 py-2 text-sm font-semibold text-ink hover:border-accent hover:text-accent"
                 >
                   登出
                 </button>
@@ -92,13 +90,13 @@ export function Navigation() {
             <>
               <Link
                 href="/login"
-                className="text-sm font-semibold text-white hover:text-accent no-underline"
+                className="text-sm font-semibold text-ink hover:text-accent no-underline"
               >
                 登入
               </Link>
               <Link
                 href="/signup"
-                className="rounded-card bg-accent px-4 py-2 text-sm font-semibold text-ink no-underline hover:scale-[1.02] transition"
+                className="rounded-card bg-accent px-4 py-2 text-sm font-semibold text-white no-underline hover:bg-accent-dim transition"
               >
                 免費註冊
               </Link>
@@ -111,7 +109,7 @@ export function Navigation() {
           aria-label="開啟選單"
           aria-expanded={open}
           onClick={() => setOpen((s) => !s)}
-          className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-lg border border-line-soft text-white"
+          className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-lg border border-line text-ink"
         >
           <span className="sr-only">menu</span>
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -142,7 +140,7 @@ export function Navigation() {
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className="rounded-card px-3 py-3 text-sm text-white no-underline hover:bg-surface"
+                className="rounded-card px-3 py-3 text-sm text-ink no-underline hover:bg-surface-2"
               >
                 {l.label}
               </Link>
@@ -153,14 +151,14 @@ export function Navigation() {
                 <Link
                   href="/dashboard"
                   onClick={() => setOpen(false)}
-                  className="rounded-card px-3 py-3 text-sm font-semibold text-white no-underline hover:bg-surface"
+                  className="rounded-card px-3 py-3 text-sm font-semibold text-ink no-underline hover:bg-surface-2"
                 >
                   Dashboard
                 </Link>
                 <form action="/auth/logout" method="post" className="mt-1">
                   <button
                     type="submit"
-                    className="w-full rounded-card border border-line-soft px-4 py-3 text-center text-sm font-semibold text-white"
+                    className="w-full rounded-card border border-line px-4 py-3 text-center text-sm font-semibold text-ink"
                   >
                     登出
                   </button>
@@ -171,14 +169,14 @@ export function Navigation() {
                 <Link
                   href="/login"
                   onClick={() => setOpen(false)}
-                  className="rounded-card px-3 py-3 text-sm font-semibold text-white no-underline hover:bg-surface"
+                  className="rounded-card px-3 py-3 text-sm font-semibold text-ink no-underline hover:bg-surface-2"
                 >
                   登入
                 </Link>
                 <Link
                   href="/signup"
                   onClick={() => setOpen(false)}
-                  className="mt-2 rounded-card bg-accent px-4 py-3 text-center text-sm font-semibold text-ink no-underline"
+                  className="mt-2 rounded-card bg-accent px-4 py-3 text-center text-sm font-semibold text-white no-underline"
                 >
                   免費註冊
                 </Link>
