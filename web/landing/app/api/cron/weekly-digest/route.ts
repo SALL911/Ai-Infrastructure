@@ -27,6 +27,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { send as sendEmail } from "@/lib/email/resend";
+import { syncToNotion } from "@/lib/news/notion-sync";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -204,6 +205,23 @@ export async function GET(req: NextRequest) {
     stats.errors.push(`insert digest: ${insErr.message}`);
   } else {
     stats.digest_inserted = true;
+
+    // Archive the digest itself to Notion (fire-and-forget)
+    void syncToNotion({
+      slug: digestSlug,
+      title_zh: titleZh,
+      summary_zh: summaryZh,
+      bci_perspective: bciPerspective,
+      category: "weekly-digest",
+      sdg_number: null,
+      tags: ["weekly-digest", "newsletter"],
+      source: "symcio-editorial",
+      published_at: new Date().toISOString(),
+    }).catch((err) => {
+      stats.errors.push(
+        `notion-sync digest: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    });
   }
 
   // 4. Query active newsletter subscribers

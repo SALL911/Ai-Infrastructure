@@ -84,38 +84,35 @@ curl "https://www.symcio.tw/api/cron/weekly-digest?secret=<CRON_SECRET>"
 
 ---
 
-## 待辦:Notion 同步(下個 sprint)
+## Notion 同步(✅ 已實作 2026-05-18)
 
-**問題**:Vercel Hobby 方案最多 2 個 cron,目前已用完(daily fetch + weekly digest)。
+**Notion 資料庫**:「Symcio Newsletter Archive」
+- URL: https://www.notion.so/f63835c3386943deab6a94f1d44e7df1
+- ID: `f63835c3-3869-43de-ab6a-94f1d44e7df1`
+- 父頁面:BrandOS™
+- 欄位:標題、URL、分類、來源、SDG、發布日期、摘要、BCI 視角、標籤、Slug、同步時間
 
-**解法 3 選 1**:
+**同步邏輯**:`lib/news/notion-sync.ts`(直接呼叫 Notion API,不依賴 Composio)
+- 在 `/api/cron/fetch-news` 每筆 news_items INSERT 成功後 fire-and-forget 呼叫
+- 在 `/api/cron/weekly-digest` 週報 INSERT 成功後同步一份(分類=weekly-digest)
+- 沒設 env vars → no-op,不影響 cron 主流程
 
-### A. 升級 Vercel Pro(USD 20/月)
-然後新增第 3 個 cron `/api/cron/notion-news-sync`,每日跑一次,把 `news_items WHERE notion_synced_at IS NULL` 寫進 Notion 資料庫。
-
-### B. 內嵌進 fetch-news(零成本,推薦)
-在 `app/api/cron/fetch-news/route.ts` 的 INSERT 成功後,立刻呼叫 Composio Notion `create_page` action,把新 item 同步進指定 Notion DB。失敗不影響主流程(graceful degrade)。
-
-**實作步驟**(B 方案,~1 小時):
-1. 在 Notion 建 "Symcio Newsletter Archive" 資料庫,欄位:標題(title)、URL、分類、發布日期、摘要、BCI 視角、SDG、Source
-2. 複製該資料庫 ID(URL 後段 hex)
-3. Vercel 新增 env `NOTION_NEWS_ARCHIVE_DB_ID`
-4. 寫 `lib/news/notion-sync.ts`:
-   ```ts
-   import { executeAction } from "@/lib/agent/composio";
-   export async function syncToNotion(item: NewsItem): Promise<void> {
-     const dbId = process.env.NOTION_NEWS_ARCHIVE_DB_ID;
-     if (!dbId) return; // graceful
-     await executeAction("notion_create_page", {
-       parent: { database_id: dbId },
-       properties: { /* map fields */ },
-     });
-   }
+**啟用 Notion 同步**(一次性 setup):
+1. 前往 https://www.notion.so/my-integrations → 新建 Internal Integration → 複製 token(`secret_xxx`)
+2. 開啟「Symcio Newsletter Archive」資料庫 → 右上 ⋯ → **Connections** → 加入剛剛建的 integration
+3. Vercel env vars:
    ```
-5. 在 fetch-news 的 INSERT 成功後 `void syncToNotion(item).catch(() => {})`
+   NOTION_TOKEN              = secret_xxx
+   NOTION_NEWS_ARCHIVE_DB_ID = f63835c3-3869-43de-ab6a-94f1d44e7df1   (預設值,可省略)
+   ```
+4. 完成。下次 cron 跑時自動同步。
 
-### C. GitHub Actions cron(零成本)
-在 `.github/workflows/notion-news-sync.yml` 新增每日 workflow,呼叫 supabase REST API 撈未同步的 news_items,經 Composio 寫進 Notion。和 Vercel cron 解耦。
+**驗證**:
+```bash
+curl "https://www.symcio.tw/api/cron/fetch-news?secret=<CRON_SECRET>"
+# 回傳 JSON,errors 沒有 notion-sync 字串 = 同步成功
+# 打開 Notion DB 應看到新頁面
+```
 
 **建議:先做 B**(零成本、最少新增的程式碼)。
 
