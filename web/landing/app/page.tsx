@@ -5,9 +5,9 @@ import { Footer } from "@/components/Footer";
 import { contactCtaUrl } from "@/lib/contact";
 
 export const metadata: Metadata = {
-  title: "Symcio BrandOS — 量化品牌 AI 基礎設施系統",
+  title: "Symcio · BrandOS — AI 能見度的量化標準",
   description:
-    "為品牌和自營商打造的 BrandOS。整合 TNFD 框架、Biocredit 自然資本、AI 可見度追蹤 — 讓品牌資本可量化、可追蹤、可治理。依循 ISO 10668。",
+    "3 分鐘看見 AI 怎麼描述你的品牌。跨 ChatGPT / Claude / Gemini / Perplexity 四引擎品牌曝光量化,ABVI 方法論開源公開。框架精神參考 ISO 10668。",
 };
 
 const STAGES = [
