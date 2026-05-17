@@ -30,58 +30,107 @@ function isEmail(s: string): boolean {
 }
 
 export async function POST(req: NextRequest) {
-  let body: { email?: string; display_name?: string; language?: string };
+  // Defensive top-level try/catch — any uncaught exception below would
+  // otherwise return HTTP 500 with empty body, which crashes client .json().
   try {
-    body = (await req.json()) as typeof body;
-  } catch {
-    return NextResponse.json({ ok: false, error: "invalid-json" }, { status: 400 });
-  }
+    let body: { email?: string; display_name?: string; language?: string };
+    try {
+      body = (await req.json()) as typeof body;
+    } catch {
+      return NextResponse.json(
+        { ok: false, error: "invalid-json" },
+        { status: 400 },
+      );
+    }
 
-  const email = (body.email ?? "").trim().toLowerCase();
-  if (!isEmail(email)) {
-    return NextResponse.json({ ok: false, error: "invalid-email" }, { status: 400 });
-  }
+    const email = (body.email ?? "").trim().toLowerCase();
+    if (!isEmail(email)) {
+      return NextResponse.json(
+        { ok: false, error: "invalid-email" },
+        { status: 400 },
+      );
+    }
 
-  const displayName = (body.display_name ?? "").trim().slice(0, 120) || null;
-  const language = (body.language ?? "zh-TW").slice(0, 10);
+    const displayName = (body.display_name ?? "").trim().slice(0, 120) || null;
+    const language = (body.language ?? "zh-TW").slice(0, 10);
 
-  const sb = supabase();
-  if (!sb) {
+    const sb = supabase();
+    if (!sb) {
+      // Graceful: env not yet wired in Vercel. Don't 500 the user —
+      // record their interest in a way they can see + we can recover.
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "subscribe-not-yet-active",
+          message:
+            "電子報訂閱系統尚未啟用(Supabase env 未設)。請來信 info@symcio.tw,我們會手動把你加入名單。",
+        },
+        { status: 503 },
+      );
+    }
+
+    let upsertErrorMsg: string | null = null;
+    try {
+      const { error } = await sb.from("newsletter_subscribers").upsert(
+        {
+          email,
+          display_name: displayName,
+          language,
+          status: "active",
+          source: "website",
+          subscribed_at: new Date().toISOString(),
+          unsubscribed_at: null,
+        },
+        { onConflict: "email" },
+      );
+      if (error) upsertErrorMsg = error.message;
+    } catch (e) {
+      upsertErrorMsg = e instanceof Error ? e.message : String(e);
+    }
+
+    if (upsertErrorMsg) {
+      // Most common cause: newsletter_subscribers table doesn't exist yet
+      // (migration 20260518000000_newsletter.sql not run).
+      const isMissingTable =
+        upsertErrorMsg.toLowerCase().includes("does not exist") ||
+        upsertErrorMsg.toLowerCase().includes("relation") ||
+        upsertErrorMsg.toLowerCase().includes("schema cache");
+      return NextResponse.json(
+        {
+          ok: false,
+          error: isMissingTable ? "table-not-migrated" : "db-error",
+          message: isMissingTable
+            ? "newsletter_subscribers 表尚未在 Supabase 建立。請執行 supabase/migrations/20260518000000_newsletter.sql。"
+            : upsertErrorMsg,
+        },
+        { status: 503 },
+      );
+    }
+
+    // Fire-and-forget welcome email — don't block. If Resend not set,
+    // sendEmail returns { ok:false } gracefully.
+    void sendEmail({
+      from: process.env.NEWSLETTER_FROM ?? "newsletter@symcio.tw",
+      to: email,
+      subject: "歡迎訂閱 Symcio ESG × SDG 週報",
+      html: welcomeHtml(displayName ?? email),
+      replyTo: "info@symcio.tw",
+    }).catch(() => {
+      /* welcome email failure is non-fatal */
+    });
+
+    return NextResponse.json({ ok: true, status: "active" });
+  } catch (err) {
+    // Last-resort handler so the client always gets parseable JSON.
     return NextResponse.json(
-      { ok: false, error: "supabase-not-configured" },
-      { status: 503 },
+      {
+        ok: false,
+        error: "internal-error",
+        message: err instanceof Error ? err.message : String(err),
+      },
+      { status: 500 },
     );
   }
-
-  const { error } = await sb.from("newsletter_subscribers").upsert(
-    {
-      email,
-      display_name: displayName,
-      language,
-      status: "active",
-      source: "website",
-      subscribed_at: new Date().toISOString(),
-      unsubscribed_at: null,
-    },
-    { onConflict: "email" },
-  );
-
-  if (error) {
-    return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
-  }
-
-  // Fire-and-forget welcome email — don't block on it
-  void sendEmail({
-    from: process.env.NEWSLETTER_FROM ?? "newsletter@symcio.tw",
-    to: email,
-    subject: "歡迎訂閱 Symcio ESG × SDG 週報",
-    html: welcomeHtml(displayName ?? email),
-    replyTo: "info@symcio.tw",
-  }).catch(() => {
-    /* welcome email failure is non-fatal */
-  });
-
-  return NextResponse.json({ ok: true, status: "active" });
 }
 
 function welcomeHtml(name: string): string {

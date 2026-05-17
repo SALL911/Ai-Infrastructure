@@ -33,9 +33,22 @@ export function NewsletterSubscribe() {
           language: "zh-TW",
         }),
       });
-      const data: { ok: boolean; error?: string } = await res.json();
-      if (!res.ok || !data.ok) {
-        throw new Error(data.error ?? `HTTP ${res.status}`);
+
+      // Defensive JSON parsing — if server returns empty body
+      // (uncaught exception, gateway timeout), don't throw cryptic
+      // "Unexpected end of JSON input" — show the HTTP status.
+      let data: { ok: boolean; error?: string; message?: string } | null = null;
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error(
+          `伺服器回應異常(HTTP ${res.status})。請稍後再試,或來信 info@symcio.tw。`,
+        );
+      }
+
+      if (!res.ok || !data || !data.ok) {
+        const friendly = data?.message ?? data?.error ?? `HTTP ${res.status}`;
+        throw new Error(friendly);
       }
       setStatus("success");
     } catch (err) {
