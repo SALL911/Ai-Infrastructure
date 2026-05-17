@@ -13,6 +13,7 @@ import {
   type Revenue,
   type ScoringResult,
 } from "@/lib/scoring";
+import { getAttribution } from "@/lib/utm/capture";
 
 const AuditReport = dynamic(() => import("./AuditReport"), { ssr: false });
 
@@ -132,6 +133,34 @@ export default function AuditForm() {
     setResult(r);
     const tier = bciTier(r.BCI);
     ga("report_view", { brand: r.brandName, bci: r.BCI, tier: tier.key });
+
+    // Silent lead capture → leads 表（含 UTM 歸因）。Fire-and-forget，不擋 UI。
+    try {
+      fetch("/api/audit-leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          brand_name_zh: form.brandNameZh,
+          brand_name_en: form.brandNameEn,
+          website: form.website,
+          industry: form.industry,
+          company_size: form.companySize,
+          revenue: form.revenue,
+          email: form.email,
+          contact_name: form.contactName,
+          title: form.title,
+          bci: r.BCI,
+          tier: tier.key,
+          attribution: getAttribution(),
+        }),
+        keepalive: true,
+      }).catch(() => {
+        /* lead 失敗不影響使用者看報告 */
+      });
+    } catch {
+      /* ignore */
+    }
+
     setTimeout(() => {
       reportRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 200);
@@ -141,11 +170,11 @@ export default function AuditForm() {
     <>
       {/* Diagnostic overlay */}
       {diagActive && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-ink/95 p-6 backdrop-blur">
-          <div className="mb-8 flex h-18 w-18 animate-spin-slow items-center justify-center rounded-2xl bg-accent text-4xl font-extrabold text-ink">
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-bg/95 p-6 backdrop-blur">
+          <div className="mb-8 flex h-18 w-18 animate-spin-slow items-center justify-center rounded-2xl bg-accent text-4xl font-extrabold text-white">
             S
           </div>
-          <div className="mb-5 min-h-[28px] text-center text-lg text-white">
+          <div className="mb-5 min-h-[28px] text-center text-lg text-ink">
             {STAGES[stageIdx]?.text ?? ""}
           </div>
           <div className="h-1.5 w-[min(480px,90%)] overflow-hidden rounded-full bg-line">
@@ -174,7 +203,7 @@ export default function AuditForm() {
           <form onSubmit={onSubmit}>
             {step === 1 && (
               <div>
-                <h3 className="mb-5 text-lg font-semibold text-white">
+                <h3 className="mb-5 text-lg font-semibold text-ink">
                   Step 1 · 品牌資料
                 </h3>
 
@@ -241,7 +270,7 @@ export default function AuditForm() {
                     type="button"
                     onClick={toStep2}
                     disabled={!canStep2}
-                    className="rounded-card bg-accent px-7 py-3 text-sm font-semibold text-ink transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-40"
+                    className="rounded-card bg-accent px-7 py-3 text-sm font-semibold text-white transition hover:bg-accent-dim disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     下一步 →
                   </button>
@@ -251,7 +280,7 @@ export default function AuditForm() {
 
             {step === 2 && (
               <div>
-                <h3 className="mb-5 text-lg font-semibold text-white">
+                <h3 className="mb-5 text-lg font-semibold text-ink">
                   Step 2 · 企業資料
                 </h3>
 
@@ -320,7 +349,7 @@ export default function AuditForm() {
                   <button
                     type="button"
                     onClick={() => setStep(1)}
-                    className="rounded-card border border-line-soft px-5 py-3 text-sm font-semibold text-white hover:border-accent hover:text-accent"
+                    className="rounded-card border border-line px-5 py-3 text-sm font-semibold text-ink hover:border-accent hover:text-accent"
                   >
                     ← 上一步
                   </button>
@@ -339,12 +368,7 @@ export default function AuditForm() {
 
       {result && (
         <div ref={reportRef}>
-          <AuditReport
-            result={result}
-            companySize={form.companySize || undefined}
-            revenue={form.revenue || undefined}
-            description={form.description || undefined}
-          />
+          <AuditReport result={result} />
         </div>
       )}
 
@@ -352,17 +376,21 @@ export default function AuditForm() {
         .form-input {
           width: 100%;
           padding: 12px 14px;
-          background: #0a0a0a;
-          border: 1px solid #2a2a2a;
+          background: #FFFFFF;
+          border: 1px solid #E5E2D9;
           border-radius: 8px;
-          color: #f5f5f5;
+          color: #1A2E22;
           font-family: inherit;
           font-size: 15px;
-          transition: border-color 0.15s;
+          transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .form-input::placeholder {
+          color: #94A29A;
         }
         .form-input:focus {
           outline: none;
-          border-color: #c8f55a;
+          border-color: #2A4D3A;
+          box-shadow: 0 0 0 3px rgba(42, 77, 58, 0.12);
         }
         .animate-spin-slow {
           animation: diagSpin 2.5s linear infinite;
