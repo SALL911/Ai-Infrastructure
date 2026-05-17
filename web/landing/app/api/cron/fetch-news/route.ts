@@ -23,6 +23,7 @@ import { enabledSources, type NewsSource } from "@/lib/news/sources";
 import { fetchRss, slugify, type RssEntry } from "@/lib/news/rss";
 import { summarizeNews, type NewsSummary } from "@/lib/news/claude";
 import { buildNewsEmbed, postToDiscord } from "@/lib/news/discord";
+import { syncToNotion } from "@/lib/news/notion-sync";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -208,6 +209,25 @@ export async function GET(req: NextRequest) {
         } else {
           stats.errors.push(`[${source.id}] discord: ${dRes.error}`);
         }
+      }
+
+      // Fire-and-forget Notion archive sync. Don't block cron on it.
+      if (inserted) {
+        void syncToNotion({
+          slug: inserted.slug,
+          title_zh: inserted.title_zh,
+          summary_zh: inserted.summary_zh,
+          bci_perspective: inserted.bci_perspective,
+          category: inserted.category,
+          sdg_number: inserted.sdg_number,
+          tags: inserted.tags,
+          source: inserted.source,
+          published_at: entry.publishedAt ?? null,
+        }).catch((err) => {
+          stats.errors.push(
+            `[${source.id}] notion-sync: ${err instanceof Error ? err.message : String(err)}`,
+          );
+        });
       }
 
       // Gentle rate limit — Claude tier + RSS source politeness
