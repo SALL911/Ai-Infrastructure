@@ -169,6 +169,28 @@ export default async function NewsIndexPage({
           </div>
 
           <NewsletterSubscribe />
+
+          <div className="mt-4 rounded-card border border-line bg-surface-2 p-5">
+            <p className="font-mono text-[10px] uppercase tracking-[2px] text-accent">
+              本週特別工具
+            </p>
+            <div className="mt-2 flex flex-wrap items-start justify-between gap-4">
+              <div className="flex-1 min-w-[240px]">
+                <p className="font-bold text-ink">
+                  你的公司在 EU/US/APAC 永續法規面對什麼?
+                </p>
+                <p className="mt-1 text-sm text-muted">
+                  2 分鐘 AI 評估,涵蓋 ESPR、DPP、CSRD、IFRS S1S2、TNFD。
+                </p>
+              </div>
+              <a
+                href="/tools/compliance-audit"
+                className="rounded-card bg-accent px-5 py-2.5 text-sm font-semibold text-white no-underline hover:bg-accent-dim"
+              >
+                免費評估 →
+              </a>
+            </div>
+          </div>
         </div>
       </section>
 

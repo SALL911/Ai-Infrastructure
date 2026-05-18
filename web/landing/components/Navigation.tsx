@@ -6,12 +6,12 @@ import { createClient } from "@/lib/supabase/client";
 
 const LINKS: { href: string; label: string }[] = [
   { href: "/rankings", label: "排行榜" },
+  { href: "/news", label: "週報" },
+  { href: "/tools/compliance-audit", label: "合規評估" },
   { href: "/audit", label: "診斷" },
-  { href: "/news", label: "新聞" },
   { href: "/pricing", label: "方案" },
   { href: "/docs", label: "文件" },
   { href: "/faq/enterprise", label: "FAQ" },
-  { href: "/tools", label: "工具" },
   { href: "/about", label: "關於" },
 ];
 
