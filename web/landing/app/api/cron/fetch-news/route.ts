@@ -48,7 +48,12 @@ function supabase() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) return null;
-  return createClient(url, key, { auth: { persistSession: false } });
+  try {
+    return createClient(url, key, { auth: { persistSession: false } });
+  } catch {
+    // Most common: SUPABASE_URL is malformed (missing https://, placeholder, etc.)
+    return null;
+  }
 }
 
 function authed(req: NextRequest): boolean {
@@ -72,11 +77,30 @@ export async function GET(req: NextRequest) {
   if (!authed(req)) {
     return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
   }
+  try {
+    return await runFetchNews(req);
+  } catch (err) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "internal-error",
+        message: err instanceof Error ? err.message : String(err),
+      },
+      { status: 500 },
+    );
+  }
+}
 
+async function runFetchNews(_req: NextRequest) {
   const sb = supabase();
   if (!sb) {
     return NextResponse.json(
-      { ok: false, error: "supabase-not-configured" },
+      {
+        ok: false,
+        error: "supabase-not-configured",
+        message:
+          "SUPABASE_URL 或 SUPABASE_SERVICE_ROLE_KEY 未設或值無效(常見:URL 沒含 https://)。",
+      },
       { status: 503 },
     );
   }
