@@ -29,18 +29,68 @@ on:
 
 permissions:
   issues: write
+  actions: read  # 下載失敗 run 的 log zip
 
 jobs:
   alert:
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
     runs-on: ubuntu-latest
     steps:
+      - name: Fetch failure log tail
+        id: log
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          REPO: ${{ github.repository }}
+        # 抓失敗 run 的 log zip，挑失敗 job 的 step log，取最後 ~80 行。
+        # 抓不到 log（權限/網路）就空字串，本步驟絕不能讓 workflow 紅。
+        run: |
+          set +e
+          mkdir -p _logs/extract
+          tail_path=_logs/tail.txt
+          : > "$tail_path"
+
+          # 1. 找出失敗的 job id（一個 workflow_run 可能有多個 job，取第一個 failure）
+          job_id=$(gh api "repos/${REPO}/actions/runs/${RUN_ID}/jobs" \
+            --jq '[.jobs[] | select(.conclusion=="failure")] | .[0].id' 2>/dev/null)
+
+          if [ -z "$job_id" ] || [ "$job_id" = "null" ]; then
+            echo "(no failed job found via API)" >> "$tail_path"
+          else
+            # 2. 抓該 job 的純文字 log（GET .../jobs/{id}/logs 回 text/plain）
+            gh api "repos/${REPO}/actions/jobs/${job_id}/logs" \
+              > _logs/job.log 2> _logs/err.log
+            if [ -s _logs/job.log ]; then
+              # 去掉時間戳前綴，留最後 80 行
+              tail -n 80 _logs/job.log | sed -E 's/^[0-9T:\.Z-]+ //' > "$tail_path"
+            else
+              echo "(failed to download job log)" >> "$tail_path"
+              head -c 500 _logs/err.log >> "$tail_path" 2>/dev/null
+            fi
+          fi
+
+          # GitHub comment 上限 65536；保守給 5000 字元、轉 base64 避免換行/quoting 問題
+          head -c 5000 "$tail_path" | base64 -w0 > _logs/tail.b64
+          echo "tail_b64=$(cat _logs/tail.b64)" >> "$GITHUB_OUTPUT"
+
       - uses: actions/github-script@v7
+        env:
+          TAIL_B64: ${{ steps.log.outputs.tail_b64 }}
         with:
           script: |
             const run = context.payload.workflow_run;
             const shortSha = run.head_sha.substring(0, 7);
             const title = `🚨 [cron-failure] ${run.name}`;
+
+            const tailB64 = process.env.TAIL_B64 || "";
+            const tail = tailB64
+              ? Buffer.from(tailB64, "base64").toString("utf-8")
+              : "";
+            const tailBlock = tail
+              ? "\n<details><summary>Failed step — last 80 lines</summary>\n\n```\n" +
+                tail.replace(/```/g, "ʼʼʼ") +
+                "\n```\n\n</details>\n"
+              : "";
 
             const body = [
               `Workflow [\`${run.name}\`](${run.html_url}) failed.`,
@@ -49,7 +99,7 @@ jobs:
               `- **Branch**: \`${run.head_branch}\``,
               `- **Commit**: \`${shortSha}\``,
               `- **Run**: ${run.html_url}`,
-              ``,
+              tailBlock,
               `### Triage`,
               `1. Open the run URL, find the red step.`,
               `2. If **transient** (rate limit / network / Supabase blip)`,
@@ -62,6 +112,10 @@ jobs:
               `Repeated failures will be appended as comments on this same`,
               `issue (no duplicates).`,
             ].join("\n");
+
+            const followupBody =
+              `Failed again — \`${shortSha}\` on \`${run.head_branch}\`. Run: ${run.html_url}` +
+              tailBlock;
 
             // De-dup: if there's already an OPEN issue with this title +
             // the cron-failure label, comment on it instead of opening a
@@ -76,7 +130,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: issueNumber,
-                body: `Failed again — \`${shortSha}\` on \`${run.head_branch}\`. Run: ${run.html_url}`,
+                body: followupBody,
               });
               core.notice(`Appended comment to existing issue #${issueNumber}`);
             } else {
