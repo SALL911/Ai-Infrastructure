@@ -28,6 +28,13 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { send as sendEmail } from "@/lib/email/resend";
 import { syncToNotion } from "@/lib/news/notion-sync";
+import {
+  renderLinkedInPost,
+  renderTelegramPost,
+  type DigestPostInput,
+} from "@/lib/social/audience-prompts";
+import { postToTelegram } from "@/lib/social/telegram";
+import { emailLinkedInDraft } from "@/lib/social/linkedin-draft";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -63,6 +70,10 @@ interface DigestStats {
   subscribers_total: number;
   emails_sent: number;
   email_failures: number;
+  social: {
+    telegram: "sent" | "skipped" | "failed" | "not-attempted";
+    linkedin_draft: "sent" | "skipped" | "failed" | "not-attempted";
+  };
   errors: string[];
 }
 
@@ -117,6 +128,10 @@ export async function GET(req: NextRequest) {
     subscribers_total: 0,
     emails_sent: 0,
     email_failures: 0,
+    social: {
+      telegram: "not-attempted",
+      linkedin_draft: "not-attempted",
+    },
     errors: [],
   };
 
@@ -271,6 +286,55 @@ export async function GET(req: NextRequest) {
         error: result.error,
       });
     }
+  }
+
+  // 6. Social fanout — Telegram channel + LinkedIn draft email.
+  // Discord already pushed per-item in fetch-news cron; we don't re-push
+  // the digest there to avoid noise.
+  const digestPostInput: DigestPostInput = {
+    title_zh: titleZh,
+    summary_zh: summaryZh.slice(0, 800),
+    bci_perspective: bciPerspective.slice(0, 1500),
+    category: "weekly-digest",
+    sdg_number: null,
+    tags: ["weekly-digest", "newsletter", stats.week_iso],
+    url: `https://www.symcio.tw/news/${digestSlug}`,
+    week_iso: stats.week_iso,
+  };
+
+  // 6a. Telegram channel
+  try {
+    const tg = await postToTelegram(renderTelegramPost(digestPostInput));
+    if (tg.ok) stats.social.telegram = "sent";
+    else if (tg.skipped) stats.social.telegram = "skipped";
+    else {
+      stats.social.telegram = "failed";
+      stats.errors.push(`telegram: ${tg.error}`);
+    }
+  } catch (err) {
+    stats.social.telegram = "failed";
+    stats.errors.push(
+      `telegram exception: ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
+
+  // 6b. LinkedIn draft (email to founder for manual posting)
+  try {
+    const li = await emailLinkedInDraft(
+      renderLinkedInPost(digestPostInput),
+      stats.week_iso,
+    );
+    if (li.ok) stats.social.linkedin_draft = "sent";
+    else if (li.skipped) stats.social.linkedin_draft = "skipped";
+    else {
+      stats.social.linkedin_draft = "failed";
+      stats.errors.push(`linkedin-draft: ${li.error}`);
+    }
+  } catch (err) {
+    stats.social.linkedin_draft = "failed";
+    stats.errors.push(
+      `linkedin-draft exception: ${err instanceof Error ? err.message : String(err)}`,
+    );
   }
 
   return NextResponse.json({ ok: true, stats });

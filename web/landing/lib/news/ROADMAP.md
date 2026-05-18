@@ -137,6 +137,56 @@ curl "https://www.symcio.tw/api/cron/fetch-news?secret=<CRON_SECRET>"
 
 ---
 
+## 社群 Fanout(✅ 已實作 2026-05-18)
+
+**架構**:不新增 Vercel cron(已用滿 2 個),fanout 內嵌於 `/api/cron/weekly-digest` 末段。
+
+**支援平台**:
+
+| 平台 | 模式 | env 需求 | 成本 |
+|---|---|---|---|
+| Discord | 即時 per-item(已存在於 fetch-news) | `DISCORD_NEWS_WEBHOOK_URL` | 免費 |
+| Telegram channel | 每週一週報自動 post | `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHANNEL_ID` | 免費 |
+| LinkedIn(草稿信) | 每週一寄草稿到你信箱,手動 copy-paste | `LINKEDIN_DRAFT_RECIPIENT` | 免費 |
+
+**啟用 Telegram**:
+1. 在 Telegram 跟 `@BotFather` 對話 → `/newbot` → 拿 token
+2. 開一個 public channel(例如 `@symcio_esg`)
+3. 把 bot 加入 channel 並設為 Admin(post messages 權限)
+4. Vercel env:
+   ```
+   TELEGRAM_BOT_TOKEN     = 123456:ABC-DEF...
+   TELEGRAM_CHANNEL_ID    = @symcio_esg
+   ```
+
+**啟用 LinkedIn 草稿信**:
+```
+LINKEDIN_DRAFT_RECIPIENT = sall@symcio.tw
+```
+週一 cron 跑完會寄一封 [LinkedIn Draft] 給你,內含 copy-paste-ready 貼文。
+
+**檔案**:
+- `lib/social/audience-prompts.ts` — 各平台 tone/length/hashtag 規則 + 渲染函數
+- `lib/social/telegram.ts` — Bot API 直接呼叫
+- `lib/social/linkedin-draft.ts` — Resend 寄信
+- `app/api/cron/weekly-digest/route.ts` 末段 — fanout 整合
+
+## Web3 社群平台(下個 sprint 候選)
+
+依優先序:
+
+| 平台 | 為什麼適合 Symcio | 整合方式 | 估時 |
+|---|---|---|---|
+| **Farcaster (Warpcast)** | Web3 最活躍社群,可發 Frame 互動內容(訪客在 Frame 內訂閱 /news) | Neynar API 免費 tier | 半天 |
+| **Mirror.xyz** | Web3 thought leadership,文章可 mint NFT(L3 會員制 collectible) | OAuth + 寫合約呼叫 | 1 天 |
+| **Telegram channel** | 橋接 Web3 + ESG 投資人,亞洲/中東強 | 已實作(見上) | 0 |
+| **(可選) Paragraph.xyz** | Web3 原生 newsletter,token-gated 訂閱對接 L3 | 跟 Mirror 類似 | 1 天 |
+
+建議啟動順序:
+1. **先設 Telegram + LinkedIn(已就緒)** — 0 成本,啟動 0 開發
+2. **Farcaster 第一個 Web3 整合**(因為比 Mirror 簡單,API 免費 + 活躍度最高)
+3. **Mirror.xyz** 用 weekly-digest 同步 mint 文章 NFT,作為 L3 會員專屬 collectible
+
 ## L2 · Compliance Pre-Audit(下下個 Sprint)
 
 > 你的 MCP 設計 L2 名單捕獲層
