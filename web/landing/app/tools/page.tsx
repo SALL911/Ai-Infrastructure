@@ -36,8 +36,16 @@ const TOOLS = [
   },
   {
     code: "04",
+    name: "Compliance Pre-Audit",
+    desc: "輸入公司+品類+市場,AI 2 分鐘產出 EU ESPR/DPP/CSRD、IFRS S1S2、TNFD 等永續合規曝險評估。寄完整報告到信箱。",
+    href: "/tools/compliance-audit",
+    cta: "立即評估",
+    free: true,
+  },
+  {
+    code: "05",
     name: "Typeform 品牌健檢",
-    desc: "非 BCI 路徑的入口 — 給不想填 10 欄的用戶；提交後接 Supabase leads 與 GitHub Actions audit。",
+    desc: "非 BCI 路徑的入口 — 給不想填 10 欄的用戶;提交後接 Supabase leads 與 GitHub Actions audit。",
     href: "/tools/brand-check",
     cta: "開始填寫",
     free: true,
