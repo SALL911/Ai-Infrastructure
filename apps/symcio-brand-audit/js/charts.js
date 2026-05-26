@@ -16,10 +16,10 @@
     return new Chart(el, {
       type: 'radar',
       data: {
-        labels: ['財務品牌價值 (FBV)', '自然資本價值 (NCV)', 'AI 可見度 (AIV)'],
+        labels: ['財務品牌價值 (FBV)', '永續合規價值 (SCV)', 'AI 可見度 (AIV)'],
         datasets: [{
           label: result.brandName,
-          data: [result.FBV, result.NCV, result.AIV],
+          data: [result.FBV, result.SCV, result.AIV],
           backgroundColor: 'rgba(200, 245, 90, 0.18)',
           borderColor: '#c8f55a',
           borderWidth: 2,
