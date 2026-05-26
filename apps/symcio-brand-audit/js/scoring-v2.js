@@ -3,7 +3,14 @@
  * ------------------------------
  * Client-side Brand Capital Index calculation.
  * Deterministic: same input (brand names) → same output (hash-seeded PRNG).
- * ISO 10668-aligned three-layer composition: FBV + NCV + AIV.
+ * Three layers: FBV + SCV + AIV (BCI v1.0).
+ *
+ * BCI = α · FBV + β · SCV + γ · AIV   (α = 0.50, β = 0.25, γ = 0.25)
+ *
+ * SCV note: v1.0 formal definition = 0.40·RCS + 0.40·EDS + 0.20·NCS.
+ * This client-side MVP only computes the NCS sub-indicator proxy via
+ * TNFD LEAP industry baselines; RCS and EDS require server-side data
+ * pipelines and are not implemented here.
  */
 
 (function (root) {
@@ -36,6 +43,8 @@
     '能源環保': 0.35, '其他': 0.50
   };
 
+  // TNFD LEAP industry baselines — used as NCS sub-indicator proxy
+  // within the SCV layer until full RCS/EDS/NCS pipeline is online.
   const INDUSTRY_LEAP = {
     '食品飲料': 72, '科技軟體': 25, '金融服務': 15,
     '零售電商': 35, '製造業': 65, '醫療健康': 40,
@@ -48,7 +57,7 @@
     '科技軟體': [{ name: '台積電', score: 95 }, { name: '趨勢科技', score: 78 }, { name: '訊連科技', score: 55 }],
     '金融服務': [{ name: '國泰金', score: 88 }, { name: '永豐金', score: 72 }, { name: '玉山金', score: 81 }],
     '零售電商': [{ name: 'PChome', score: 65 }, { name: 'momo', score: 78 }, { name: '蝦皮', score: 85 }],
-    '製造業':   [{ name: '鴻海', score: 90 }, { name: '巨大', score: 68 }, { name: '上銀', score: 52 }],
+    '製造業':   [{ name: '鴻海', score: 90 }, { name: '巨大', score: 68 }, { name: '上銘', score: 52 }],
     '醫療健康': [{ name: '長庚', score: 75 }, { name: '慈濟', score: 82 }, { name: '國泰醫', score: 60 }],
     '教育培訓': [{ name: 'TutorABC', score: 55 }, { name: 'Hahow', score: 62 }, { name: '均一', score: 70 }],
     '餐飲服務': [{ name: '鼎泰豐', score: 92 }, { name: '王品', score: 75 }, { name: '八方雲集', score: 58 }],
@@ -78,6 +87,8 @@
     const seed = hashCode(brandNameZh + brandNameEn);
 
     // === Layer 1: FBV (Financial Brand Value) ===
+    // v1.0 formal = ISO 10668 income method (Brand Revenue × Role-of-Brand
+    // × Brand Strength Score ÷ Discount Rate). MVP proxy below.
     const revenueMultiplier = REVENUE_MULT[revenue] ?? 0.5;
     const sizeMultiplier = SIZE_MULT[companySize] ?? 0.5;
     const brandRole = INDUSTRY_BRAND_ROLE[industry] ?? 0.5;
@@ -89,7 +100,10 @@
       brandStrength * 0.1
     ) * (brandStrength / 100);
 
-    // === Layer 2: NCV (Nature Capital Value) ===
+    // === Layer 2: SCV (Sustainability Compliance Value) ===
+    // v1.0 formal = 0.40·RCS + 0.40·EDS + 0.20·NCS (regulation-neutral).
+    // MVP only computes NCS sub-indicator proxy via TNFD LEAP industry
+    // baselines + biocredit estimate; RCS/EDS via server-side pipeline.
     const leapBase = INDUSTRY_LEAP[industry] ?? 30;
     const leapScore = seededRandom(
       seed + 2,
@@ -97,9 +111,11 @@
       Math.min(leapBase + 15, 100)
     );
     const biocreditEstimate = leapScore * revenueMultiplier * 10;
-    const NCV = leapScore * 0.6 + biocreditEstimate * 0.02;
+    const SCV = leapScore * 0.6 + biocreditEstimate * 0.02;
 
     // === Layer 3: AIV (AI Visibility Value) ===
+    // Platform weights per BCI v1.0: ChatGPT 0.35 / Perplexity 0.25 /
+    // Google AI Overview 0.25 / Claude 0.15.
     const hasWebsite = website && /^https?:\/\//i.test(website) ? 15 : 0;
     const baseAI = seededRandom(seed + 3, 15, 55);
 
@@ -115,12 +131,12 @@
       claudeScore * 0.15
     );
 
-    // === BCI total ===
+    // === BCI total — α=0.50, β=0.25, γ=0.25 (BCI v1.0 2026 baseline) ===
     const alpha = 0.50, beta = 0.25, gamma = 0.25;
     const FBV_norm = Math.min(100, FBV * 2.5);
-    const NCV_norm = Math.min(100, NCV * 1.5);
+    const SCV_norm = Math.min(100, SCV * 1.5);
     const AIV_norm = AIV;
-    const BCI = Math.round(alpha * FBV_norm + beta * NCV_norm + gamma * AIV_norm);
+    const BCI = Math.round(alpha * FBV_norm + beta * SCV_norm + gamma * AIV_norm);
 
     // === GEO infrastructure checks ===
     const geoChecks = {
@@ -146,13 +162,13 @@
     });
     if (chatgptScore < 40) recommendations.push({
       priority: '中', title: '提升 ChatGPT 引用率',
-      desc: '品牌在 ChatGPT 的提及率偏低。建議在 LinkedIn、Medium 等平台發布更多與品牌相關的公開內容。',
-      action: '每週發布 2-3 篇與品牌專業領域相關的文章'
+      desc: '品牌在 ChatGPT 的提及率偏低。建議在 LinkedIn、Medium 等平台發佈更多與品牌相關的公開內容。',
+      action: '每週發佈 2-3 篇與品牌專業領域相關的文章'
     });
-    if (NCV_norm < 30) recommendations.push({
-      priority: '中', title: '啟動 TNFD 自然資本評估',
-      desc: '品牌的自然資本價值評分偏低。建議使用 TNFD LEAP 框架進行初步的自然依賴度評估。',
-      action: '使用 npfbriefing.netlify.app 工具進行免費評估'
+    if (SCV_norm < 30) recommendations.push({
+      priority: '中', title: '啟動永續合規評估 (SCV)',
+      desc: '品牌的永續合規價值偏低。BCI v1.0 SCV = 0.40·RCS（法規合規）+ 0.40·EDS（ESG 揭露）+ 0.20·NCS（自然資本）。建議先走完 TNFD LEAP 自然依賴評估（NCS 子指標），同步規劃 CSRD / IFRS S1·S2 揭露路徑。',
+      action: '使用 npfbriefing.netlify.app 工具進行免費評估（NCS 起點）'
     });
     if (recommendations.length < 3) recommendations.push({
       priority: '低', title: '建立品牌 AI 內容策略',
@@ -165,7 +181,7 @@
     return {
       BCI,
       FBV: Math.round(FBV_norm),
-      NCV: Math.round(NCV_norm),
+      SCV: Math.round(SCV_norm),
       AIV: Math.round(AIV_norm),
       chatgptScore: Math.round(chatgptScore),
       perplexityScore: Math.round(perplexityScore),
