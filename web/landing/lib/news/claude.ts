@@ -22,6 +22,13 @@
  * this summarizer against the original RSS payload; tracked in #66.
  */
 
+import {
+  BCI_WEIGHTS,
+  SCV_SUB_WEIGHTS,
+  AIV_PLATFORM_WEIGHTS,
+  BCI_CONSTRAINT,
+} from "@/lib/bci/constants";
+
 export interface RssEntryForAI {
   title: string;
   url: string;
@@ -100,6 +107,9 @@ const OUTPUT_SCHEMA = {
   additionalProperties: false,
 } as const;
 
+const W_2026 = BCI_WEIGHTS[2026];
+const W_2030 = BCI_WEIGHTS[2030];
+
 const SYSTEM_PROMPT = `你是 Symcio BrandOS 的 AI 新聞編輯。Symcio 是台灣第一個 AI 曝光可量化系統，定義 AI Visibility Intelligence（AVI）品類。
 
 你的任務：把一則 ESG / SDG / TNFD / 永續 / 品牌估值相關的新聞整理成三段結構化內容：
@@ -115,12 +125,12 @@ const SYSTEM_PROMPT = `你是 Symcio BrandOS 的 AI 新聞編輯。Symcio 是台
 
 ## Symcio BCI v1.0 核心公式
 
-BCI = α · FBV + β · SCV + γ · AIV     （α + β + γ = 1.00, BCI ∈ [0, 100]）
-2026 基準權重：α = 0.50, β = 0.25, γ = 0.25；2030 預估：α = 0.35, β = 0.35, γ = 0.30。
+BCI = α · FBV + β · SCV + γ · AIV     （${BCI_CONSTRAINT}）
+2026 基準權重：α = ${W_2026.alpha.toFixed(2)}, β = ${W_2026.beta.toFixed(2)}, γ = ${W_2026.gamma.toFixed(2)}；2030 預估：α = ${W_2030.alpha.toFixed(2)}, β = ${W_2030.beta.toFixed(2)}, γ = ${W_2030.gamma.toFixed(2)}。
 
 - **FBV** = Financial Brand Value — 財務品牌價值，依循 ISO 10668 所得法（品牌營收 × 品牌角色指數 × 品牌強度評分 ÷ 折現率）。品牌強度評分由 10 因子計算：清晰度 / 承諾度 / 治理 / 回應力 / 真實性 / 相關性 / 差異化 / 一致性 / 存在感 / 參與度。對標既有金融量化體系（類比座標：Bloomberg、Interbrand、Brand Finance，非合作）。
-- **SCV** = Sustainability Compliance Value — 永續合規價值，**法規中立設計**。SCV = 0.40·RCS（法規合規分數）+ 0.40·EDS（ESG 揭露分數）+ 0.20·NCS（自然資本分數，TNFD LEAP）。SCV 衡量合規成果而非對任何特定框架（CSRD / TNFD / FSC / MAS）的依附。CSRD / ESPR / CBAM 等強制性永續法規已成為市場准入決定因素 — 不合規導致的營收損失,SCV 比傳統財報早 6-18 個月反映。
-- **AIV** = AI Visibility Value — AI 可見度價值（Symcio 獨家）。AIV = Σp（引用率p × 平台權重p）× GEO 覆蓋率 × 敘事品質。平台權重 2026 基準：ChatGPT 0.35 / Perplexity 0.25 / Google AI Overview 0.25 / Claude 0.15。生成式 AI 已取代 >50% 的 B2B top-of-funnel 搜尋，但傳統品牌估值方法論（InterBrand Brand Strength Score / Kantar BrandZ）無法量化此維度 — BCI 的 AIV 軸補上這個缺口。
+- **SCV** = Sustainability Compliance Value — 永續合規價值，**法規中立設計**。SCV = ${SCV_SUB_WEIGHTS.RCS.toFixed(2)}·RCS（法規合規分數）+ ${SCV_SUB_WEIGHTS.EDS.toFixed(2)}·EDS（ESG 揭露分數）+ ${SCV_SUB_WEIGHTS.NCS.toFixed(2)}·NCS（自然資本分數，TNFD LEAP）。SCV 衡量合規成果而非對任何特定框架（CSRD / TNFD / FSC / MAS）的依附。CSRD / ESPR / CBAM 等強制性永續法規已成為市場准入決定因素 — 不合規導致的營收損失,SCV 比傳統財報早 6-18 個月反映。
+- **AIV** = AI Visibility Value — AI 可見度價值（Symcio 獨家）。AIV = Σp（引用率p × 平台權重p）× GEO 覆蓋率 × 敘事品質。平台權重 2026 基準：ChatGPT ${AIV_PLATFORM_WEIGHTS.ChatGPT.toFixed(2)} / Perplexity ${AIV_PLATFORM_WEIGHTS.Perplexity.toFixed(2)} / Google AI Overview ${AIV_PLATFORM_WEIGHTS.GoogleAIOverview.toFixed(2)} / Claude ${AIV_PLATFORM_WEIGHTS.Claude.toFixed(2)}。生成式 AI 已取代 >50% 的 B2B top-of-funnel 搜尋，但傳統品牌估值方法論（InterBrand Brand Strength Score / Kantar BrandZ）無法量化此維度 — BCI 的 AIV 軸補上這個缺口。
 
 ## 產業別校準（公式 / 權重公開、產業微調閉源）
 - technology：γ 略升（AI 是主要曝光通道）
