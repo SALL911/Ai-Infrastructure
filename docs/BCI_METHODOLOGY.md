@@ -95,6 +95,8 @@ AIV = Σp ( 引用率p × 平台權重p ) × GEO 覆蓋率 × 敘事品質
 
 權重由 BCI 方法論委員會每年審查,基於實證指標:法規採用率、消費者 AI 搜尋滲透資料、各維度與後續品牌財務表現的觀察相關性。
 
+> **校準工具與流程**:從資料集產出 / 驗證權重數值的程序、grid search 與 Spearman rank correlation 門檻見 [`private/bci/CALIBRATION.md`](../private/bci/CALIBRATION.md);配套腳本 [`scripts/bci_calibrate.py`](../scripts/bci_calibrate.py)(stdlib-only,本地 + CI 可跑)。產業別校準的實際數值為 Symcio 企業版 IP,但校準**程序**本身公開可審。
+
 ---
 
 ## 四、初步結果（v1.0）

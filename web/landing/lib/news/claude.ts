@@ -13,6 +13,13 @@
  *
  * Output schema: enforced via output_config.format=json_schema so every
  * response is valid JSON matching NewsSummary.
+ *
+ * Methodology version note (BCI v1.0 cut-over):
+ * SYSTEM_PROMPT now describes BCI v1.0 (FBV / SCV / AIV). Existing
+ * news_items.bci_perspective rows written before this cut-over still
+ * contain v0.x F / V / E text and will display alongside new records.
+ * Backfilling old rows requires a separate one-shot script that re-runs
+ * this summarizer against the original RSS payload; tracked in #66.
  */
 
 export interface RssEntryForAI {

@@ -57,7 +57,7 @@
     '科技軟體': [{ name: '台積電', score: 95 }, { name: '趨勢科技', score: 78 }, { name: '訊連科技', score: 55 }],
     '金融服務': [{ name: '國泰金', score: 88 }, { name: '永豐金', score: 72 }, { name: '玉山金', score: 81 }],
     '零售電商': [{ name: 'PChome', score: 65 }, { name: 'momo', score: 78 }, { name: '蝦皮', score: 85 }],
-    '製造業':   [{ name: '鴻海', score: 90 }, { name: '巨大', score: 68 }, { name: '上銘', score: 52 }],
+    '製造業':   [{ name: '鴻海', score: 90 }, { name: '巨大', score: 68 }, { name: '上銀', score: 52 }],
     '醫療健康': [{ name: '長庚', score: 75 }, { name: '慈濟', score: 82 }, { name: '國泰醫', score: 60 }],
     '教育培訓': [{ name: 'TutorABC', score: 55 }, { name: 'Hahow', score: 62 }, { name: '均一', score: 70 }],
     '餐飲服務': [{ name: '鼎泰豐', score: 92 }, { name: '王品', score: 75 }, { name: '八方雲集', score: 58 }],
