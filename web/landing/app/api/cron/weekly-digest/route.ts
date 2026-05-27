@@ -21,6 +21,11 @@
  *   - If RESEND_API_KEY missing → archive digest to news_items but skip email
  *   - If newsletter_subscribers table absent → email count = 0, still archive
  *
+ * Dry-run preview:
+ *   - Pass ?dry_run=1 (or true) to run steps 1–3 only:
+ *       archive digest to news_items + Notion, but skip email send and
+ *       social fanout. Use to preview a digest before broadcasting.
+ *
  * Protected — requires Vercel cron header OR CRON_SECRET.
  */
 
@@ -64,9 +69,11 @@ interface SubscriberRow {
 
 interface DigestStats {
   week_iso: string;
+  dry_run: boolean;
   items_in_window: number;
   by_category: Record<string, number>;
   digest_inserted: boolean;
+  digest_url: string | null;
   subscribers_total: number;
   emails_sent: number;
   email_failures: number;
@@ -112,6 +119,12 @@ function isoWeekLabel(d: Date = new Date()): string {
   return `${dt.getUTCFullYear()}w${String(week).padStart(2, "0")}`;
 }
 
+function isDryRun(req: NextRequest): boolean {
+  const v = new URL(req.url).searchParams.get("dry_run");
+  if (!v) return false;
+  return v === "1" || v.toLowerCase() === "true" || v.toLowerCase() === "yes";
+}
+
 export async function GET(req: NextRequest) {
   if (!authed(req)) {
     return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
@@ -130,7 +143,8 @@ export async function GET(req: NextRequest) {
   }
 }
 
-async function runDigest(_req: NextRequest) {
+async function runDigest(req: NextRequest) {
+  const dryRun = isDryRun(req);
   const sb = supabase();
   if (!sb) {
     return NextResponse.json(
@@ -146,15 +160,17 @@ async function runDigest(_req: NextRequest) {
 
   const stats: DigestStats = {
     week_iso: isoWeekLabel(),
+    dry_run: dryRun,
     items_in_window: 0,
     by_category: {},
     digest_inserted: false,
+    digest_url: null,
     subscribers_total: 0,
     emails_sent: 0,
     email_failures: 0,
     social: {
-      telegram: "not-attempted",
-      linkedin_draft: "not-attempted",
+      telegram: dryRun ? "skipped" : "not-attempted",
+      linkedin_draft: dryRun ? "skipped" : "not-attempted",
     },
     errors: [],
   };
@@ -244,6 +260,7 @@ async function runDigest(_req: NextRequest) {
     stats.errors.push(`insert digest: ${insErr.message}`);
   } else {
     stats.digest_inserted = true;
+    stats.digest_url = `https://www.symcio.tw/news/${digestSlug}`;
 
     // Archive the digest itself to Notion (fire-and-forget)
     void syncToNotion({
@@ -261,6 +278,12 @@ async function runDigest(_req: NextRequest) {
         `notion-sync digest: ${err instanceof Error ? err.message : String(err)}`,
       );
     });
+  }
+
+  // Dry-run: stop here. Archive to news_items + Notion is done; skip
+  // subscriber query, email send, and social fanout.
+  if (dryRun) {
+    return NextResponse.json({ ok: true, stats });
   }
 
   // 4. Query active newsletter subscribers
