@@ -69,8 +69,8 @@ const MODULES = [
   {
     code: "05",
     name: "TNFD / Biocredit",
-    desc: "基於 TNFD LEAP 框架自動化自然資本評估、biocredit 估算、產業依賴度基準,整合進 NCV 分軸。",
-    metrics: ["LEAP 四階段", "Biocredit", "NCV 評分", "自然資本時序"],
+    desc: "基於 TNFD LEAP 框架自動化自然資本評估、biocredit 估算、產業依賴度基準,整合進 SCV 永續合規價值分軸的 NCS 子指標。",
+    metrics: ["LEAP 四階段", "Biocredit", "NCS 子指標", "SCV 時序"],
   },
   {
     code: "06",
@@ -274,7 +274,7 @@ export default function HomePage() {
 
           <div className="mt-8 rounded-card border border-accent/30 bg-accent p-8 md:p-10">
             <div className="text-center font-mono text-xl md:text-2xl text-white">
-              BCI = α · FBV + β · NCV + γ · AIV
+              BCI = α · FBV + β · SCV + γ · AIV
             </div>
             <div className="mt-3 text-center font-mono text-xs text-white/70">
               α = 0.50 · β = 0.25 · γ = 0.25
@@ -295,13 +295,13 @@ export default function HomePage() {
             </div>
             <div className="rounded-card border border-line bg-surface p-6">
               <div className="font-mono text-[11px] uppercase tracking-[2px] text-excellent">
-                NCV
+                SCV
               </div>
               <h3 className="mt-2 text-lg font-bold">
-                Nature Capital Value
+                Sustainability Compliance Value
               </h3>
               <p className="mt-3 text-sm leading-relaxed text-muted">
-                基於 TNFD LEAP 框架;結合產業自然依賴度基準與 Biocredit 估算。
+                法規中立設計 · SCV = 0.40·RCS(法規合規) + 0.40·EDS(ESG 揭露) + 0.20·NCS(自然資本,TNFD LEAP)。
               </p>
             </div>
             <div className="rounded-card border border-line bg-surface p-6">
@@ -591,7 +591,7 @@ export default function HomePage() {
               <div className="text-3xl">📚</div>
               <h3 className="mt-3 text-lg font-bold text-ink">ESGpedia</h3>
               <p className="mt-2 text-sm text-muted">
-                亞太 ESG 資料庫合作夥伴（洽談中）;資料層整合進 NCV 分軸。
+                亞太 ESG 資料庫合作夥伴（洽談中）;資料層整合進 SCV 永續合規分軸。
               </p>
               <div className="mt-4 font-mono text-xs text-accent">
                 esgpedia.io →

@@ -15,7 +15,7 @@ test.describe("Homepage", () => {
     await expect(page.getByText("板塊四 · 商模重構與資本化")).toBeVisible();
 
     // BCI formula
-    await expect(page.getByText(/BCI = α · FBV \+ β · NCV \+ γ · AIV/)).toBeVisible();
+    await expect(page.getByText(/BCI = α · FBV \+ β · SCV \+ γ · AIV/)).toBeVisible();
 
     // 6 modules present
     await expect(page.getByRole("heading", { name: "AI Visibility Index" })).toBeVisible();

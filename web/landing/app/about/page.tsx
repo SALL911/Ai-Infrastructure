@@ -87,14 +87,18 @@ export default function AboutPage() {
                 BCI · Brand Capital Index
               </h2>
               <p className="mt-4 text-ink">
-                Symcio 提出的綜合指標,把金融視角的品牌強度、AI 可見度、
-                品牌參與度三條原本獨立的觀察軸放進同一個時序:
+                Symcio 提出的三維品牌資本量化指標,整合
+                <strong className="text-ink">財務品牌價值（FBV，依循 ISO 10668 所得法）</strong>、
+                <strong className="text-ink">永續合規價值（SCV，法規中立）</strong>與
+                <strong className="text-ink">AI 可見度價值（AIV，跨四引擎引用率）</strong>
+                為單一時序指標:
               </p>
               <p className="mt-3 font-mono text-sm text-accent">
-                BCI = w_F · F + w_V · V + w_E · E
+                BCI = α · FBV + β · SCV + γ · AIV  &nbsp;  (α + β + γ = 1.00, BCI ∈ [0, 100])
               </p>
               <p className="mt-3 text-ink">
-                公式與權重向量於 GitHub 公開。框架精神參考 ISO 10668 國際品牌評價標準,
+                2026 基準權重 α = 0.50 · β = 0.25 · γ = 0.25。公式、權重與校準邏輯完整公開於
+                Symcio Research 獨立研究論文 v1.0。框架精神參考 ISO 10668 國際品牌評價標準,
                 並非該標準的合規認證。BCI 為觀察性指標,不構成品牌估值意見書或財務建議。
               </p>
               <p className="mt-4">

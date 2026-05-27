@@ -1,172 +1,166 @@
 ---
 title: "BCI：AI 時代的品牌資產量化座標系"
-subtitle: "InterBrand 用了 38 年量化品牌價值。但它測不到 ChatGPT 裡你的品牌。"
-author: Symcio
+subtitle: "InterBrand 用了 38 年量化品牌價值。但它測不到 ChatGPT 裡你的品牌,也測不到 CSRD 後你的市場准入風險。"
+author: Symcio Research
 date: 2026-04-22
+last_updated: 2026-05
 platform: Medium
-tags: [AI, Branding, InterBrand, ESG, GEO, AVI, Bloomberg, Symcio]
-canonical: https://symcio.tw/blog/bci-brand-capital-index
+tags: [AI, Branding, InterBrand, ESG, CSRD, GEO, AVI, ISO10668, Symcio]
+canonical: https://symcio-research.netlify.app/blog/bci-brand-capital-index
 language: zh-TW
 english_summary: true
 ---
 
 # BCI：AI 時代的品牌資產量化座標系
 
-> InterBrand 用了 38 年量化品牌價值。但它測不到 ChatGPT 裡你的品牌。
+> InterBrand 用了 38 年量化品牌價值。
+> 但它測不到 ChatGPT 裡你的品牌,也測不到 CSRD 後你的市場准入風險。
 
-2026 年，超過一半的 B2B 採購者在打開 Google 前已先問 AI。而 **InterBrand、Kantar BrandZ、Bloomberg 三家最權威的品牌與金融資料庫裡，完全沒有一個欄位叫「AI 曝光」**。
+2026 年,超過一半的 B2B 採購者在打開 Google 前已先問 AI。同一時間,歐盟 CSRD、ESPR、CBAM、台灣金管會的分階段 ESG 揭露要求,讓「合規準備度」變成市場准入的決定因素。**但 InterBrand、Brand Finance、Bloomberg 三家最權威的品牌與金融資料庫裡,完全沒有一個欄位叫「AI 曝光」,也沒有一個欄位叫「永續合規準備度」**。
 
 不是他們落後。是**底層座標系換了**。
 
-這篇文章介紹 Symcio 定義的新指標：**BCI（Brand Capital Index）**——第一個同時納入財務動能、AI 搜尋曝光、用戶參與度的單一品牌資產時序。
+這篇文章介紹 Symcio Research 發表於 SSRN 的獨立研究論文 v1.0:**BCI（Brand Capital Index, 品牌資本指數）**——第一個同時納入 ISO 10668 所得法、永續法規合規、生成式 AI 引擎可見度的單一品牌資產時序。
 
 ---
 
-## 一、三個不相關的市場，量三種不一樣的東西
+## 一、傳統品牌估值的單維度局限
 
-| 市場 | 代表工具 | 量什麼 | 盲點 |
-|------|---------|-------|-----|
-| 金融估值 | Bloomberg、S&P Capital IQ | 市值、毛利、成長率 | 看不到 AI 曝光、品牌情感 |
-| SEO / 搜尋 | SimilarWeb、SEMrush | 網頁流量、關鍵字排名 | 生成式引擎結果、財務動能 |
-| 品牌顧問 | InterBrand、Kantar BrandZ | 品牌估值、Brand Strength | 年度頻率、AI 時代通路 |
+全球無形資產價值於 2024 年超過 74 兆美元,品牌價值佔其顯著且增長中的部分。然而,用於量化品牌價值的方法論——以 ISO 10668:2010 標準化,由 Interbrand 和 Brand Finance 等機構商業化實施——仍維持根本上的單維度:**衡量品牌對企業盈餘的財務貢獻**。
 
-三家頂尖工具，**三種完全不相關的座標系**。一家品牌若想知道自己真正的「品牌資本」狀態，得買三套資料庫、訓練三組分析師、對賭三種方法論的差異。
+這個方法論的兩個盲點:
 
-BCI 的主張很簡單：把三個市場的訊號，統一成一條時序曲線。
+**第一,永續合規已成為市場准入的決定因素。** 因環境產品法規不合規而失去歐盟市場准入的品牌,遭受的是傳統財務分析在營收損失實際發生前無法捕捉的品牌價值減損。CSRD、ESPR、CBAM、TNFD——這些不是「ESG 加分項」,是「市場准入的最低門檻」。
+
+**第二,生成式 AI 平台已成為消費者品牌發現的重要管道。** 2025 年主要市場已有超過 30% 的消費者透過 ChatGPT、Perplexity、Google AI Overview 而非傳統搜尋引擎進行產品研究。在 AI 生成的推薦中缺席的品牌面臨可衡量的品牌發現風險——目前沒有品牌估值方法論涵蓋此維度。
 
 ---
 
-## 二、InterBrand 的 10 個因子裡，有 3 個在 AI 時代要重寫
-
-InterBrand 的 **Brand Strength Score** 由 10 個因子組成（4 internal + 6 external）。外部 6 因子裡，跟數位 / 用戶參與度最相關的三個是：
-
-### 1. Presence（品牌呈現度）
-InterBrand 定義：品牌在各接觸點的普遍性與熟悉度。
-資料源：消費者調研、媒體監測、廣告支出。
-
-**AI 時代的問題**：ChatGPT 不做 impression，AI 引擎只做「提及」或「不提及」。品牌在 30 個 AI 答案裡只出現 3 次，這個事實不會出現在任何 InterBrand 資料裡。
-
-### 2. Engagement（品牌參與度）
-InterBrand 定義：使用者與品牌的情感 / 功能互動深度。
-資料源：NPS、社群互動率、重複購買。
-
-**AI 時代的問題**：AI 引擎在回答時會用「推薦」「首選」「業界標竿」之類的語言——也會用「過時」「小眾」「已被取代」。這些詞彙對品牌資本的訊號強度，遠高於社群留言數，但沒有人在量。
-
-### 3. Relevance（品牌切合度）
-InterBrand 定義：與目標受眾需求與文化情境的契合度。
-資料源：受眾匹配度、轉換率、CAC 效率。
-
-**AI 時代的問題**：AI 在 category-prompt（「最好的 XX 是？」）中主動提及你的品牌的頻率，是 relevance 最直接的訊號。這個訊號在廣告後台看不到。
-
-**Symcio 的立場**：這三個因子不是要升級，是**換了底層座標系**。InterBrand 的方法論對網頁+廣告時代仍然有效；BCI 是對 AI 時代另寫的一套。
-
----
-
-## 三、BCI 公式（公開抽象）
+## 二、BCI 公式（公開、可獨立複製）
 
 ```
-BCI(b, t) = w_F · F(b, t) + w_V · V(b, t) + w_E · E(b, t)
+BCI = α · FBVnorm + β · SCVnorm + γ · AIVnorm
 
-其中：
-  F = Financial Capital       金融資本
-  V = AI Visibility Capital   AI 可見度資本  ← Symcio 獨家
-  E = Engagement Capital      品牌參與度資本
+其中:
+  FBV = Financial Brand Value             財務品牌價值（ISO 10668 所得法）
+  SCV = Sustainability Compliance Value   永續合規價值（法規中立）
+  AIV = AI Visibility Value               AI 可見度價值
 
-  w_F + w_V + w_E = 1         ← 產業別權重向量（核心 IP）
+  α + β + γ = 1.00
+  BCI ∈ [0, 100]
+
+2026 基準權重: α = 0.50, β = 0.25, γ = 0.25
+2030 預估權重: α = 0.35, β = 0.35, γ = 0.30
 ```
 
-三個子項皆正規化到 `[0, 100]`，最終 BCI ∈ `[0, 100]`。
+三個子項皆經 min-max 標準化到 `[0, 100]`,最終 BCI ∈ `[0, 100]`。
 
-### F · Financial Capital
-沿用金融市場的既有訊號：市值、年營收成長、營業利益率、Beta。資料源透過 **MarketDataProvider** 抽象層，預設走 Yahoo Finance + 公開資訊觀測站；企業客戶若自備 Bloomberg Terminal 授權，可接 Bloomberg adapter。
+### FBV · 財務品牌價值（ISO 10668 所得法）
 
-### V · AI Visibility Capital
-Symcio 獨家。對每個品牌執行跨 **ChatGPT / Claude / Gemini / Perplexity** 四引擎的 prompt 抽樣，解析：
-- `MentionRate` — 品牌在相關 prompt 中被提及的比例
-- `AvgRank` — 被提及時的平均排名
-- `SentimentScore` — 提及時的語意傾向（positive / neutral / negative）
-- `CompetitorShare` — 同框出現的競品數量
+```
+FBV = 品牌營收 × 品牌角色指數 × 品牌強度評分 ÷ 折現率
+```
 
-### E · Engagement Capital
-對應 InterBrand 的 Engagement + Relevance 因子，但資料源換成 AI 時代可得的訊號：
-- `DigitalSOV` — 數位 Share of Voice
-- `NPSProxy` — NPS 或其代理訊號
-- `AdvocacyLexiconHits` — AI 回應中出現「推薦」類語言的頻率
-- `CategoryRelevance` — Category prompt 主動提及率
+品牌營收從企業總營收中分離品牌貢獻;品牌角色指數(0-1)衡量品牌在購買決策中的影響權重;品牌強度評分(0-100)由 10 個因子組成:清晰度、承諾度、治理、回應力、真實性、相關性、差異化、一致性、存在感、參與度。折現率反映品牌特定風險。
 
-### 為什麼權重要保密
-頂層 `w_F / w_V / w_E` 與子項係數 `a*, b*, c*` 由產業別決定，並依金融市場、AI 引擎的結構性變化定期更新。**這組向量是 Symcio 的核心技術護城河**——就像 Google PageRank 當年不可能公開的邏輯一樣。公式抽象公開，權重數值閉源，這是 Symcio 的戰略邊界。
+### SCV · 永續合規價值（法規中立設計）
+
+```
+SCV = 0.40 · RCS + 0.40 · EDS + 0.20 · NCS
+
+  RCS = 法規合規分數 — 目標市場永續法規合規準備度
+  EDS = ESG 揭露分數 — GRI / SASB / IFRS S1·S2 / GHG Scope 1·2·3 覆蓋
+  NCS = 自然資本分數 — TNFD LEAP 或產業基準估算
+```
+
+台灣上市櫃公司的 SCV 反映金管會要求;出口歐盟的製造商的 SCV 額外反映 ESPR 和 CBAM 準備度;新加坡企業的 SCV 反映 MAS 永續報告指引。**沒有任何單一法規框架在評分方法論中被特殊對待**——這是 BCI 跨司法管轄區可適用性的核心設計。
+
+### AIV · AI 可見度價值
+
+```
+AIV = Σp ( 引用率p × 平台權重p ) × GEO 覆蓋率 × 敘事品質
+
+平台權重 (2026):
+  ChatGPT 0.35 + Perplexity 0.25 + Google AI Overview 0.25 + Claude 0.15
+```
+
+對每個品牌執行 100 個標準化產業查詢,跨四引擎抽樣,計算引用率;乘以品牌結構化資料完整度(Wikidata、Schema.org、Google Knowledge Panel)與 AI 生成描述的敘事品質。
 
 ---
 
-## 四、為什麼 Symcio 敢給 AI 可見度這麼重的權重
+## 三、為什麼是這三個維度
 
-市面上所有品牌資產量化工具的共同盲點：**沒有一家有跨四引擎的同框 benchmarking 資料**。
+InterBrand 的 Brand Strength Score 由 10 個因子組成(4 internal + 6 external),這份框架對網頁 + 廣告時代仍然有效。BCI v1.0 沒有重新發明這 10 個因子——**它們進入了 FBV 的「品牌強度評分」項**。
 
-- InterBrand：一年出一次，人工分析為主
-- Kantar BrandZ：消費者調研為主
-- Bloomberg：金融資料深，品牌資產面僅提供第三方授權（InterBrand 之一）
-- SimilarWeb / SEMrush：網站 / Google 搜尋訊號，不碰生成式引擎
+BCI 真正新增的兩個維度:
 
-Symcio 從 2026 年 Q1 開始，每天對 ChatGPT、Claude、Gemini、Perplexity 跑產業標準化 prompt，累積出目前台灣唯一、全球少數的跨引擎品牌可見度資料集。
+1. **SCV** 對應的是 InterBrand / Brand Finance 模型完全沒有的欄位:**強制性永續法規的合規準備度**。在 CSRD / ESPR / CBAM / TNFD 的世界裡,合規不合規不再是「ESG 評等加減分」,而是「能否賣進歐盟」「能否拿到銀行授信」「能否簽 B2B 大客戶」。
+2. **AIV** 對應的是 SimilarWeb / SEMrush 完全沒有的欄位:**生成式 AI 引擎裡的品牌曝光**。當 30% 的消費者已經從 ChatGPT、Perplexity 取代 Google,「在 AI 答案裡缺席」就是可量化的品牌價值減損。
 
-這個資料集支撐的 V 分量，在 technology / 消費品產業的 `w_V` 權重往往**高於 w_F（金融）**。意思是：在 AI 時代，ChatGPT 怎麼回答你的品牌，比你這季的毛利更預測未來 12 個月的品牌動能。
+**Symcio Research 的主張**:BCI 不是要取代 ISO 10668。BCI **延伸** ISO 10668——把單維度的財務估值框架擴展為三維,涵蓋兩個 ISO 10668:2010 制定當年還不存在的市場現實(永續法規 × 生成式 AI)。
+
+---
+
+## 四、初步驗證結果
+
+以 30 家台灣上市櫃公司為樣本,涵蓋 10 個產業,初步模擬結果:
+
+- BCI 分數範圍:22–95(平均 58.3,標準差 19.7)
+- FBV 與 AIV 相關:中度(r = 0.62)— 相關但獨立維度
+- FBV 與 SCV 相關:弱(r = 0.31)— 確認財務表現與永續合規立場的獨立性
+- 三因子模型比單一 FBV 多解釋約 15–20% 的後續 6 個月營收變動
+
+> 以上為初步模擬;使用實際評估資料的實證驗證將於 v2.0 進行。
 
 ---
 
 ## 五、與既有方法論的邊界
 
-Symcio 對 InterBrand / Kantar / Bloomberg 的立場非常清楚：
+Symcio Research 對 Interbrand、Brand Finance、Bloomberg 的立場:
 
-- **致敬**：這三家是品牌量化 / 金融量化的巨人。我們不假裝在重新發明火。
-- **不合作**：BCI 是 Symcio 獨立定義的指標，與 InterBrand 的 Brand Strength Score、Bloomberg 的任何專屬指標均無授權、合作或代表關係。
-- **不抄欄位**：BCI 的 F / V / E 三維是 Symcio 重新設計的資料模型，與上述三家的內部欄位結構不重疊。
-- **互補而非取代**：企業若已訂 InterBrand 年度報告、Bloomberg Terminal，BCI 是**補上 AI 時代缺失的維度**，不是要取代。
-
-這個邊界寫進了我們的技術文件 `docs/BCI_METHODOLOGY.md`，也寫進了我們的合規政策。
+- **致敬**:這三家是品牌量化 / 金融量化的巨人。我們不假裝在重新發明火。
+- **不合作**:BCI 是 Symcio 獨立定義的指標,與 Interbrand 的 Brand Strength Score、Brand Finance 的 Brand Strength Index、Bloomberg 的任何專屬指標均無授權、合作或代表關係。
+- **不抄欄位**:BCI 的 FBV / SCV / AIV 三維是 Symcio Research 重新設計的資料模型,與上述三家的內部欄位結構不重疊。
+- **互補而非取代**:企業若已訂 Interbrand 年度報告、Bloomberg Terminal,BCI 是**補上 ISO 10668 框架外缺失的兩個維度**,不是要取代。
 
 ---
 
-## 六、公開版 vs 企業版
+## 六、治理與透明度
 
-| 項目 | 公開版（免費）| 企業版（付費）|
-|------|------------|------------|
-| 公式抽象 | ✅ 完整公開 | ✅ 完整公開 |
-| 權重向量 | ❌ 僅結構，不給值 | ✅ 產業別實際權重 |
-| 資料更新頻率 | 每日 | 每日 + 即時 webhook |
-| AI 引擎覆蓋 | 4（ChatGPT / Claude / Gemini / Perplexity）| 4 + 企業自建 |
-| F-axis 資料源 | Yahoo Finance + MOPS TW | 上述 + 客戶自備 Bloomberg Terminal |
-| 歷史時序深度 | 最近 90 天 | 完整歷史 + API |
-| 產業別 benchmark | ❌ | ✅ |
-| 自訂權重（客戶定義）| ❌ | ✅ |
-| API 回傳欄位 | total_bci + updated_at | 子項分數 + raw metrics |
-| SLA | Best effort | 99.5% |
+**方法論委員會** — 三個獨立席位:財務估值委員(CVA/ASA 或同等資格)、永續科學委員(環境法規與合規專業)、AI 資料科學委員(NLP/ML 研究專業)。每季召開方法論審查會議,審查報告對外公開。
 
-公開版已上線：`GET https://symcio.tw/api/bci/{brand}`（尚未填資料的品牌回 404）。
+**開放方法論** — BCI 公式、權重參數和標準化基準完整公開。任何第三方均可使用公開的方法論和公開資料源獨立複製 BCI 計算。
+
+**版本控制** — 所有方法論變更均記錄變更理由與生效日期。歷史 BCI 分數保留其計算時使用的方法論版本。
 
 ---
 
 ## 七、開發者資訊
 
-- 方法論白皮書：[docs/BCI_METHODOLOGY.md](https://github.com/SALL911/BrandOS-Infrastructure/blob/main/docs/BCI_METHODOLOGY.md)
-- 引擎原始碼：[scripts/bci_engine.py](https://github.com/SALL911/BrandOS-Infrastructure/blob/main/scripts/bci_engine.py)
-- Provider 抽象層：[scripts/providers/](https://github.com/SALL911/BrandOS-Infrastructure/tree/main/scripts/providers)
-- SQL schema：[supabase/migrations/](https://github.com/SALL911/BrandOS-Infrastructure/tree/main/supabase/migrations)
+- 方法論技術文件:[docs/BCI_METHODOLOGY.md](https://github.com/SALL911/BrandOS-Infrastructure/blob/main/docs/BCI_METHODOLOGY.md)
+- 引擎原始碼:[scripts/bci_engine.py](https://github.com/SALL911/BrandOS-Infrastructure/blob/main/scripts/bci_engine.py)
+- Provider 抽象層:[scripts/providers/](https://github.com/SALL911/BrandOS-Infrastructure/tree/main/scripts/providers)
+- SQL schema:[supabase/migrations/](https://github.com/SALL911/BrandOS-Infrastructure/tree/main/supabase/migrations)
+- SSRN 獨立研究論文:Huang, Chih-Chuan (2026), *品牌資本指數（BCI）方法論白皮書 v1.0*
 
 ---
 
 ## English Summary
 
-**BCI (Brand Capital Index)** is Symcio's new metric that unifies three traditionally disconnected markets — financial valuation (Bloomberg), AI search visibility (Symcio-exclusive, four-engine), and digital engagement (InterBrand's Engagement + Relevance re-defined for the AI era) — into a single daily time series.
+**BCI (Brand Capital Index)** is a three-dimensional brand-valuation framework that extends the ISO 10668:2010 income-method approach to cover two market dimensions that did not exist when the standard was drafted: (1) mandatory sustainability-regulation compliance readiness, and (2) generative-AI-engine visibility.
 
-Formula: `BCI = w_F·F + w_V·V + w_E·E`, industry-specific weights kept as Symcio IP, formula abstract fully open-sourced.
+Formula: `BCI = α·FBV + β·SCV + γ·AIV`, with `α + β + γ = 1`. 2026 baseline weights: `α = 0.50, β = 0.25, γ = 0.25`. 2030 projection: `α = 0.35, β = 0.35, γ = 0.30`.
 
-Why now: InterBrand's Brand Strength Score was built for a web-and-advertising world. ChatGPT / Claude / Gemini / Perplexity now drive >50% of B2B purchase discovery, but none of the legacy brand-valuation indices have an "AI visibility" axis. BCI fills that gap.
+- **FBV** — Financial Brand Value, computed via ISO 10668 income method: Brand Revenue × Role-of-Brand Index × Brand Strength Score ÷ Discount Rate.
+- **SCV** — Sustainability Compliance Value, weighted `0.40 · RCS + 0.40 · EDS + 0.20 · NCS` (Regulatory Compliance / ESG Disclosure / Natural Capital). **Regulation-neutral by design**: measures compliance outcomes rather than adherence to any specific framework, ensuring cross-jurisdictional applicability (EU CSRD/ESPR/CBAM, Taiwan FSC, Japan TCFD, Singapore MAS, etc.).
+- **AIV** — AI Visibility Value across ChatGPT (0.35), Perplexity (0.25), Google AI Overview (0.25), Claude (0.15), multiplied by GEO infrastructure completeness and narrative quality.
+
+Validation: 30 Taiwan-listed companies, 10 industries, simulated three-factor model explains 15–20% additional variance in 6-month forward revenue vs. single-FBV baseline. FBV ↔ SCV correlation r = 0.31 (weak), confirming sustainability compliance captures an independent dimension.
+
+BCI is independently defined by Symcio Research. Interbrand / Brand Finance / Bloomberg are referenced as nominative fair-use analogues only — no partnership, authorized-representative, or redistribution claim.
 
 Open methodology: [github.com/SALL911/BrandOS-Infrastructure](https://github.com/SALL911/BrandOS-Infrastructure) · Public API: `GET https://symcio.tw/api/bci/{brand}`.
 
-Legal note: BCI is independently defined by Symcio. Bloomberg / InterBrand / Kantar are referenced as nominative fair-use analogues only; no partnership, authorized-representative, or redistribution claim.
-
 ---
 
-*Symcio 是 AI Visibility Intelligence (AVI) 平台。我們量化企業在 ChatGPT、Claude、Gemini、Perplexity 四個 AI 引擎裡的曝光、排名與影響力。免費健檢：[symcio.tw/tools/brand-check](https://symcio.tw/tools/brand-check)。*
+*Symcio Research 發表的 BCI 方法論論文以開放方法論形式發布;任何第三方均可使用公開的參數和公開資料源獨立複製計算。本文章旨在學術討論,不構成投資建議。*

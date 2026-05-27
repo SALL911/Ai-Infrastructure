@@ -69,7 +69,7 @@
       <!-- Section 2: Radar -->
       <section class="section">
         <h2>2 · BCI 三維分析</h2>
-        <h3>FBV · NCV · AIV 三軸雷達</h3>
+        <h3>FBV · SCV · AIV 三軸雷達</h3>
         <div class="chart-box" style="max-width:500px;margin:0 auto;">
           <canvas id="radar-chart" height="340"></canvas>
         </div>
@@ -110,13 +110,13 @@
         <h2>7 · 方法論說明</h2>
         <details class="methodology">
           <summary>BCI 方法論、權重與依據</summary>
-          <div class="formula">BCI = α · FBV + β · NCV + γ · AIV &nbsp;&nbsp; (α=0.50, β=0.25, γ=0.25)</div>
-          <p><b>FBV · Financial Brand Value</b>：依循 ISO 10668 財務精神，整合營收、公司規模、產業品牌角色指數 (Brand Role Index)、品牌強度。</p>
-          <p><b>NCV · Nature Capital Value</b>：基於 TNFD LEAP 框架，結合產業自然依賴度基準與 biocredit 估算。</p>
-          <p><b>AIV · AI Visibility Value</b>：Symcio 獨創；跨 ChatGPT (35%) / Perplexity (25%) / Google AI (25%) / Claude (15%) 加權提及率。</p>
+          <div class="formula">BCI = α · FBV + β · SCV + γ · AIV &nbsp;&nbsp; (α=0.50, β=0.25, γ=0.25 · BCI v1.0 2026 baseline)</div>
+          <p><b>FBV · Financial Brand Value</b>：依循 ISO 10668 所得法（品牌營收 × 品牌角色指數 × 品牌強度評分 ÷ 折現率）。</p>
+          <p><b>SCV · Sustainability Compliance Value</b>：BCI v1.0 完整定義 = 0.40·RCS（法規合規）+ 0.40·EDS（ESG 揭露）+ 0.20·NCS（自然資本，TNFD LEAP），法規中立設計。本 audit MVP 目前以 NCS 子指標代理計算。</p>
+          <p><b>AIV · AI Visibility Value</b>：Symcio Research 定義；跨 ChatGPT (35%) / Perplexity (25%) / Google AI Overview (25%) / Claude (15%) 加權提及率。</p>
           <p style="margin-top:10px;">
-            本報告為 MVP v2 版本（含 Prompt Scoring）。生產環境會串接真實 API 結果；方法論定義見
-            <a href="https://github.com/sall911/symcio" target="_blank" rel="noopener">github.com/sall911/symcio</a>。
+            本報告為 MVP v2 版本（含 Prompt Scoring）。生產環境會串接真實 API 結果；完整方法論見
+            <a href="https://symcio-research.netlify.app" target="_blank" rel="noopener">Symcio Research · BCI v1.0 白皮書</a>。
           </p>
         </details>
       </section>

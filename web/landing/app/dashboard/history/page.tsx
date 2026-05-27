@@ -97,7 +97,7 @@ export default async function HistoryPage() {
                 <th className="px-5 py-3">產業</th>
                 <th className="px-5 py-3">BCI</th>
                 <th className="px-5 py-3">FBV</th>
-                <th className="px-5 py-3">NCV</th>
+                <th className="px-5 py-3">SCV</th>
                 <th className="px-5 py-3">AIV</th>
                 <th className="px-5 py-3">評等</th>
                 <th className="px-5 py-3">日期</th>

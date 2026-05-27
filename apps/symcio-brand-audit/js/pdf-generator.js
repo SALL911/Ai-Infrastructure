@@ -1,6 +1,8 @@
 /**
  * PDF report generator using html2pdf.js (loaded from CDN in report.html).
  * Builds the report HTML inside #pdf-content, renders to A4 PDF.
+ *
+ * Aligned with BCI v1.0 (FBV + SCV + AIV).
  */
 
 (function (root) {
@@ -13,7 +15,7 @@
   }
 
   function buildPdfContent(result) {
-    const { brandName, industry, BCI, FBV, NCV, AIV,
+    const { brandName, industry, BCI, FBV, SCV, AIV,
       chatgptScore, perplexityScore, googleAIScore, claudeScore,
       geoChecks, geoScore, recommendations, competitors } = result;
     const tier = root.SymcioScoring.bciTier(BCI);
@@ -62,9 +64,9 @@
         <table>
           <thead><tr><th>維度</th><th>分數</th><th>說明</th></tr></thead>
           <tbody>
-            <tr><td>FBV · 財務品牌價值</td><td>${FBV}/100</td><td>依循 ISO 10668 財務法精神；整合營收、規模、品牌角色與強度。</td></tr>
-            <tr><td>NCV · 自然資本價值</td><td>${NCV}/100</td><td>基於 TNFD LEAP 框架；反映產業自然依賴度與 biocredit 潛力。</td></tr>
-            <tr><td>AIV · AI 可見度價值</td><td>${AIV}/100</td><td>跨 ChatGPT / Perplexity / Google AI / Claude 的加權提及率。</td></tr>
+            <tr><td>FBV · 財務品牌價值</td><td>${FBV}/100</td><td>依循 ISO 10668 所得法；品牌營收 × 角色指數 × 強度評分 ÷ 折現率。</td></tr>
+            <tr><td>SCV · 永續合規價值</td><td>${SCV}/100</td><td>v1.0 = 0.40·RCS + 0.40·EDS + 0.20·NCS（本 MVP 以 NCS / TNFD LEAP 代理）。</td></tr>
+            <tr><td>AIV · AI 可見度價值</td><td>${AIV}/100</td><td>跨 ChatGPT (35%) / Perplexity (25%) / Google AI Overview (25%) / Claude (15%) 加權提及率。</td></tr>
           </tbody>
         </table>
       </div>
@@ -104,12 +106,12 @@
       <div class="pdf-page" style="page-break-after:auto;">
         <h2 style="font-size:18px;border-bottom:2px solid #0a0a0a;padding-bottom:6px;margin-bottom:16px;">六、關於 Symcio</h2>
         <p style="font-size:13px;color:#333;margin-bottom:12px;">
-          Symcio（全識）是台灣第一個 AI 曝光可量化系統。BCI 方法論依循 ISO 10668 國際品牌評價標準，整合：
+          Symcio（全識）是台灣第一個 AI 曝光可量化系統。BCI v1.0 方法論以 ISO 10668 國際品牌評價標準為架構，整合：
         </p>
         <ul style="font-size:13px;color:#333;padding-left:20px;line-height:1.8;">
-          <li>Interbrand 財務品牌估值精神（FBV）</li>
-          <li>TNFD LEAP 自然資本框架（NCV）</li>
-          <li>Symcio 獨創跨四引擎 AI 可見度（AIV）</li>
+          <li>FBV · 財務品牌價值（ISO 10668 所得法）</li>
+          <li>SCV · 永續合規價值（0.40·RCS + 0.40·EDS + 0.20·NCS，法規中立設計）</li>
+          <li>AIV · AI 可見度價值（Symcio Research 独創，跨四引擎）</li>
         </ul>
         <h3 style="font-size:14px;margin-top:20px;margin-bottom:8px;">建議下一步：</h3>
         <ul style="font-size:13px;color:#333;padding-left:20px;line-height:1.8;">
@@ -123,7 +125,7 @@
           GitHub：github.com/sall911/symcio
         </p>
         <div class="footer">
-          本報告由 Symcio Brand Capital Index (BCI) 方法論生成 · 依循 ISO 10668 · CONFIDENTIAL
+          本報告由 Symcio Brand Capital Index (BCI) v1.0 方法論生成 · 依循 ISO 10668 · CONFIDENTIAL
         </div>
       </div>
     `;
