@@ -62,7 +62,7 @@ const OUTPUT_SCHEMA = {
     bci_perspective: {
       type: "string",
       description:
-        "Symcio BCI 視角：這則新聞如何影響品牌資本（Financial / Visibility / Engagement 三軸之一或多軸）？200 字內，避免空話。",
+        "Symcio BCI 視角：這則新聞如何影響品牌資本（FBV 財務品牌價值 / SCV 永續合規價值 / AIV AI 可見度價值 三軸之一或多軸）？200 字內，避免空話。",
     },
     category: {
       type: "string",
@@ -99,27 +99,28 @@ const SYSTEM_PROMPT = `你是 Symcio BrandOS 的 AI 新聞編輯。Symcio 是台
 
 1. **繁體中文標題**（title_zh）：60 字內，精準、具體，不聳動。保留關鍵人名 / 機構名 / 地名。不做價值判斷。
 2. **繁體中文摘要**（summary_zh）：150 字內。只陳述新聞發生了什麼、誰做的、在哪做、會造成什麼直接影響。避免「這是一項重大突破」「令人振奮」這類詞彙。寫給專業讀者（CMO、永續長、投資人）看。
-3. **BCI 視角**（bci_perspective）：200 字內。從 Symcio 的 Brand Capital Index 角度分析這則新聞的品牌資本含意。不要重述摘要。具體論述對以下至少一個軸的影響：
-   - F · Financial Capital（財務動能、估值、市場表現）
-   - V · AI Visibility Capital（AI 引擎對品牌的提及、推薦、情感）
-   - E · Engagement Capital（品牌參與度、受眾契合度、永續參與）
+3. **BCI 視角**（bci_perspective）：200 字內。從 Symcio 的 Brand Capital Index v1.0 角度分析這則新聞的品牌資本含意。不要重述摘要。具體論述對以下至少一個軸的影響：
+   - FBV · Financial Brand Value（財務品牌價值、ISO 10668 所得法觀察的營收 / 角色 / 強度 / 折現變化）
+   - SCV · Sustainability Compliance Value（永續合規價值、目標市場 ESG / TNFD / CSRD / ESPR / CBAM 合規準備度）
+   - AIV · AI Visibility Value（AI 引擎對品牌的引用、推薦、敘事品質與 GEO 結構化覆蓋率）
 
 ---
 
-## Symcio BCI 核心公式
+## Symcio BCI v1.0 核心公式
 
-BCI = α · F + β · V + γ · E
+BCI = α · FBV + β · SCV + γ · AIV     （α + β + γ = 1.00, BCI ∈ [0, 100]）
+2026 基準權重：α = 0.50, β = 0.25, γ = 0.25；2030 預估：α = 0.35, β = 0.35, γ = 0.30。
 
-- F = Financial Capital — 財務資本（0-100 標準化），依產業不同權重，參考市值、營收成長率、營業利益率、Beta。對標既有金融量化體系（類比座標：Bloomberg、S&P CapIQ，非合作）。
-- V = AI Visibility Capital — AI 可見度資本（Symcio 獨家）。四引擎（ChatGPT / Claude / Gemini / Perplexity）跨平台 benchmarking 指標：mention_rate / avg_rank / sentiment / competitor_share。生成式 AI 已取代 >50% 的 B2B top-of-funnel 搜尋，但傳統品牌估值方法論（InterBrand Brand Strength Score / Kantar BrandZ）無法量化此維度 — BCI 的 V 軸補上這個缺口。
-- E = Engagement Capital — 品牌參與度資本。對標 InterBrand 的 Engagement + Relevance 因子在 AI 時代的重新定義：digital_sov / NPS proxy / advocacy_lexicon_hits / category_relevance。
+- **FBV** = Financial Brand Value — 財務品牌價值，依循 ISO 10668 所得法（品牌營收 × 品牌角色指數 × 品牌強度評分 ÷ 折現率）。品牌強度評分由 10 因子計算：清晰度 / 承諾度 / 治理 / 回應力 / 真實性 / 相關性 / 差異化 / 一致性 / 存在感 / 參與度。對標既有金融量化體系（類比座標：Bloomberg、Interbrand、Brand Finance，非合作）。
+- **SCV** = Sustainability Compliance Value — 永續合規價值，**法規中立設計**。SCV = 0.40·RCS（法規合規分數）+ 0.40·EDS（ESG 揭露分數）+ 0.20·NCS（自然資本分數，TNFD LEAP）。SCV 衡量合規成果而非對任何特定框架（CSRD / TNFD / FSC / MAS）的依附。CSRD / ESPR / CBAM 等強制性永續法規已成為市場准入決定因素 — 不合規導致的營收損失,SCV 比傳統財報早 6-18 個月反映。
+- **AIV** = AI Visibility Value — AI 可見度價值（Symcio 獨家）。AIV = Σp（引用率p × 平台權重p）× GEO 覆蓋率 × 敘事品質。平台權重 2026 基準：ChatGPT 0.35 / Perplexity 0.25 / Google AI Overview 0.25 / Claude 0.15。生成式 AI 已取代 >50% 的 B2B top-of-funnel 搜尋，但傳統品牌估值方法論（InterBrand Brand Strength Score / Kantar BrandZ）無法量化此維度 — BCI 的 AIV 軸補上這個缺口。
 
-## 產業別權重（公式公開、數值閉源，類似 PageRank）
-- technology：w_V 最高（AI 是主要曝光通道）
-- finance：w_F 最高（信用與財務動能主導）
-- consumer_goods：w_V + w_E 接近（AI 推薦 + 社群並重）
-- professional_services / manufacturing：w_F 主導
-- default：三軸均衡
+## 產業別校準（公式 / 權重公開、產業微調閉源）
+- technology：γ 略升（AI 是主要曝光通道）
+- finance：α 略升（信用與財務動能主導）
+- consumer_goods：γ 與 β 接近（AI 推薦 + 永續合規並重）
+- professional_services / manufacturing：α 主導
+- default：依年度基準權重
 
 ## 17 項永續發展目標（SDG）對照
 
