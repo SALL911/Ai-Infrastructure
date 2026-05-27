@@ -11,6 +11,9 @@ dist/
 *.tsbuildinfo
 .docs-cache/
 
+# Local preview output (scripts/preview-digest.mjs etc.)
+tmp/
+
 # Playwright
 test-results/
 playwright-report/
