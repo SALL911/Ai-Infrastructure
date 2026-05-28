@@ -1,8 +1,21 @@
 # Beehiiv 整合設計 — 雙軌電子報架構
 
-> **Status**: 設計確認，待實作（預計下週開工）
+> **Status**: 設計確認；RSS feed endpoint 已建（見 Phase C），其餘待實作
 > **Author**: 2026-05-28 規劃 session
 > **依賴**：`?dry_run=1` 預覽模式（PR #68 已 merge）、`newsletter_subscribers` 表（已建）、Notion Archive DB（已建）
+
+---
+
+## ⚠️ 重要：Beehiiv API 方案門檻（2026-05 查證）
+
+| Beehiiv API | 方案門檻 | 我們能用嗎 |
+|---|---|---|
+| **Subscriptions API**（加/查/更新訂閱者、enroll automation） | 一般付費方案 | ✅ 能 |
+| **Send API / Create Post**（程式化建 post + 寄送） | **Enterprise 限定 + Beta 需申請** | ❌ 14 天試用版不能 |
+
+**結論**：不能用 Create Post API 程式化寄送 digest。改用 Beehiiv 原生的 **RSS-to-Email automation**——我們 expose 一個 digest RSS feed，Beehiiv 定時 poll、自動把新項目變成寄出的 post。任何付費方案都支援，且兩端解耦更乾淨。
+
+來源：beehiiv 官方 — [Send API 說明](https://www.beehiiv.com/support/article/29286794539671-how-to-access-the-beehiiv-send-api)（Enterprise beta）、[Create Post 文件](https://developers.beehiiv.com/api-reference/posts/create)
 
 ---
 
@@ -34,13 +47,13 @@ Beehiiv 的免費被動流量（其他電子報互相推薦）與 SEO post 頁�
         ↓                     ↓                     ↓
    ① Supabase upsert     ① news_items archive   /tools/compliance-audit
    ② async push          ② Notion 同步 (既有)    (L2 已建好)
-      Beehiiv API        ③ Beehiiv Posts API        │
-                            建 draft + schedule       ↓
-                            (dry_run=1 → 停 draft) Lead → Resend 寄
-                                                     transactional 報告
-                                                          ↓
-                                                     報告底 CTA →
-                                                     預約顧問 / 升級付費
+      Beehiiv            ③ 更新 /news/rss.xml       │
+      Subscriptions API     (digest feed)           ↓
+                            │                    Lead → Resend 寄
+                            ↓                     transactional 報告
+                       Beehiiv RSS automation          ↓
+                       定時 poll → 自動建 post     報告底 CTA →
+                       → 寄送 (或建 draft 審)      預約顧問 / 升級付費
 ```
 
 ---
@@ -50,9 +63,10 @@ Beehiiv 的免費被動流量（其他電子報互相推薦）與 SEO post 頁�
 | 題目 | 決策 | 理由 |
 |---|---|---|
 | **訂閱者 SSoT** | Supabase（Beehiiv 當鏡像） | Beehiiv 試用結束/漲價/倒閉都能搬家；反向會被綁住 |
-| **digest 內容誰組** | Symcio code 組 HTML，PUT 到 Beehiiv 當 draft | 自動化邏輯留在 repo；想手動微調再進 Beehiiv 編輯器 |
-| **`?dry_run=1` 對 Beehiiv** | 建成 **draft**（不 schedule） | 在 Beehiiv 後台預覽，比看 HTML 檔直觀 |
-| **既有訂閱者遷移** | 一次性 backfill script | 跑一次就好，未來新訂閱者走 /subscribe 自動雙寫 |
+| **digest 怎麼進 Beehiiv** | 透過 **RSS feed**（`/news/rss.xml`），Beehiiv RSS automation poll | Send API 是 Enterprise beta，用不了；RSS 任何方案都行且解耦 |
+| **digest 內容誰組** | Symcio code 組（已有 `renderDigestHtml`），feed 吐 `content:encoded` | 自動化邏輯留 repo；Beehiiv 只負責寄送＋分眾 |
+| **送出前審核** | Beehiiv RSS automation 可設「自動寄」或「建 draft 等審」 | 初期設 draft 審核，穩定後切自動寄 |
+| **既有訂閱者遷移** | 一次性 backfill script（Subscriptions API） | 跑一次就好，未來新訂閱者走 /subscribe 自動雙寫 |
 
 ---
 
@@ -75,26 +89,36 @@ Beehiiv 的免費被動流量（其他電子報互相推薦）與 SEO post 頁�
 
 ## 實作 Phase（總計 ~4 小時開發）
 
-### Phase A：Beehiiv API wrapper（30 分）
+### Phase A：Beehiiv Subscriptions API wrapper（30 分）
 - 新檔：`lib/email/beehiiv.ts`
-- Functions:
-  - `createPost(input)` — Beehiiv Posts API
-  - `upsertSubscription(email, attrs)` — Beehiiv Subscriptions API
-  - `removeSubscription(email)`
+- Functions（只做 Subscriptions API，不碰 Create Post）:
+  - `upsertSubscription(email, attrs)` — POST /v2/publications/{id}/subscriptions
+  - `removeSubscription(email)` — PATCH status=inactive
+  - `getSubscription(email)` — GET by email（reconcile 用）
 - Env vars: `BEEHIIV_API_KEY`, `BEEHIIV_PUBLICATION_ID`
 - 連線測試 endpoint：`GET /api/admin/beehiiv-ping`（dev only）
+- graceful：缺 env → `{ ok:false, skipped:true }`（同 notion-sync 模式）
 
 ### Phase B：訂閱雙寫（30 分）
 - 修：`app/api/newsletter/subscribe/route.ts`
 - 流程：Supabase upsert 成功 → fire-and-forget `beehiiv.upsertSubscription()`
 - 失敗 graceful：Beehiiv 失敗不影響使用者體驗（已寫進 Supabase 是真實已訂閱）
 
-### Phase C：weekly-digest 改用 Beehiiv（1 小時）
-- 修：`app/api/cron/weekly-digest/route.ts`
-- 把 per-subscriber Resend loop 換成單一 `beehiiv.createPost({ status: dry_run ? 'draft' : 'scheduled', scheduled_at })`
-- 保留：news_items archive、Notion sync
-- `?dry_run=1`：建 draft，不 schedule
-- 正式：schedule 立刻寄（或下個整點）
+### Phase C：digest RSS feed ✅ 已建（`app/news/rss.xml/route.ts`）
+- 輸出 slug 前綴 `digest-` 的 weekly digest 成 RSS 2.0
+- `content:encoded` 帶 summary + BCI 視角，Beehiiv RSS automation 直接吃
+- graceful：Supabase 沒設 / 沒 digest → 合法空 feed
+- **Beehiiv 端一次性設定**（你做，非 code）：
+  1. Beehiiv → Automations → 新增 RSS automation
+  2. Feed URL 填 `https://www.symcio.tw/news/rss.xml`
+  3. 設 poll 頻率（每週一次即可）+ 選「建 draft 等審」或「自動寄」
+  4. 套用 email 模板
+
+### Phase C2：關掉 weekly-digest 的 Resend 廣播（10 分）
+- 改：`app/api/cron/weekly-digest/route.ts`
+- digest 改由 Beehiiv RSS 寄，所以**移除 per-subscriber Resend loop**（避免雙重寄送）
+- 保留：news_items archive、Notion sync、social fanout
+- 加 env flag `DIGEST_SENDER=beehiiv|resend`，預設 beehiiv 時跳過 Resend loop（保留 fallback 彈性）
 
 ### Phase D：既有訂閱者 backfill（30 分）
 - 新檔：`scripts/migrate-subscribers-to-beehiiv.mjs`
