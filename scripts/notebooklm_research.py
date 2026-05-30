@@ -16,8 +16,15 @@ PREREQS（使用者本機一次性設定）
     notebooklm login                   # 會開瀏覽器，登你的 Google 帳號
 
 USAGE
+    # 模式 A：用手寫 seed 清單
     python scripts/notebooklm_research.py \\
         --seed data/claude_code_skills_seed.txt \\
+        --notebook "Claude Code Skills Landscape 2026" \\
+        --out outputs/notebooklm-research
+
+    # 模式 B：用 yt-dlp 搜尋直接抓前 N 支
+    python scripts/notebooklm_research.py \\
+        --query "Claude Code skills" --limit 10 \\
         --notebook "Claude Code Skills Landscape 2026" \\
         --out outputs/notebooklm-research
 
@@ -90,6 +97,28 @@ def parse_seed(path: Path) -> list[Video]:
             continue
         video_id = url.rsplit("=", 1)[-1] if "=" in url else url.rsplit("/", 1)[-1]
         videos.append(Video(url=url, video_id=video_id, note=note))
+    return videos
+
+
+def search_videos(query: str, limit: int) -> list[Video]:
+    """用 yt-dlp 的 ytsearch 抓前 N 支當 seed。
+
+    yt-dlp 內建 'ytsearchN:keyword' 走 YouTube search 排序,大致對應「相關度+熱門」。
+    要嚴格按上傳時間用 'ytsearchdateN:...'。
+    """
+    proc = run([
+        "yt-dlp",
+        f"ytsearch{limit}:{query}",
+        "--skip-download",
+        "--print", "%(id)s|||%(webpage_url)s|||%(title)s",
+    ], capture=True)
+    videos: list[Video] = []
+    for line in (proc.stdout or "").splitlines():
+        parts = line.split("|||", 2)
+        if len(parts) >= 2:
+            vid, url = parts[0], parts[1]
+            title = parts[2] if len(parts) == 3 else ""
+            videos.append(Video(url=url, video_id=vid, note=title))
     return videos
 
 
@@ -306,20 +335,26 @@ def write_report(
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="YouTube → NotebookLM research pipeline")
-    ap.add_argument("--seed", required=True, type=Path, help="一行一個 YouTube URL 的清單")
+    src = ap.add_mutually_exclusive_group(required=True)
+    src.add_argument("--seed", type=Path, help="一行一個 YouTube URL 的清單(與 --query 二選一)")
+    src.add_argument("--query", help="改用 yt-dlp 搜尋當作 seed,例如 'Claude Code skills'")
+    ap.add_argument("--limit", type=int, default=10, help="--query 模式下抓前 N 支(預設 10)")
     ap.add_argument("--notebook", required=True, help="NotebookLM notebook 標題")
     ap.add_argument("--out", required=True, type=Path, help="輸出根目錄")
     args = ap.parse_args()
 
-    if not args.seed.exists():
-        sys.exit(f"✗ seed 檔找不到：{args.seed}")
-
     require_binary("yt-dlp")
     require_binary("notebooklm")
 
-    videos = parse_seed(args.seed)
+    if args.query:
+        print(f"[0/5] yt-dlp ytsearch{args.limit}:{args.query}")
+        videos = search_videos(args.query, args.limit)
+    else:
+        if not args.seed.exists():
+            sys.exit(f"✗ seed 檔找不到：{args.seed}")
+        videos = parse_seed(args.seed)
     if not videos:
-        sys.exit("✗ seed 檔沒有任何 URL")
+        sys.exit("✗ 沒有任何影片可處理")
     print(f"讀到 {len(videos)} 支影片。")
 
     yt_dir = args.out / "youtube"
