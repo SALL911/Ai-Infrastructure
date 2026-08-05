@@ -30,6 +30,8 @@ WHY
     QUEUE_BATCH_SIZE               選，單次最多處理幾筆，預設 10
     QUEUE_RESCAN_DAYS              選，>N 天沒掃就重掃，預設 7
     DRY_RUN                        選，設任何非空值就不寫 DB 不寄信
+    HEALTHCHECK                    選，設任何非空值只驗證 Supabase 憑證：
+                                   有效 exit 0、無效 exit 1（供每日健康檢查 workflow）
 
 執行
     python scripts/geo_audit_queue.py
@@ -239,6 +241,26 @@ def sb_headers() -> dict[str, str]:
     }
 
 
+# 憑證/設定類錯誤（非程式碼問題）。分開處理，避免每小時排程一直 crash 洗告警。
+AUTH_STATUSES = (401, 403)
+
+AUTH_FAIL_MSG = (
+    "Supabase 憑證無效（HTTP {status}）。這不是程式碼問題，是 GitHub secret 設定問題。\n"
+    "  修法：Repo → Settings → Secrets and variables → Actions → 更新 "
+    "SUPABASE_SERVICE_ROLE_KEY\n"
+    "        （來源：Supabase → Project Settings → API → 複製 service_role key，"
+    "勿複製到 anon key）\n"
+    "  並確認 SUPABASE_URL 指向同一個 Supabase 專案。\n"
+    "  Supabase 回應：{body}"
+)
+
+
+def preflight_supabase() -> dict:
+    """輕量驗證 Supabase 憑證是否有效（撈一筆即可）。回傳 _http result dict。"""
+    url = f"{SUPABASE_URL}/rest/v1/brands?select=id&limit=1"
+    return _http(url, headers=sb_headers())
+
+
 def fetch_prospects(limit: int, rescan_days: int) -> list[dict]:
     """撈 status='prospect' 且 (last_scanned_at is NULL 或 > rescan_days 天前)"""
     # Supabase PostgREST 的 or filter 語法
@@ -401,9 +423,32 @@ def _esc(s: str) -> str:
 # ---------- Main ----------
 
 def main() -> int:
+    # HEALTHCHECK=1 → 只驗證 Supabase 憑證，壞了就 fail（給每日健康檢查 workflow 用）。
+    healthcheck = bool(os.environ.get("HEALTHCHECK", "").strip())
+
     if not SUPABASE_URL or not SUPABASE_KEY:
         print("ERROR: SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY 必填", file=sys.stderr)
         return 2
+
+    # 先驗證憑證。憑證/設定錯誤（401/403）不該讓每小時排程一直 crash 洗告警——
+    # 每小時模式安靜跳過（exit 0），改由每日 HEALTHCHECK 一天提醒一次。
+    probe = preflight_supabase()
+    if not probe["ok"] and probe["status"] in AUTH_STATUSES:
+        msg = AUTH_FAIL_MSG.format(status=probe["status"], body=str(probe["body"])[:200])
+        if healthcheck:
+            print(f"ERROR: {msg}", file=sys.stderr)
+            return 1
+        print(f"WARNING: {msg}")
+        print("==> 憑證修好前先跳過此次執行（不觸發告警）。換好 key 後自動恢復。")
+        return 0
+    if not probe["ok"]:
+        # 非憑證類（網路 / 5xx）→ 當作真的失敗，照舊告警。
+        raise RuntimeError(
+            f"supabase preflight failed: HTTP {probe['status']}: {probe['body']}"
+        )
+    if healthcheck:
+        print("==> Supabase 憑證有效，健康檢查通過。")
+        return 0
 
     active = [n for n, (env, _label, _) in ENGINES.items() if os.environ.get(env)]
     if not active:

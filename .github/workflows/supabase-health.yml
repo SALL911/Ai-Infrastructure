@@ -1,0 +1,49 @@
+name: Supabase Health Check
+
+# WHY：GEO Audit Queue 等排程一旦 Supabase 憑證失效（401/403），現在會「安靜
+# 跳過」不再每小時洗告警。但憑證壞掉本身仍需要有人處理，所以另設這條「每日一次」
+# 的健康檢查：只驗證 SUPABASE_SERVICE_ROLE_KEY 是否有效，壞了才 fail。
+#
+# 失敗時由 cron-failure-alert.yml 統一接手：一天在同一個 issue 底下提醒一次
+# （去重），不會像先前每小時一則。修好 secret 後下一次檢查即恢復綠燈。
+
+on:
+  schedule:
+    # 每日 01:00 UTC（台北 09:00）。
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-health
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: Verify Supabase credentials
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Probe Supabase auth
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          HEALTHCHECK: '1'
+        run: python scripts/geo_audit_queue.py
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Supabase Health Check" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ job.status }}" != "success" ]; then
+            echo "- 憑證無效：更新 \`SUPABASE_SERVICE_ROLE_KEY\` secret（見 log）" >> $GITHUB_STEP_SUMMARY
+          fi
