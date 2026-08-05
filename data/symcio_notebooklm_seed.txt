@@ -1,0 +1,19 @@
+# Symcio — NotebookLM source manifest（curated 2026-05-29）
+# 一行一個 source，# 開頭為註解。
+# 規則：
+#   - http(s):// 開頭   → 當成「網址 source」加進 NotebookLM
+#   - 其他              → 當成「本機檔案 source」（路徑相對於 repo 根目錄）
+# 更新原則：Symcio 對外事實有變 → 改上游 SSoT 檔，再重跑 /notebooklm 同步。
+
+# ── 核心知識（本機檔案，repo 內 SSoT）──
+docs/SYMCIO_KNOWLEDGE_BASE.md   # 彙整版知識底座（主 source）
+llms.txt                        # 對 AI 引擎的 canonical 事實檔
+README.md                       # BrandOS / Symcio 專案概述
+docs/POSITIONING.md             # 品類與訊息矩陣
+
+# ── 對外網站（網址 source）──
+https://symcio.tw                          # 官網
+https://symcio-research.netlify.app        # 研究站（BCI 白皮書）
+https://www.wikidata.org/wiki/Q138922082   # Wikidata 實體
+https://github.com/SALL911/BrandOS-Infrastructure  # 工程 SSoT repo
+https://github.com/SALL911/symcio          # 對外品牌站 repo
