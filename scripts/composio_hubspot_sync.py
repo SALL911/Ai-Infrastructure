@@ -110,17 +110,24 @@ def composio_execute_action(
 
 def lead_to_hubspot_args(lead: dict) -> dict:
     """Map Supabase lead row → HubSpot properties payload."""
-    return {
-        "properties": {
-            "email": lead["email"],
-            "firstname": (lead.get("name") or "").split(" ")[0] or None,
-            "lastname": " ".join((lead.get("name") or "").split(" ")[1:]) or None,
-            "company": lead.get("company"),
-            "hs_lead_status": "NEW",
-            "lifecyclestage": "lead",
-            "source_symcio": lead.get("source"),
-        }
+    parts = (lead.get("name") or "").split(" ", 1)
+    props: dict[str, str] = {
+        "email": lead["email"],
+        "firstname": parts[0] if parts and parts[0] else "",
+        "lastname": parts[1] if len(parts) > 1 else "",
+        "company": lead.get("company") or "",
+        "hs_lead_status": "NEW",
+        "lifecyclestage": "lead",
+        "source_symcio": lead.get("source") or "",
     }
+    return {"properties": {k: v for k, v in props.items() if v != ""}}
+
+
+def _is_duplicate_error(resp: dict, err_msg: str) -> bool:
+    """HubSpot 對既存 email 回 409 / 'Contact already exists' — 視為冪等成功。"""
+    needles = ("already exists", "CONTACT_EXISTS", "duplicate", "409")
+    blob = (json.dumps(resp, default=str) + " " + err_msg).lower()
+    return any(n.lower() in blob for n in needles)
 
 
 def main() -> int:
@@ -153,11 +160,19 @@ def main() -> int:
             resp = composio_execute_action(
                 cp_key, cp_user, "HUBSPOT_CREATE_CONTACT", args, cp_conn
             )
-            if not resp.get("successful", resp.get("ok", True)):
+            ok = resp.get("successful", resp.get("ok", True))
+            if not ok and not _is_duplicate_error(resp, ""):
                 raise RuntimeError(f"Composio response: {resp}")
             supabase_mark_synced(sb_url, sb_key, lead["id"], lead.get("notes", ""))
             synced += 1
+            if not ok:
+                print("    · already in HubSpot, marked synced")
         except Exception as e:  # noqa: BLE001
+            if _is_duplicate_error({}, str(e)):
+                supabase_mark_synced(sb_url, sb_key, lead["id"], lead.get("notes", ""))
+                synced += 1
+                print("    · already in HubSpot, marked synced")
+                continue
             failed += 1
             print(f"    ! {e}")
 
