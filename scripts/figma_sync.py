@@ -105,10 +105,16 @@ def main() -> int:
     out_dir = Path(os.environ.get("OUTPUT_DIR", "docs/design"))
 
     if not token:
-        print("ERROR: FIGMA_TOKEN not set", file=sys.stderr)
-        return 2
+        # Figma 尚未配置 → 安靜跳過（exit 0），不觸發每週 cron 告警。
+        # 補上 FIGMA_TOKEN secret 後即自動開始同步。
+        print(
+            "SKIP: Figma 尚未配置（缺 FIGMA_TOKEN），跳過本次同步。"
+            "設定 secret 後自動恢復。"
+        )
+        return 0
     if not file_key:
-        print("ERROR: FIGMA_FILE_KEY not set", file=sys.stderr)
+        # token 已設但缺 file key → 屬真正的設定錯誤，維持失敗讓人注意。
+        print("ERROR: FIGMA_TOKEN 已設但缺 FIGMA_FILE_KEY", file=sys.stderr)
         return 2
 
     print(f"==> Fetching Figma file {file_key}")

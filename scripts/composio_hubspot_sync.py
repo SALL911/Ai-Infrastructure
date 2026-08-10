@@ -135,8 +135,13 @@ def main() -> int:
         print("ERROR: SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY missing", file=sys.stderr)
         return 2
     if not (cp_key and cp_user):
-        print("ERROR: COMPOSIO_API_KEY / COMPOSIO_USER_ID missing", file=sys.stderr)
-        return 2
+        # Composio 尚未配置 → 安靜跳過（exit 0），不觸發每小時 cron 告警。
+        # 補上 COMPOSIO_API_KEY / COMPOSIO_USER_ID secret 後即自動開始同步。
+        print(
+            "SKIP: Composio 尚未配置（缺 COMPOSIO_API_KEY / COMPOSIO_USER_ID），"
+            "跳過本次 Lead → HubSpot 同步。設定 secret 後自動恢復。"
+        )
+        return 0
 
     print("==> Fetching unsynced leads from Supabase")
     leads = supabase_select_unsynced_leads(sb_url, sb_key)

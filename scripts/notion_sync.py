@@ -154,8 +154,13 @@ def main() -> int:
     out_dir = Path(os.environ.get("OUTPUT_DIR", "docs/notion-sync"))
 
     if not token:
-        print("ERROR: NOTION_API_KEY not set", file=sys.stderr)
-        return 2
+        # Notion 尚未配置 → 安靜跳過（exit 0），不觸發每日 cron 告警。
+        # 補上 NOTION_API_KEY secret 後即自動開始同步。
+        print(
+            "SKIP: Notion 尚未配置（缺 NOTION_API_KEY），跳過本次同步。"
+            "設定 secret 後自動恢復。"
+        )
+        return 0
 
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / ".keep").touch(exist_ok=True)
