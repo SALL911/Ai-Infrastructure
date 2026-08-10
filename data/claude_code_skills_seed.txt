@@ -18,3 +18,19 @@ https://www.youtube.com/watch?v=QZCJ4aEhrMk  # Boris Cherny Workflow (Mastering 
 
 # ── 整體脈絡：作為對照輸入 ──
 https://www.youtube.com/watch?v=LlFgLsffbBs  # The ONLY Claude Code Tutorial You'll Ever Need in 2026
+
+# ── ▼ 新增區塊 (2026-05-30,WebSearch 驗證) ──
+# 來源：Google Web Search,在出現於搜尋結果頁的影片中挑選。
+# 注意：sandbox 內無法直接打 youtube.com,因此這些 URL 只「在搜尋結果中存在」,
+# 實際播放可看性需本機跑 yt-dlp 時才會確認。發現失效就從這裡刪掉。
+
+# skills 主題直球
+https://www.youtube.com/watch?v=O_z9vDLgvoY  # Claude Skills Tutorial (2026): Chat, Cowork, and Claude Code
+https://www.youtube.com/watch?v=rcRS8-7OgBo  # Claude Code Skills & skills.sh - Crash Course
+https://www.youtube.com/watch?v=epZy_NajGnA  # Claude Code Skills Changed Everything (And Nobody Noticed)
+
+# Claude Code 完整教學(2026)
+https://www.youtube.com/watch?v=bqJzIWAEn40  # Full Claude Code Tutorial for Non-Technical Beginners in 2026
+https://www.youtube.com/watch?v=Xg55nTrbYYY  # FULL Claude Tutorial For Beginners in 2026! (FULL COURSE)
+https://www.youtube.com/watch?v=rRrBbyv3ChM  # FULL Claude Tutorial for Beginners in 2026! (Become a PRO!)
+https://www.youtube.com/watch?v=WqoPkZ88f5k  # The ONLY Claude Tutorial You'll Ever Need in 2026
