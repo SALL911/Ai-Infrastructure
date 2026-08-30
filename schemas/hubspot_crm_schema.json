@@ -1,0 +1,215 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BrandOS × 全國區塊鏈會計聯合會 — HubSpot CRM 欄位架構",
+  "version": "1.0.0",
+  "updated": "2026-08-30",
+  "principles": [
+    "個資法第6條特種個資（宗教信仰、病歷、醫療、基因、性生活、健康檢查、犯罪前科）一律不設欄位",
+    "宗教團體以 COMPANY 建檔（organization_type=religious_org），自然人層級零宗教標籤",
+    "虛擬資產交易所 public_disclosure_ok 一律為 false，不得出現在對外夥伴名單",
+    "商業金流欄位屬 Symcio，聯合會端只保留會員/活動/認證性質欄位"
+  ],
+  "objects": {
+    "companies": {
+      "groupName": "brandos_stakeholder",
+      "groupLabel": "BrandOS 利益人節點",
+      "properties": [
+        {
+          "name": "brandos_org_type",
+          "label": "組織類型",
+          "type": "enumeration",
+          "fieldType": "select",
+          "description": "利益人節點的組織屬性。宗教團體僅在此層級標記，絕不下沉到 CONTACT。",
+          "options": [
+            { "label": "地方政府", "value": "government" },
+            { "label": "品牌／企業", "value": "brand" },
+            { "label": "媒體", "value": "media" },
+            { "label": "媒體代理商", "value": "media_agency" },
+            { "label": "產業公會／協會", "value": "trade_association" },
+            { "label": "宗教團體", "value": "religious_org" },
+            { "label": "學研機構", "value": "academic" },
+            { "label": "社群／NGO", "value": "community_ngo" },
+            { "label": "能源／電廠", "value": "energy" },
+            { "label": "區塊鏈技術商", "value": "blockchain_tech" },
+            { "label": "虛擬資產交易所（僅內部）", "value": "vasp_exchange" }
+          ]
+        },
+        {
+          "name": "brandos_county_city",
+          "label": "縣市",
+          "type": "enumeration",
+          "fieldType": "select",
+          "description": "22 縣市。不是 22 個對口，是 22 組標籤——先攻有實體節點的縣市。",
+          "options": [
+            { "label": "臺北市", "value": "taipei" },
+            { "label": "新北市", "value": "new_taipei" },
+            { "label": "桃園市", "value": "taoyuan" },
+            { "label": "臺中市", "value": "taichung" },
+            { "label": "臺南市", "value": "tainan" },
+            { "label": "高雄市", "value": "kaohsiung" },
+            { "label": "基隆市", "value": "keelung" },
+            { "label": "新竹市", "value": "hsinchu_city" },
+            { "label": "新竹縣", "value": "hsinchu_county" },
+            { "label": "苗栗縣", "value": "miaoli" },
+            { "label": "彰化縣", "value": "changhua" },
+            { "label": "南投縣", "value": "nantou" },
+            { "label": "雲林縣", "value": "yunlin" },
+            { "label": "嘉義市", "value": "chiayi_city" },
+            { "label": "嘉義縣", "value": "chiayi_county" },
+            { "label": "屏東縣", "value": "pingtung" },
+            { "label": "宜蘭縣", "value": "yilan" },
+            { "label": "花蓮縣", "value": "hualien" },
+            { "label": "臺東縣", "value": "taitung" },
+            { "label": "澎湖縣", "value": "penghu" },
+            { "label": "金門縣", "value": "kinmen" },
+            { "label": "連江縣", "value": "lienchiang" }
+          ]
+        },
+        {
+          "name": "brandos_relationship_stage",
+          "label": "關係階段",
+          "type": "enumeration",
+          "fieldType": "select",
+          "options": [
+            { "label": "冷（未接觸）", "value": "cold" },
+            { "label": "已接觸", "value": "contacted" },
+            { "label": "已回覆", "value": "replied" },
+            { "label": "合作中", "value": "active" },
+            { "label": "暫不接觸", "value": "paused" }
+          ]
+        },
+        {
+          "name": "brandos_source_node",
+          "label": "來源節點",
+          "type": "enumeration",
+          "fieldType": "checkbox",
+          "description": "此聯絡人／組織是透過哪個既有節點取得。可複選。",
+          "options": [
+            { "label": "大橡科技", "value": "daxiang_tech" },
+            { "label": "AI 人工智慧管理學院", "value": "ai_mgmt_academy" },
+            { "label": "台灣自造者協會", "value": "maker_association" },
+            { "label": "台北市媒體服務代理商協會 MAA", "value": "maa" },
+            { "label": "全國區塊鏈會計聯合會", "value": "blockchain_accounting_union" },
+            { "label": "NIS 節點", "value": "nis" },
+            { "label": "阿罩霧文化基金會", "value": "azhewu_foundation" },
+            { "label": "綠電／T-REC 電廠", "value": "trec_energy" },
+            { "label": "Symcio 既有客戶", "value": "symcio_client" },
+            { "label": "研討會／實體活動", "value": "event" },
+            { "label": "LINE OA 掃碼加入", "value": "line_oa" },
+            { "label": "官網表單", "value": "web_form" }
+          ]
+        },
+        {
+          "name": "brandos_public_disclosure_ok",
+          "label": "公開揭露許可",
+          "type": "enumeration",
+          "fieldType": "booleancheckbox",
+          "description": "是否可出現在對外文宣／官網／記者會的夥伴名單。虛擬資產交易所一律 false。",
+          "options": [
+            { "label": "可公開", "value": "true" },
+            { "label": "僅內部", "value": "false" }
+          ]
+        },
+        {
+          "name": "brandos_committee",
+          "label": "所屬委員會",
+          "type": "enumeration",
+          "fieldType": "checkbox",
+          "description": "聯合會下設委員會（理事會決議成立）。可複選。",
+          "options": [
+            { "label": "媒體與永續數據委員會", "value": "media_sustainability" },
+            { "label": "區塊鏈會計標準委員會", "value": "blockchain_accounting_standard" },
+            { "label": "地方創生與縣市協作委員會", "value": "local_revitalization" },
+            { "label": "尚未指派", "value": "unassigned" }
+          ]
+        },
+        {
+          "name": "brandos_consent_basis",
+          "label": "個資蒐集依據",
+          "type": "enumeration",
+          "fieldType": "select",
+          "description": "個資法第19條合法事由。公務聯絡方式屬公開資訊；自然人個資需明示同意。",
+          "options": [
+            { "label": "組織公務聯絡方式（公開資訊）", "value": "public_business_contact" },
+            { "label": "當事人書面同意", "value": "written_consent" },
+            { "label": "LINE OA 加入時告知同意", "value": "line_oa_notice" },
+            { "label": "表單填寫時告知同意", "value": "form_notice" },
+            { "label": "待補", "value": "pending" }
+          ]
+        }
+      ]
+    },
+    "contacts": {
+      "groupName": "brandos_stakeholder",
+      "groupLabel": "BrandOS 利益人節點",
+      "forbidden_properties": [
+        "宗教信仰 / religion / faith — 個資法第6條特種個資，絕對禁止",
+        "病歷 / 醫療 / 健康檢查 — 同上",
+        "基因 / 性生活 — 同上",
+        "犯罪前科 — 同上"
+      ],
+      "properties": [
+        {
+          "name": "brandos_role_title",
+          "label": "職稱（公務）",
+          "type": "string",
+          "fieldType": "text",
+          "description": "僅記錄公務職稱，不記錄個人身份特徵。"
+        },
+        {
+          "name": "brandos_relationship_stage",
+          "label": "關係階段",
+          "type": "enumeration",
+          "fieldType": "select",
+          "options": [
+            { "label": "冷（未接觸）", "value": "cold" },
+            { "label": "已接觸", "value": "contacted" },
+            { "label": "已回覆", "value": "replied" },
+            { "label": "合作中", "value": "active" },
+            { "label": "暫不接觸", "value": "paused" }
+          ]
+        },
+        {
+          "name": "brandos_source_node",
+          "label": "來源節點",
+          "type": "enumeration",
+          "fieldType": "checkbox",
+          "options": [
+            { "label": "大橡科技", "value": "daxiang_tech" },
+            { "label": "AI 人工智慧管理學院", "value": "ai_mgmt_academy" },
+            { "label": "台灣自造者協會", "value": "maker_association" },
+            { "label": "台北市媒體服務代理商協會 MAA", "value": "maa" },
+            { "label": "全國區塊鏈會計聯合會", "value": "blockchain_accounting_union" },
+            { "label": "NIS 節點", "value": "nis" },
+            { "label": "阿罩霧文化基金會", "value": "azhewu_foundation" },
+            { "label": "綠電／T-REC 電廠", "value": "trec_energy" },
+            { "label": "Symcio 既有客戶", "value": "symcio_client" },
+            { "label": "研討會／實體活動", "value": "event" },
+            { "label": "LINE OA 掃碼加入", "value": "line_oa" },
+            { "label": "官網表單", "value": "web_form" }
+          ]
+        },
+        {
+          "name": "brandos_line_user_ref",
+          "label": "LINE OA 加入參數",
+          "type": "string",
+          "fieldType": "text",
+          "description": "帶參數 QR code 的來源代碼（縣市_場合），非 LINE userId 本身。"
+        },
+        {
+          "name": "brandos_consent_basis",
+          "label": "個資蒐集依據",
+          "type": "enumeration",
+          "fieldType": "select",
+          "options": [
+            { "label": "組織公務聯絡方式（公開資訊）", "value": "public_business_contact" },
+            { "label": "當事人書面同意", "value": "written_consent" },
+            { "label": "LINE OA 加入時告知同意", "value": "line_oa_notice" },
+            { "label": "表單填寫時告知同意", "value": "form_notice" },
+            { "label": "待補", "value": "pending" }
+          ]
+        }
+      ]
+    }
+  }
+}
