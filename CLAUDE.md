@@ -1,5 +1,5 @@
 # BrandOS Infrastructure — AI Visibility Intelligence Platform
-## CLAUDE.md v1.1 | Symcio × BrandOS
+## CLAUDE.md v1.2 | Symcio × BrandOS
 
 ---
 
@@ -170,3 +170,33 @@ brandos-infrastructure/
 | P1 | Lead → HubSpot via Composio | `.github/workflows/composio-hubspot-sync.yml` |
 | P2 | Lead scoring agent | `agents/lead-scorer.py`（待建）|
 | P3 | GEO 內容自動發布 | `agents/publisher.py`（待建）|
+
+### 9.4 NGO 主體與利益人 CRM（全國區塊鏈會計聯合會）
+
+聯合會（社團法人）與 Symcio（公司）是**兩個主體、兩套金流**，不得混用：
+
+| 主體 | 做什麼 | 收什麼錢 |
+|------|-------|---------|
+| 全國區塊鏈會計聯合會 | 標準制定、認證、培訓、公益專案、跨縣市串連 | 會費、活動費、研究委辦費 |
+| Symcio | 所有商業服務與資料授權 | 商業收入 |
+
+**不新設合作社**——用「聯合會下設委員會」（理事會決議即成立）承載產業號召。
+合作社的觸發條件：固定合作創作者 > 20 人**且**主動要求集體治理。
+
+**個資法紅線（欄位層級強制，非文件約定）**：
+- 宗教信仰為個資法第 6 條特種個資 → CONTACT 物件**不存在**任何宗教欄位
+- 宮廟／教會以 COMPANY 建檔（`brandos_org_type=religious_org`），只記公務聯絡方式
+- `scripts/hubspot_crm_bootstrap.py` 內建守門員，欄位名稱命中特種個資關鍵字即中止
+
+**虛擬資產交易所**：只能是 CRM 的私有聯絡人（`public_disclosure_ok=false`，程式強制），
+不得出現在對外夥伴名單。沿用既有紅線（Banking Act 29-1、不作發行方、TCX 僅數據層）。
+
+**技術棧**（全部免費方案）：HubSpot Free（主檔）× LINE OA ×1（觸達）× Make.com Free（接線）。
+
+相關文件：
+- `docs/NGO_ENTITY_STRUCTURE.md` — 主體架構與理事會授權前提
+- `docs/MARTECH_STACK_NGO.md` — 三層技術棧與執行順序
+- `docs/LINE_OA_VERIFICATION.md` — LINE OA 灰盾認證申請（無 API，人工送件）
+- `schemas/hubspot_crm_schema.json` — CRM 欄位定義（SSoT）
+- `data/crm/agency_partners.csv` — 18 家媒體代理商 + MAA 公會
+- `scripts/hubspot_crm_bootstrap.py` — 欄位建立 + 名單匯入（DRY_RUN 預設）

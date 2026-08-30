@@ -1,0 +1,51 @@
+name: HubSpot CRM Bootstrap — 欄位架構 + 代理商名單
+
+# 手動觸發專用。這個 workflow 會寫入 HubSpot，不排程自動跑。
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: '預設 true（只預覽）。設為 false 才真的寫入 HubSpot。'
+        required: true
+        default: 'true'
+        type: choice
+        options: ['true', 'false']
+      only:
+        description: '限定範圍：props（只建欄位）/ data（只匯資料）/ 留空（兩者都做）'
+        required: false
+        default: ''
+        type: choice
+        options: ['', 'props', 'data']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hubspot-crm-bootstrap
+  cancel-in-progress: false
+
+jobs:
+  bootstrap:
+    name: Create properties and import agency partners
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run bootstrap
+        env:
+          HUBSPOT_PRIVATE_APP_TOKEN: ${{ secrets.HUBSPOT_PRIVATE_APP_TOKEN }}
+          DRY_RUN: ${{ github.event.inputs.dry_run == 'false' && '0' || '1' }}
+          ONLY: ${{ github.event.inputs.only }}
+        run: python scripts/hubspot_crm_bootstrap.py
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## HubSpot CRM Bootstrap" >> $GITHUB_STEP_SUMMARY
+          echo "- Dry run: ${{ github.event.inputs.dry_run }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Scope: ${{ github.event.inputs.only || 'props + data' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
