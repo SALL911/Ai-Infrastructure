@@ -1,0 +1,87 @@
+name: AIVI Weekly Tracking
+
+on:
+  schedule:
+    # 每週一台北 09:00（UTC 01:00）— 與每日 geo-audit / bci 錯開
+    - cron: '0 1 * * 1'
+  workflow_dispatch:
+    inputs:
+      brand_slug:
+        description: 'Brand slug（對應 prompts/<slug>/）'
+        required: false
+        default: 'symcio'
+      brand_name:
+        description: 'Brand name（比對用）'
+        required: false
+        default: 'Symcio'
+      run_type:
+        description: 'baseline / weekly / adhoc'
+        required: false
+        default: 'adhoc'
+      dry_run:
+        description: 'Dry run（不呼叫引擎、不寫 DB）'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aivi-weekly
+  cancel-in-progress: false
+
+jobs:
+  track:
+    name: Sample AI engines with locked prompt bank
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run AIVI tracker
+        env:
+          BRAND_SLUG: ${{ github.event.inputs.brand_slug || vars.AIVI_BRAND_SLUG || 'symcio' }}
+          BRAND_NAME: ${{ github.event.inputs.brand_name || vars.AIVI_BRAND_NAME || 'Symcio' }}
+          BRAND_DOMAIN: ${{ vars.AIVI_BRAND_DOMAIN || 'symcio.tw' }}
+          BRAND_ALIASES: ${{ vars.AIVI_BRAND_ALIASES }}
+          BRAND_ID: ${{ vars.AIVI_BRAND_ID }}
+
+          # baseline = 自我量測示範版；poc / subscription 需 CONSENT_REF + DPA_ID
+          TRACKING_STATUS: ${{ vars.AIVI_TRACKING_STATUS || 'baseline' }}
+          CONSENT_REF: ${{ secrets.AIVI_CONSENT_REF }}
+          DPA_ID: ${{ secrets.AIVI_DPA_ID }}
+
+          PROMPT_VERSION: ${{ vars.AIVI_PROMPT_VERSION || 'v1' }}
+          PROMPT_LOCALES: ${{ vars.AIVI_PROMPT_LOCALES || 'zh-TW,en' }}
+          RUN_TYPE: ${{ github.event.inputs.run_type || 'weekly' }}
+
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
+
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+        run: python scripts/aivi_tracker.py
+
+      - name: Upload sampling artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aivi-${{ github.run_id }}
+          path: reports/aivi/
+          retention-days: 90
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## AIVI Weekly Tracking" >> $GITHUB_STEP_SUMMARY
+          echo "- Brand: ${{ github.event.inputs.brand_slug || vars.AIVI_BRAND_SLUG || 'symcio' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Prompt version: ${{ vars.AIVI_PROMPT_VERSION || 'v1' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Sampling: official APIs only（非消費者介面重現）" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY

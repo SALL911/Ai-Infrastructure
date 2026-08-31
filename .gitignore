@@ -53,3 +53,9 @@ private/bci/calibration_log.md
 # 例外：允許 *.example.* + README.md 結構樣本進 repo
 !private/bci/weights_*.example.json
 !private/bci/inputs/README.md
+
+# ========== AIVI IP（維度權重與等級門檻；生產走 GitHub Secrets）==========
+private/aivi/weights_*.json
+private/aivi/fixtures_*.json
+# 例外：格式樣本可進 repo（數值為佔位值，非實際權重）
+!private/aivi/weights_*.example.json

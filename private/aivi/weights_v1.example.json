@@ -1,0 +1,25 @@
+{
+  "_comment": "AIVI 維度權重的『格式樣本』。此處數值為等權重佔位值，不是實際使用的權重。",
+  "_usage": "正式環境從 GitHub Secret AIVI_WEIGHTS_JSON 注入；本機開發複製為 private/aivi/weights_dev.json（已 gitignore）。",
+  "v1": {
+    "default": {
+      "presence": 0.1667,
+      "rank": 0.1667,
+      "share": 0.1667,
+      "sentiment": 0.1667,
+      "citation": 0.1667,
+      "consistency": 0.1667
+    },
+    "technology": {
+      "presence": 0.1667,
+      "rank": 0.1667,
+      "share": 0.1667,
+      "sentiment": 0.1667,
+      "citation": 0.1667,
+      "consistency": 0.1667
+    }
+  },
+  "_grade_bands": {
+    "v1": [["A", 80], ["B", 65], ["C", 50], ["D", 35], ["E", 0]]
+  }
+}
