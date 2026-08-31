@@ -54,7 +54,8 @@ AIVI Baseline（免費・示範版・非公開評等）
 | 免費單次診斷 | `scripts/geo_audit.py` + `.github/workflows/geo-audit.yml` | 漏斗入口（依產業出題） |
 | 訂閱週期採樣 | `scripts/aivi_tracker.py` + `.github/workflows/aivi-weekly.yml` | 依品牌鎖版 prompt bank |
 | 鎖版題庫 | `prompts/<slug>/<version>.<locale>.json` | 改題必須開新版 |
-| 分數引擎 | `scripts/bci_engine.py` + `.github/workflows/bci-daily.yml` | 權重來自 Secrets |
+| 六維度計分 / 月報 | `scripts/aivi_score.py` + `.github/workflows/aivi-monthly.yml` | 權重來自 Secrets，月報 HTML |
+| 品牌資本分數 | `scripts/bci_engine.py` + `.github/workflows/bci-daily.yml` | 權重來自 Secrets |
 | 資料層 | `supabase/migrations/20260830000000_aivi_tracking.sql` | runs / responses / mentions / scores |
 
 ### 硬約束（已寫進 migration 與腳本，不是慣例）
@@ -67,6 +68,22 @@ AIVI Baseline（免費・示範版・非公開評等）
    **repo 內只有 loader，不得硬編碼**。
 4. `prompt_sets.locked_until` 期間不得改題；改題開 `v2`，否則月對月趨勢失效。
 5. `aivi_billing_plans` 只有 `fixed_fee`，刻意不設 success fee 欄位。
+
+### 六維度定義（`scripts/aivi_score.py`）
+
+| 維度 | 定義 | 計法 |
+|---|---|---|
+| presence 提及率 | 問到這個品類時，回答裡出現品牌的比例 | 命中數 / 有效樣本 |
+| rank 排名 | 被列出時的名次 | 第 1 名 100 分，往後每名 −12；有提及但未入列記中性 50 |
+| share 同框佔比 | 品牌與競品在同一題的出現比重 | 命中數 /（命中數 + 競品提及數）|
+| sentiment 語氣 | 推薦 / 中性 / 保留 | positive 100、neutral 60、negative 0，對命中取平均 |
+| citation 引用 | 回答引用的網址裡有沒有自家網域 | 引用自家網域的命中數 / 命中數 |
+| consistency 一致性 | 跨引擎、跨語言講的是不是同一個你 | 100 −（引擎提及率落差 ×0.6 + 語言落差 ×0.4）|
+
+零命中時 `consistency` 記 0，不記 100——全體一致地不存在不是一致性，
+否則「完全隱形」的品牌會靠這一維度拿到分數。
+
+綜合分 = Σ(權重 × 維度分) / Σ權重；等級門檻與權重同樣存在 config，不寫死在 repo。
 
 ---
 
@@ -93,12 +110,17 @@ supabase db push   # 套用 20260830000000_aivi_tracking.sql
 
 `GEMINI_API_KEY`、`ANTHROPIC_API_KEY`、`OPENAI_API_KEY`、`PERPLEXITY_API_KEY`、
 `SUPABASE_URL`、`SUPABASE_SERVICE_ROLE_KEY`、`BCI_WEIGHTS_JSON`、
-`AIVI_CONSENT_REF`、`AIVI_DPA_ID`
+`AIVI_WEIGHTS_JSON`、`AIVI_CONSENT_REF`、`AIVI_DPA_ID`
+
+`AIVI_WEIGHTS_JSON` 的格式：`python scripts/aivi_score.py --print-schema`，
+或見 `private/aivi/weights_v1.example.json`（該檔數值為佔位值，非實際權重）。
+未設定時計分會退回等權重並印 warning——**不得以該結果交付客戶**。
 
 ### 4.3 GitHub Variables（非機密參數）
 
 `AIVI_BRAND_SLUG`、`AIVI_BRAND_NAME`、`AIVI_BRAND_DOMAIN`、`AIVI_BRAND_ALIASES`、
-`AIVI_BRAND_ID`、`AIVI_TRACKING_STATUS`、`AIVI_PROMPT_VERSION`、`AIVI_PROMPT_LOCALES`
+`AIVI_BRAND_ID`、`AIVI_TRACKING_STATUS`、`AIVI_PROMPT_VERSION`、`AIVI_PROMPT_LOCALES`、
+`AIVI_BRAND_INDUSTRY`、`AIVI_WEIGHTS_VERSION`
 
 ### 4.4 Storage
 
@@ -114,7 +136,7 @@ supabase db push   # 套用 20260830000000_aivi_tracking.sql
 4. 手動觸發 `aivi-weekly.yml`（`run_type=baseline`）跑期初基線
 5. 抽驗 10% mentions，填 `verified_by`
 6. 交期初報告（含方法論揭露段）
-7. 排程自動每週採樣；每月產月報
+7. 排程自動每週採樣（`aivi-weekly.yml`）；每月 1 日 `aivi-monthly.yml` 對上個月計分並產月報 HTML
 8. 第 90 天出 before/after，轉月訂閱或結案
 
 ---
