@@ -1,0 +1,89 @@
+name: AIVI Monthly Report
+
+on:
+  schedule:
+    # 每月 1 日台北 10:00（UTC 02:00），對「上個月」計分
+    - cron: '0 2 1 * *'
+  workflow_dispatch:
+    inputs:
+      brand_id:
+        description: 'Supabase brands.id（留空則用 AIVI_BRAND_ID variable）'
+        required: false
+      period:
+        description: '計分月份 YYYY-MM（留空則為上個月）'
+        required: false
+      dry_run:
+        description: 'Dry run（計分但不寫 aivi_scores_monthly）'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aivi-monthly
+  cancel-in-progress: false
+
+jobs:
+  score:
+    name: Score six dimensions and render monthly report
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Resolve period
+        id: period
+        run: |
+          if [ -n "${{ github.event.inputs.period }}" ]; then
+            PERIOD="${{ github.event.inputs.period }}"
+          else
+            PERIOD=$(date -u -d "$(date -u +%Y-%m-01) -1 day" +%Y-%m)
+          fi
+          echo "value=$PERIOD" >> "$GITHUB_OUTPUT"
+          echo "計分月份：$PERIOD"
+
+      - name: Score and render
+        env:
+          BRAND_NAME: ${{ vars.AIVI_BRAND_NAME || 'Symcio' }}
+          BRAND_DOMAIN: ${{ vars.AIVI_BRAND_DOMAIN || 'symcio.tw' }}
+          BRAND_INDUSTRY: ${{ vars.AIVI_BRAND_INDUSTRY || 'default' }}
+
+          # 維度權重與等級門檻是 IP，只從 Secret 注入；缺少時腳本會 warn 並退回等權重
+          AIVI_WEIGHTS_JSON: ${{ secrets.AIVI_WEIGHTS_JSON }}
+          AIVI_WEIGHTS_VERSION: ${{ vars.AIVI_WEIGHTS_VERSION || 'v1' }}
+
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          BRAND_ID="${{ github.event.inputs.brand_id || vars.AIVI_BRAND_ID }}"
+          if [ -z "$BRAND_ID" ]; then
+            echo "::error::缺少 brand_id（設定 AIVI_BRAND_ID variable 或用 workflow_dispatch 輸入）"
+            exit 1
+          fi
+          ARGS="--brand-id $BRAND_ID --period ${{ steps.period.outputs.value }}"
+          ARGS="$ARGS --industry $BRAND_INDUSTRY"
+          ARGS="$ARGS --html reports/aivi-monthly/${{ steps.period.outputs.value }}.html"
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          python scripts/aivi_score.py $ARGS
+
+      - name: Upload monthly report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aivi-monthly-${{ steps.period.outputs.value }}
+          path: reports/aivi-monthly/
+          retention-days: 90
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## AIVI Monthly Report" >> $GITHUB_STEP_SUMMARY
+          echo "- Period: ${{ steps.period.outputs.value }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Weights version: ${{ vars.AIVI_WEIGHTS_VERSION || 'v1' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
